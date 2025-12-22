@@ -23,12 +23,12 @@ export const treeSchema = z.object({
     estimated_error_margin: z.string().optional().nullable(),
 
     // TRAQ Fields
-    risco_falha: z.string().optional().nullable(),
-    fator_impacto: z.string().optional().nullable(),
-    categoria_alvo: z.coerce.number().optional().nullable(),
-    risco_residual: z.string().optional().nullable(),
-    fatores_risco: z.array(z.union([z.number(), z.string()])).optional().nullable(),
-    intervencao_sugerida: z.string().optional().nullable(),
+    failure_prob: z.string().optional().nullable(),
+    impact_prob: z.string().optional().nullable(),
+    target_category: z.coerce.number().optional().nullable(),
+    residual_risk: z.string().optional().nullable(),
+    risk_factors: z.array(z.union([z.number(), z.string()])).optional().nullable(),
+    mitigation: z.string().optional().nullable(),
 });
 
 export type TreeFormData = z.infer<typeof treeSchema>;

@@ -92,12 +92,12 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
     const handleTRAQComplete = (assessment: TRAQAssessment) => {
         setValue('pontuacao', assessment.totalScore);
         setValue('risco', assessment.initialRisk); // Initial Risk as main risk
-        setValue('risco_falha', assessment.failureProb);
-        setValue('fator_impacto', assessment.impactProb);
-        setValue('categoria_alvo', assessment.targetCategory || 0); // Default to 0 if null
-        setValue('risco_residual', assessment.residualRisk);
-        setValue('fatores_risco', assessment.riskFactors);
-        setValue('intervencao_sugerida', assessment.mitigationAction);
+        setValue('failure_prob', assessment.failureProb);
+        setValue('impact_prob', assessment.impactProb);
+        setValue('target_category', assessment.targetCategory || 0);
+        setValue('residual_risk', assessment.residualRisk);
+        setValue('risk_factors', assessment.riskFactors);
+        setValue('mitigation', assessment.mitigationAction);
 
         toast.success(`Avaliação TRAQ concluída: Risco ${assessment.initialRisk}`);
     };

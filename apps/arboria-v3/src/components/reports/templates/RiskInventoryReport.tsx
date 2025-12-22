@@ -177,7 +177,7 @@ export function RiskInventoryReport({ installationName, trees, stats }: RiskInve
                                 </td>
                                 <td style={{ padding: '8px', verticalAlign: 'top' }}>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                        {(tree.fatores_risco && Array.isArray(tree.fatores_risco)) ? tree.fatores_risco.map((f: string | number, i: number) => {
+                                        {(tree.risk_factors && Array.isArray(tree.risk_factors)) ? tree.risk_factors.map((f: string | number, i: number) => {
                                             const isRiskPresent = String(f) === '1';
                                             if (!isRiskPresent) return null;
                                             const label = RISK_LABELS[i] || `Risco ${i + 1}`;

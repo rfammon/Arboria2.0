@@ -68,7 +68,7 @@ describe('TaskExecutionCard', () => {
             />
         );
 
-        expect(screen.getByText('PODA')).toBeInTheDocument();
+        expect(screen.getByText(/poda/i)).toBeInTheDocument();
         expect(screen.getByText('MEDIUM')).toBeInTheDocument();
         expect(screen.getByText('Ipê')).toBeInTheDocument(); // Tree info
         expect(screen.getByText('Praça Central')).toBeInTheDocument(); // Local

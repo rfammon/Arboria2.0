@@ -59,7 +59,7 @@ export const useTreeMutations = () => {
             const allowedFields = [
                 'especie', 'data', 'dap', 'altura', 'pontuacao', 'risco', 'observacoes',
                 'latitude', 'longitude', 'easting', 'northing', 'utmzonenum', 'utmzoneletter',
-                'risco_falha', 'fator_impacto', 'categoria_alvo', 'risco_residual', 'fatores_risco', 'intervencao_sugerida'
+                'failure_prob', 'impact_prob', 'target_category', 'residual_risk', 'risk_factors', 'mitigation'
             ];
 
             const sanitizedData = Object.keys(updateLoad)

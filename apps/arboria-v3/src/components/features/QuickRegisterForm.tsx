@@ -148,12 +148,12 @@ export function QuickRegisterForm({ isOpen, onClose, onSuccess }: QuickRegisterF
                 observacoes: observations,
 
                 // TRAQ Fields
-                risco_falha: traqAssessment.failureProb,
-                fator_impacto: traqAssessment.impactProb,
-                categoria_alvo: traqAssessment.targetCategory,
-                risco_residual: traqAssessment.residualRisk,
-                fatores_risco: traqAssessment.riskFactors.length > 0 ? traqAssessment.riskFactors.map(f => f === 1 ? '1' : '0').join(',') : null,
-                pontuacao: traqAssessment.totalScore, // Assuming totalScore maps to pontuacao or similar
+                failure_prob: traqAssessment.failureProb,
+                impact_prob: traqAssessment.impactProb,
+                target_category: traqAssessment.targetCategory,
+                residual_risk: traqAssessment.residualRisk,
+                risk_factors: traqAssessment.riskFactors, // Sending raw array (0|1)[] - Supabase should handle integer array
+                pontuacao: traqAssessment.totalScore,
 
                 created_by: user.id,
             });
