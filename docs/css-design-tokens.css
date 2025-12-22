@@ -1,0 +1,47 @@
+/* 
+  ARBORIA 3.0 - DUAL DENSITY DESIGN TOKENS
+  Implementation: Applied via <html data-density="field|office">
+*/
+
+:root {
+    /* Common Brand Colors (Constant) */
+    --color-primary: #0066CC;
+    --color-accent: #F97316;
+    --color-danger: #EF4444;
+    --color-surface: #FFFFFF;
+}
+
+/* FIELD DENSITY (Mobile / Capacitor) */
+:root[data-density='field'] {
+    --spacing-unit: 24px;
+    --input-height: 56px;
+    --font-size-lg: 20px;
+    --font-size-md: 18px;
+    --touch-target: 56px;
+    --border-radius: 16px;
+    --icon-size: 28px;
+    --blade-width: 100vw;
+    /* Full screen drawer */
+}
+
+/* OFFICE DENSITY (Desktop / Tauri) */
+:root[data-density='office'] {
+    --spacing-unit: 16px;
+    --input-height: 44px;
+    --font-size-lg: 18px;
+    --font-size-md: 16px;
+    --touch-target: 44px;
+    --border-radius: 8px;
+    --icon-size: 20px;
+    --blade-width: 400px;
+    /* Fixed side panel */
+}
+
+/* USAGE EXAMPLE:
+.button {
+  height: var(--input-height);
+  padding: 0 var(--spacing-unit);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-md);
+}
+*/

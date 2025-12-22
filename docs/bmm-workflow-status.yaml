@@ -1,0 +1,157 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-12-11T17:31:30-03:00"
+project: "Arboria 3.0"
+project_description: |
+  Recriação completa do sistema ArborIA usando tecnologias modernas e seguras.
+  
+  **Stack Tecnológico:**
+  - Frontend: React 18+ com TypeScript
+  - Desktop: Tauri (Windows)
+  - Mobile: Capacitor (Android)
+  - Backend: Supabase (PostgreSQL, Auth, Storage, RLS)
+  - Build: Vite
+  - Styling: Tailwind CSS
+  
+  **Funcionalidades Core:**
+  - Sistema de gestão de árvores com inventário e avaliação de risco
+  - Multi-tenant com isolamento de dados por instalação
+  - 5 perfis de usuário (Mestre, Gestor, Planejador, Executante, Inventariador)
+  - Ferramentas de medição (clinômetro, DAP)
+  - Mapas integrados (Leaflet/MapLibre)
+  - Geração de relatórios PDF
+  - Planos de intervenção
+  - Módulo de execução (novo)
+  
+  **Aspectos de Segurança:**
+  - Code compilation e obfuscação
+  - WebAssembly para algoritmos críticos
+  - Row Level Security (RLS) no Supabase
+  - Sistema de assinaturas (subscription model)
+  
+  **Código Legado:**
+  - Localização: "Arboria - deprecated/"
+  - Aplicativo completo em JavaScript vanilla
+  - Uso: Referência para estilos, funções e lógica de negócio
+  - Objetivo: Modernizar com novas bibliotecas e código limpo
+
+project_type: "enterprise-greenfield-with-legacy-reference"
+selected_track: "enterprise"
+field_type: "greenfield"
+brainstorm_requested: true
+research_requested: true
+product_brief_requested: true
+workflow_path: ".bmad/bmm/workflows/workflow-status/paths/enterprise-greenfield.yaml"
+
+workflow_status:
+  # ============================================
+  # PHASE 0 - Discovery (Required for Enterprise)
+  # ============================================
+  phase_0_discovery:
+    brainstorm-project:
+      status: "brainstorming-session-2025-12-11.md"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:brainstorming-session"
+      note: "Exploração criativa de arquitetura, segurança e monetização"
+      
+    research:
+      status: "completed"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:research"
+      note: "Pesquisa de mercado, stack técnico (React/Tauri/Capacitor), compliance"
+      
+    product-brief:
+      status: "docs/product-brief.md"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:create-product-brief"
+      note: "Definição estratégica do Arboria 3.0 - Derivado do PRD existente"
+
+  # ============================================
+  # PHASE 1 - Planning
+  # ============================================
+  phase_1_planning:
+    prd:
+      status: "docs/prd.md"
+      agent: "pm"
+      command: "/bmad:bmm:workflows:create-prd"
+      output: "Comprehensive Product Requirements Document"
+      note: "PRD existende e completo (100kb+)"
+      
+    create-ux-design:
+      status: "docs/ux-design-specification.md"
+      agent: "ux-designer"
+      command: "/bmad:bmm:workflows:create-ux-design"
+      note: "✅ COMPLETO: 7 steps concluídos. Spec com 670+ linhas (Design System, Core Interactions, Visual Identity). Pronto para implementação."
+      started: "2025-12-12T15:29:32-03:00"
+      step6_completed: "2025-12-12T18:25:04-03:00"
+      step7_completed: "2025-12-12T18:33:22-03:00"
+      completed: "2025-12-12T18:36:28-03:00"
+
+  # ============================================
+  # PHASE 2 - Solutioning
+  # ============================================
+  phase_2_solutioning:
+    create-architecture:
+      status: "docs/architecture.md"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:create-architecture"
+      output: "Enterprise-grade system architecture"
+      note: "Arquitetura definida: React/Tauri/Capacitor + Offline-First + Multi-tenant"
+      
+    test-design:
+      status: "docs/test-design-system.md"
+      agent: "tea"
+      command: "/bmad:bmm:workflows:testarch-test-design"
+      output: "System-level testability review"
+      note: "✅ COMPLETO: Testability Assessment (PASS), 8 risks identified (3 high-priority), test level strategy defined"
+      completed: "2025-12-16T08:15:00-03:00"
+      
+    validate-architecture:
+      status: "skipped"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:validate-architecture"
+      note: "Validação coberta pelo implementation-readiness workflow"
+      
+    create-epics-and-stories:
+      status: "docs/epics.md"
+      agent: "pm"
+      command: "/bmad:bmm:workflows:create-epics-and-stories"
+      note: "✅ Completo: 9 epics detalhados com 126h de esforço total, incluindo análise de risco"
+      
+    implementation-readiness:
+      status: "docs/implementation-readiness-report-2025-12-16.md"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:check-implementation-readiness"
+      note: "✅ COMPLETO: PRD analysis + Epic coverage validated. 7 RFs (26 sub), 5 NFRs (14 sub), 34 stories (152 SP). Ready for implementation."
+      completed: "2025-12-16T08:30:00-03:00"
+
+  # ============================================
+  # PHASE 3 - Implementation (EM ANDAMENTO)
+  # ============================================
+  phase_3_implementation:
+    sprint-planning:
+      status: "docs/sprint-artifacts/sprint-status.yaml"
+      agent: "sm"
+      command: "/bmad:bmm:workflows:sprint-planning"
+      note: "🔄 80% COMPLETO: RF1-RF6 ~90%, RF7 ~70%. 17 pages, 97 components, 21 hooks implementados."
+      last_updated: "2025-12-16T08:43:00-03:00"
+      progress:
+        completed: 32
+        in_progress: 5
+        not_started: 3
+        percentage: 80

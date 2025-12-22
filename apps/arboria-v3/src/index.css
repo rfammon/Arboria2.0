@@ -1,0 +1,326 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* Adaptive Density Tokens */
+:root[data-density='field'] {
+  --spacing-unit: 24px;
+  --input-height: 56px;
+  --font-size-lg: 20px;
+  --font-size-md: 18px;
+  --touch-target: 56px;
+  --border-radius-lg: 16px;
+  --border-radius-md: 12px;
+  --icon-size: 28px;
+  --blade-width: 100vw;
+}
+
+:root[data-density='office'] {
+  --spacing-unit: 16px;
+  --input-height: 44px;
+  --font-size-lg: 18px;
+  --font-size-md: 16px;
+  --touch-target: 44px;
+  --border-radius-lg: 8px;
+  --border-radius-md: 6px;
+  --icon-size: 20px;
+  --blade-width: 400px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+  /* Prevent pull-to-refresh on mobile if not desired */
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Arboria Blue Primary */
+    --primary: 210 100% 40%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 210 100% 40%;
+
+    --radius: 0.3rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Arboria Blue Dark */
+    --primary: 210 100% 50%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 210 100% 50%;
+  }
+
+  .forest {
+    --background: 140 15% 92%;
+    /* Desaturated, slightly darker green-grey base */
+    --foreground: 140 60% 10%;
+
+    --card: 140 20% 98%;
+    /* Lighter than background, off-white hint of green */
+    --card-foreground: 140 60% 10%;
+
+    --popover: 140 20% 98%;
+    --popover-foreground: 140 60% 10%;
+
+    /* Forest Green Primary - slightly deeper */
+    --primary: 142 70% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 140 15% 85%;
+    /* Distinct from background */
+    --secondary-foreground: 140 60% 10%;
+
+    --muted: 140 15% 85%;
+    --muted-foreground: 140 30% 40%;
+
+    --accent: 140 20% 88%;
+    --accent-foreground: 140 60% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 140 20% 80%;
+    /* Visible borders */
+    --input: 140 20% 80%;
+    --ring: 142 70% 30%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark-forest {
+    --background: 156 42% 4%;
+    /* Very dark green/black #060f0a */
+    --foreground: 146 30% 90%;
+    /* Light grey-green for text */
+
+    --card: 156 30% 6%;
+    /* Slightly lighter than bg */
+    --card-foreground: 146 30% 90%;
+
+    --popover: 156 30% 6%;
+    --popover-foreground: 146 30% 90%;
+
+    /* Forest Green Primary - Deep and Rich */
+    --primary: 142 60% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 156 25% 12%;
+    --secondary-foreground: 146 30% 90%;
+
+    --muted: 156 25% 12%;
+    --muted-foreground: 146 15% 60%;
+
+    --accent: 156 25% 15%;
+    --accent-foreground: 146 30% 90%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 156 25% 15%;
+    --input: 156 25% 15%;
+    --ring: 142 60% 35%;
+
+    --radius: 0.5rem;
+  }
+
+  .neon-dark {
+    --background: 260 12% 5%;
+    /* Deeper, more neutral dark purple background */
+    --foreground: 0 0% 95%;
+    /* Nearly white for maximum readability */
+
+    --card: 260 12% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 260 15% 3%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Neon Purple Primary */
+    --primary: 270 95% 65%;
+    /* Vibrant neon purple with better saturation */
+    --primary-foreground: 0 0% 100%;
+    /* White text on primary for contrast */
+
+    --secondary: 260 10% 18%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 260 8% 15%;
+    --muted-foreground: 0 0% 70%;
+    /* More contrasted muted text */
+
+    --accent: 260 10% 18%;
+    --accent-foreground: 0 0% 90%;
+
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 260 10% 20%;
+    --input: 260 10% 12%;
+    --ring: 270 85% 60%;
+    /* Matches primary for consistency */
+
+    --radius: 0.5rem;
+  }
+
+  .gruvbox-soft-dark {
+    --background: 23 12% 18%;
+    /* #32302f - Gruvbox soft dark background (darker) */
+    --foreground: 40 20% 90%;
+    /* Lighter, creamier text for better contrast */
+
+    --card: 23 12% 20%;
+    --card-foreground: 40 20% 90%;
+
+    --popover: 23 12% 20%;
+    --popover-foreground: 40 20% 90%;
+
+    /* Gruvbox Blue Primary */
+    --primary: 194 65% 45%;
+    /* Gruvbox blue with better saturation and darker for contrast */
+    --primary-foreground: 0 0% 100%;
+    /* White text for better contrast on primary */
+
+    --secondary: 23 10% 25%;
+    --secondary-foreground: 40 20% 85%;
+
+    --muted: 23 10% 25%;
+    --muted-foreground: 37 14% 65%;
+    /* #928374 - Gruvbox gray, brighter for contrast */
+
+    --accent: 23 10% 25%;
+    --accent-foreground: 40 20% 85%;
+
+    --destructive: 7 85% 45%;
+    /* Gruvbox red with better contrast */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 23 10% 30%;
+    /* Better contrast with background */
+    --input: 23 10% 25%;
+    --ring: 194 55% 55%;
+    /* Matches primary */
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Educational content: fixed dark text on light backgrounds, regardless of theme */
+.educational-content :where(p, h1, h2, h3, h4, h5, h6, li, td, th, span, div, a:not(.no-educational-override), blockquote, code:not(pre code)) {
+  @apply text-gray-900 dark:text-gray-900 !important;
+}
+
+.educational-content {
+  @apply bg-white dark:bg-white !important;
+  color: #111 !important;
+}
+
+/* Specific overrides for different text elements in educational content */
+.educational-content h1,
+.educational-content h2,
+.educational-content h3 {
+  @apply text-gray-900 dark:text-gray-900 !important;
+}
+
+.educational-content p,
+.educational-content li,
+.educational-content td,
+.educational-content th {
+  @apply text-gray-800 dark:text-gray-800 !important;
+}
+
+.educational-content blockquote {
+  @apply text-gray-700 dark:text-gray-700 !important;
+}
+
+.educational-content a {
+  @apply text-blue-600 dark:text-blue-600 !important;
+}
+
+.educational-content code {
+  @apply text-gray-800 dark:text-gray-800 !important;
+  background-color: #f3f4f6 !important;
+}
+
+.educational-content pre code {
+  @apply text-gray-100 !important;
+  background-color: initial !important;
+}
+
+.educational-content table th,
+.educational-content table td {
+  @apply border-gray-300 !important;
+}
+
+/* Safe Area Utilities - for devices with notches/home indicators */
+.safe-area-pb {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}

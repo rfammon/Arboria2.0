@@ -1,0 +1,144 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-12-09T20:34:16-03:00"
+project: "ArborIA"
+project_description: |
+  Sistema de manejo integrado de árvores com foco em gestão de risco.
+  
+  Funcionalidades Atuais:
+  - Levantamento de dados de inventário arbóreo
+  - Criação de planos de intervenção (poda/supressão baseado em risco de falha)
+  - Gestão macro de planos (sistema de gestão de projetos)
+  - Geração de laudos PDF automatizados
+  - Integração com mapas (MapLibre) com filtros e cores por risco
+  - Backend Supabase (SQL + cloud storage)
+  
+  Nova Funcionalidade - Sistema de Instalações:
+  - Instalação = local físico onde árvores são manejadas (município, planta industrial, campus, etc.)
+  - Sistema multi-tenant com isolamento de dados por instalação
+  - Perfis de usuário: Mestre, Gestor, Planejador, Executante, Inventariador
+  - Controle de acesso baseado em perfis e instalações
+  - Aprovação de cadastros por gestores
+  - Usuários podem ter múltiplos perfis por instalação
+  
+  Fases de Implementação:
+  1. Backend - Estrutura de dados, autenticação, permissões
+  2. Frontend - Interface de gerenciamento
+  3. Longo prazo - Refatoração para tecnologias comerciais
+
+project_type: "complex-brownfield-addition"
+selected_track: "method"
+field_type: "brownfield"
+brainstorm_requested: true
+research_requested: true
+workflow_path: ".bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml"
+
+workflow_status:
+  # ============================================
+  # PREREQUISITE - Documentation (Brownfield)
+  # ============================================
+  prerequisite:
+    document-project:
+      status: "docs/index.md"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:document-project"
+      output: "Comprehensive project documentation"
+      purpose: "Understand existing codebase before planning"
+      note: "✅ COMPLETED - Full documentation generated"
+      completed_at: "2025-12-09T20:44:21-03:00"
+
+  # ============================================
+  # PHASE 0 - Discovery (Optional)
+  # ============================================
+  phase_0_discovery:
+    brainstorm-project:
+      status: "optional"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:brainstorming-session"
+      note: "Creative exploration of multi-tenant architecture approaches"
+      
+    research:
+      status: "docs/analysis/research/technical-multi-tenant-supabase-research-2025-12-09.md"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:research"
+      note: "✅ COMPLETED - Comprehensive technical research on multi-tenancy, RLS, and RBAC"
+      completed_at: "2025-12-09T20:51:12-03:00"
+
+  # ============================================
+  # PHASE 1 - Planning
+  # ============================================
+  phase_1_planning:
+    prd:
+      status: "required"
+      agent: "pm"
+      command: "/bmad:bmm:workflows:create-prd"
+      output: "PRD focused on Installation system and user profiles"
+      note: "Must consider existing ArborIA system constraints"
+      
+    create-ux-design:
+      status: "conditional"
+      condition: "if_has_ui"
+      agent: "ux-designer"
+      command: "/bmad:bmm:workflows:create-ux-design"
+      note: "Phase 2 frontend - Installation management UI, profile management"
+
+  # ============================================
+  # PHASE 2 - Solutioning
+  # ============================================
+  phase_2_solutioning:
+    create-architecture:
+      status: "recommended"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:create-architecture"
+      output: "Integration architecture - multi-tenant solution design"
+      note: "CRITICAL: Database schema, RLS policies, authentication flow, data isolation"
+      
+    create-epics-and-stories:
+      status: "required"
+      agent: "pm"
+      command: "/bmad:bmm:workflows:create-epics-and-stories"
+      note: "Break down into implementable stories (Backend Phase 1 priority)"
+      
+    test-design:
+      status: "recommended"
+      agent: "tea"
+      command: "/bmad:bmm:workflows:testarch-test-design"
+      output: "System-level testability review"
+      note: "Test strategy for multi-tenant isolation and permissions"
+      
+    validate-architecture:
+      status: "optional"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:validate-architecture"
+      
+    implementation-readiness:
+      status: "required"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:check-implementation-readiness"
+      note: "Validates PRD + Architecture + Epics before implementation"
+
+  # ============================================
+  # PHASE 3 - Implementation
+  # ============================================
+  phase_3_implementation:
+    sprint-planning:
+      status: "required"
+      agent: "sm"
+      command: "/bmad:bmm:workflows:sprint-planning"
+      note: "Creates sprint plan - Backend Phase 1 first, then Frontend Phase 2"
+

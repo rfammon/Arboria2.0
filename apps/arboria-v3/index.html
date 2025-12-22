@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>arboria-v3</title>
+  <!-- EXIF.js library for photo metadata extraction -->
+  <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+</head>
+
+<body>
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      alert('Global Error: ' + message + '\nSource: ' + source + '\nLine: ' + lineno);
+    };
+    window.addEventListener('unhandledrejection', function (event) {
+      alert('Unhandled Rejection: ' + event.reason);
+    });
+  </script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

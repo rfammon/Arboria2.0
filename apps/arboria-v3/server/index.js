@@ -1,0 +1,544 @@
+
+const express = require('express');
+const puppeteer = require('puppeteer');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+
+// Singleton browser instance
+let browserInstance = null;
+
+// Singleton removed in favor of per-request isolation for stability
+async function getBrowser() {
+    return puppeteer.launch({
+        headless: 'new', // Try 'new' again, sometimes better on Windows
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu', // Revert to standard disable-gpu
+            '--disable-features=IsolateOrigins,site-per-process',
+            '--mute-audio',
+            '--window-size=1920,1080'
+        ]
+    });
+}
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', service: 'ArborIA Report Service', browser: !!browserInstance ? 'ready' : 'lazy' });
+});
+
+app.post('/generate-report', async (req, res) => {
+    console.log('Received report generation request');
+    const { installation, stats, trees } = req.body;
+
+    if (!installation || !trees) {
+        return res.status(400).json({ error: 'Missing data' });
+    }
+
+    let browser;
+    try {
+        console.log('Launching Puppeteer browser (Per-Request)...');
+        browser = await getBrowser(); // Use the shared config function
+
+
+        console.log('Puppeteer launched successfully.');
+
+
+        const page = await browser.newPage();
+
+        // Debugging: Pipe browser logs to Node console
+        page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+        page.on('pageerror', err => console.log('BROWSER ERROR:', err));
+        page.on('requestfailed', req => console.log('Request failed:', req.url(), req.failure().errorText));
+
+        // Prepare trees data for injection
+        const treesJson = JSON.stringify(trees);
+
+        // Define map style (ArcGIS Satellite)
+        const mapStyle = JSON.stringify({
+            version: 8,
+            sources: {
+                'satellite': {
+                    type: 'raster',
+                    tiles: [
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                    ],
+                    tileSize: 256,
+                    attribution: '© Esri'
+                }
+            },
+            layers: [{
+                id: 'satellite-layer',
+                type: 'raster',
+                source: 'satellite',
+                minzoom: 0,
+                maxzoom: 22
+            }]
+        });
+
+        // HTML Template with MapLibre GL JS
+        const htmlContent = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <style>
+        @page { margin: 10mm; size: A4; }
+        .page-break { page-break-before: always; }
+        .avoid-break { page-break-inside: avoid; }
+        #map { width: 100%; height: 400px; border-radius: 8px; overflow: hidden; position: relative; }
+        .map-legend { position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px; border-radius: 4px; font-size: 10px; z-index: 10; }
+        .risk-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; border: 1px solid white; }
+    </style>
+</head>
+<body class="bg-white text-gray-800 font-sans text-sm selection:bg-none">
+
+    <!-- HEADER -->
+    <div class="border-b-4 border-green-700 pb-4 mb-6 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-bold text-green-900">Relatório de Inventário</h1>
+            <p class="text-lg text-gray-600 font-medium">${installation.nome}</p>
+        </div>
+        <div class="text-right">
+            <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">ArborIA v3.0</div>
+            <div class="text-sm font-semibold text-gray-700">${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        </div>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-800 border-l-4 border-green-500 pl-3 mb-4">Resumo Executivo</h2>
+        <div class="grid grid-cols-5 gap-4">
+            <div class="bg-green-50 p-4 rounded-lg border border-green-100 text-center">
+                <div class="text-3xl font-bold text-green-700">${stats?.totalTrees || 0}</div>
+                <div class="text-[10px] uppercase font-bold text-green-600 mt-1">Total Árvores</div>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-center">
+                <div class="text-3xl font-bold text-red-700">${stats?.highRiskCount || 0}</div>
+                <div class="text-[10px] uppercase font-bold text-red-600 mt-1">Alto Risco</div>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-center">
+                <div class="text-3xl font-bold text-blue-700">${stats?.totalSpecies || 0}</div>
+                <div class="text-[10px] uppercase font-bold text-blue-600 mt-1">Espécies</div>
+            </div>
+            <div class="bg-stone-50 p-4 rounded-lg border border-stone-100 text-center">
+                <div class="text-3xl font-bold text-stone-700">${stats?.avgDap?.toFixed(1) || 0} cm</div>
+                <div class="text-[10px] uppercase font-bold text-stone-600 mt-1">DAP Médio</div>
+            </div>
+            <div class="bg-stone-50 p-4 rounded-lg border border-stone-100 text-center">
+                <div class="text-3xl font-bold text-stone-700">${stats?.avgHeight?.toFixed(1) || 0} m</div>
+                <div class="text-[10px] uppercase font-bold text-stone-600 mt-1">Altura Média</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP SECTION -->
+    <div class="mb-8 avoid-break relative">
+        <h2 class="text-xl font-bold text-gray-800 border-l-4 border-green-500 pl-3 mb-4">Mapa de Localização</h2>
+        <div class="border-2 border-slate-200 rounded-lg shadow-sm relative">
+             <div id="map"></div>
+             <div class="map-legend">
+                 <div><span class="risk-dot" style="background: #ef4444;"></span> Alto</div>
+                 <div><span class="risk-dot" style="background: #eab308;"></span> Médio</div>
+                 <div><span class="risk-dot" style="background: #22c55e;"></span> Baixo/Nenhum</div>
+             </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2 text-center">Visualização de Satélite - Gerada em Tempo Real</p>
+    </div>
+
+    <!-- DETAILED INVENTORY -->
+    <div class="page-break"></div>
+    <h2 class="text-xl font-bold text-gray-800 border-l-4 border-green-500 pl-3 mb-6 pt-6">Detalhamento do Inventário</h2>
+    
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="text-xs font-bold text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
+                <th class="px-4 py-3 w-16">Foto</th>
+                <th class="px-4 py-3">ID / Espécie</th>
+                <th class="px-4 py-3">Métricas</th>
+                <th class="px-4 py-3">Risco</th>
+                <th class="px-4 py-3 w-1/3">Fatores de Risco</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            ${trees.map((t, i) => `
+            <tr class="hover:bg-gray-50 avoid-break ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}">
+                <td class="px-4 py-3 align-top">
+                    ${t.photoUrl
+                ? `<img src="${t.photoUrl}" class="w-12 h-12 object-cover rounded shadow-sm border border-gray-200">`
+                : `<div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400 border border-gray-200">Sem foto</div>`
+            }
+                </td>
+                <td class="px-4 py-3 align-top">
+                    <div class="font-bold text-gray-900">#${t.id.slice(0, 8)}</div>
+                    <div class="text-gray-600 italic">${t.especie || 'Não identificada'}</div>
+                </td>
+                <td class="px-4 py-3 align-top text-xs text-gray-600">
+                    <div><span class="font-semibold">DAP:</span> ${t.dap} cm</div>
+                    <div><span class="font-semibold">Alt:</span> ${t.altura} m</div>
+                </td>
+                <td class="px-4 py-3 align-top">
+                    ${t.risco === 'Alto'
+                ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Alto</span>'
+                : t.risco === 'Médio'
+                    ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Médio</span>'
+                    : '<span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">Baixo</span>'
+            }
+                </td>
+                <td class="px-4 py-3 align-top">
+                    <div class="flex flex-wrap gap-1">
+                        ${(t.fatores_risco && t.fatores_risco.length > 0)
+                ? t.fatores_risco.map(f => `
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                    ${f}
+                                </span>
+                              `).join('')
+                : '<span class="text-xs text-gray-400 italic">Nenhum fator registrado</span>'
+            }
+                    </div>
+                </td>
+            </tr>
+            `).join('')}
+        </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <div class="mt-8 pt-4 border-t border-gray-200 text-center text-xs text-gray-400">
+        Gerado automaticamente por ArborIA - Sistema de Gestão Arbórea Urbana
+    </div>
+
+    <!-- MAP SCRIPT -->
+    <script>
+        const trees = ${treesJson};
+        const style = ${mapStyle};
+
+        // Initialize Map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: style,
+            center: [ -46.6333, -23.5505 ],
+            zoom: 12,
+            attributionControl: false,
+            preserveDrawingBuffer: true,
+            failIfMajorPerformanceCaveat: false
+        });
+
+        map.on('load', () => {
+            // Add Trees Source
+            const features = trees
+                .filter(t => t.latitude && t.longitude)
+                .map(t => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [t.longitude, t.latitude]
+                    },
+                    properties: {
+                        risk: t.risco
+                    }
+                }));
+
+            if (features.length > 0) {
+                map.addSource('trees', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: features
+                    }
+                });
+
+                // Add Circle Layer
+                map.addLayer({
+                    id: 'tree-points',
+                    type: 'circle',
+                    source: 'trees',
+                    paint: {
+                        'circle-radius': 8,
+                        'circle-color': [
+                            'match',
+                            ['get', 'risk'],
+                            'Alto', '#ef4444',
+                            'Médio', '#eab308',
+                            '#22c55e' // Default/Low
+                        ],
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff'
+                    }
+                });
+
+                // Fit Bounds
+                const bounds = new maplibregl.LngLatBounds();
+                features.forEach(f => {
+                    bounds.extend(f.geometry.coordinates);
+                });
+
+                // IMPORTANT: Limit Max Zoom to 17 to ensure satellite tiles exist
+                // Increase padding to show context
+                map.fitBounds(bounds, { padding: 100, maxZoom: 17 });
+            }
+
+            // Signal Ready when idle, but add a safety delay
+            // Sometimes idle fires too fast before tiles really start requesting
+            setTimeout(() => {
+                 map.once('idle', () => {
+                    console.log("Map IDLE - Signaling Ready");
+                    const el = document.createElement('div');
+                    el.id = 'map-ready';
+                    document.body.appendChild(el);
+                });
+                
+                // Force a repaint just in case
+                map.triggerRepaint();
+
+            }, 2000); // 2 second warmup
+        });
+    </script>
+</body>
+</html>
+        `;
+
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+        // Wait for map to be fully rendered (look for #map-ready div)
+        // Give it up to 20 seconds to load tiles
+        try {
+            console.log('Waiting for map to render...');
+            await page.waitForSelector('#map-ready', { timeout: 20000 });
+            console.log('Map rendered!');
+        } catch (e) {
+            console.warn('Map render timeout - using what we have');
+        }
+
+        console.log('Printing to PDF...');
+        const pdf = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
+        });
+
+        if (page) await page.close();
+        if (browser) await browser.close();
+
+        console.log('PDF generated successfully');
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=relatorio-${installation.nome}.pdf`);
+        res.send(pdf);
+
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        if (page) await page.close();
+        if (browser) await browser.close();
+        // Do not close browser unless critical error suggests restart needed
+        res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
+    }
+});
+
+// Generic HTML to PDF endpoint
+app.post('/generate-pdf-from-html', async (req, res) => {
+    console.log('Received HTML PDF generation request');
+    const { html, mapData } = req.body;
+
+    if (!html) {
+        return res.status(400).json({ error: 'Missing HTML content' });
+    }
+
+    let browser;
+    try {
+        console.log('Using per-request browser...');
+        browser = await getBrowser();
+        page = await browser.newPage();
+
+        // Debugging
+        page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+        page.on('pageerror', err => console.log('BROWSER ERROR:', err));
+
+        // Define map style (ArcGIS Satellite)
+        const mapStyle = JSON.stringify({
+            version: 8,
+            sources: {
+                'satellite': {
+                    type: 'raster',
+                    tiles: [
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                    ],
+                    tileSize: 256,
+                    attribution: '© Esri'
+                }
+            },
+            layers: [{
+                id: 'satellite-layer',
+                type: 'raster',
+                source: 'satellite',
+                minzoom: 0,
+                maxzoom: 22
+            }]
+        });
+
+        // HTML Shell
+        const fullHtml = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <style>
+        @page { margin: 0; size: A4; }
+        body { margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact; }
+    </style>
+</head>
+<body>
+    ${html}
+
+    <script>
+        const mapData = ${JSON.stringify(mapData || null)};
+        const style = ${mapStyle};
+
+        if (mapData && mapData.containerId && document.getElementById(mapData.containerId)) {
+            console.log('Initializing Minimap on ' + mapData.containerId);
+            
+            const map = new maplibregl.Map({
+                container: mapData.containerId,
+                style: style,
+                center: [mapData.lng, mapData.lat],
+                zoom: 18,
+                attributionControl: false,
+                preserveDrawingBuffer: true,
+                failIfMajorPerformanceCaveat: false,
+                interactive: false
+            });
+
+            const markerEl = document.createElement('div');
+            markerEl.style.width = '14px';
+            markerEl.style.height = '14px';
+            markerEl.style.backgroundColor = '#ef4444';
+            markerEl.style.border = '2px solid white';
+            markerEl.style.borderRadius = '50%';
+            markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+
+            new maplibregl.Marker({ element: markerEl })
+                .setLngLat([mapData.lng, mapData.lat])
+                .addTo(map);
+
+            // Wait for map to load
+            map.on('load', () => {
+                 setTimeout(() => {
+                     map.once('idle', () => {
+                        console.log("Map IDLE - Ready");
+                        const el = document.createElement('div');
+                        el.id = 'map-ready';
+                        document.body.appendChild(el);
+                    });
+                    map.triggerRepaint();
+                }, 1000); // Reduced delay for performance
+            });
+        } else {
+            console.log('No map data or container not found (' + (mapData ? mapData.containerId : 'null') + ')');
+            // Immediate ready if no map
+            const el = document.createElement('div');
+            el.id = 'map-ready';
+            document.body.appendChild(el);
+        }
+    </script>
+</body>
+</html>
+        `;
+
+        // Use domcontentloaded for stability - waiting for all tiles (load/networkidle) is risky
+        await page.setContent(fullHtml, { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+        try {
+            if (mapData && mapData.containerId) {
+                console.log('Waiting for map to render...');
+                await page.waitForSelector('#map-ready', { timeout: 15000 });
+            }
+        } catch (e) {
+            console.warn('Map render timeout or error', e.message);
+        }
+
+        console.log('Printing to PDF...');
+        const pdf = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '0', bottom: '0', left: '0', right: '0' }
+        });
+
+        if (page) await page.close();
+
+        console.log('PDF generated successfully');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=relatorio.pdf`);
+        res.send(pdf);
+
+    } catch (error) {
+        console.error('CRITICAL ERROR in generate-pdf-from-html:', error);
+
+        // Fallback: Try generating WITHOUT map if it was a crash
+        if (error.message.includes('detached') || error.message.includes('Protocol error')) {
+            console.log('Attempting Fallback: Generating PDF without map...');
+            try {
+                if (page) await page.close().catch(() => { });
+
+                // Create a clean HTML shell without MapLibre
+                const safeHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <script src="https://cdn.tailwindcss.com"></script>
+                        <style>@page { margin: 0; size: A4; } body { background: white; }</style>
+                    </head>
+                    <body>
+                        <div class="bg-yellow-50 text-yellow-800 p-4 mb-4 text-center border-b border-yellow-200">
+                            <strong>Aviso:</strong> O mapa não pôde ser renderizado devido a limitações do sistema.
+                        </div>
+                        ${html}
+                    </body>
+                    </html>
+                `;
+
+                const fallbackBrowser = await getBrowser();
+                const fallbackPage = await fallbackBrowser.newPage();
+                await fallbackPage.setContent(safeHtml, { waitUntil: 'load', timeout: 30000 });
+                const fallbackPdf = await fallbackPage.pdf({ format: 'A4', printBackground: true });
+                await fallbackPage.close();
+                await fallbackBrowser.close();
+
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `attachment; filename=relatorio-fallback.pdf`);
+                return res.send(fallbackPdf);
+            } catch (fallbackError) {
+                console.error('Fallback also failed:', fallbackError);
+            }
+        }
+
+        if (page) await page.close().catch(() => { });
+        if (browser) await browser.close().catch(() => { });
+
+        // Ensure we send a JSON response
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: 'Failed to generate PDF',
+                details: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
+        }
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Report Service running on http://localhost:${PORT}`);
+});
