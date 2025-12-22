@@ -93,12 +93,15 @@ export default function TreeDetailContent({ treeId, onClose, isBlade = false }: 
         return 'text-green-600 dark:text-green-400';
     };
 
-    const getRiskLabel = (score?: number) => {
+    const getRiskLabel = (score?: number, label?: string | null) => {
+        if (label) return `Risco ${label}`;
         if (!score) return 'Não avaliado';
         if (score > 8) return 'Risco Alto';
         if (score > 5) return 'Risco Médio';
         return 'Risco Baixo';
     };
+
+    const displayRiskLabel = tree.risco || tree.risklevel;
 
     const openPhotoViewer = (index: number) => {
         setViewerInitialIndex(index);
@@ -250,7 +253,7 @@ export default function TreeDetailContent({ treeId, onClose, isBlade = false }: 
                                 <div className={`text-lg font-bold flex items-center gap-2 ${getRiskColor(tree.pontuacao ?? undefined)}`}>
                                     <span>{tree.pontuacao || 0}</span>
                                     <span className="h-4 w-px bg-border mx-1" />
-                                    <span className="text-xs uppercase">{getRiskLabel(tree.pontuacao ?? undefined)}</span>
+                                    <span className="text-xs uppercase">{getRiskLabel(tree.pontuacao ?? undefined, displayRiskLabel)}</span>
                                 </div>
                             </div>
 

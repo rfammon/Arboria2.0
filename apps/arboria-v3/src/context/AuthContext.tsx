@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const fetchUserTheme = async (userId: string) => {
         try {
             const { data, error } = await supabase
-                .from('profiles')
+                .from('user_profiles')
                 .select('theme')
                 .eq('id', userId)
                 .single();
@@ -128,7 +128,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             const { error } = await supabase
-                .from('profiles')
+                .from('user_profiles')
                 .update({ theme })
                 .eq('id', session.user.id);
 

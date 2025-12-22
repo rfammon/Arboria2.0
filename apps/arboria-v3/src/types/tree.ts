@@ -16,7 +16,8 @@ export interface Tree {
     utmzonenum?: number | null;
     utmzoneletter?: string | null;
     pontuacao: number | null;
-    risklevel: string | null;
+    risco: string | null; // Corresponds to DB column 'risco'
+    risklevel: string | null; // Legacy or alias?
     user_id: string | null;
     instalacao_id: string | null;
     created_at: string;

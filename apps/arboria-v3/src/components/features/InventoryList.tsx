@@ -105,7 +105,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
             accessorKey: 'pontuacao',
             header: 'Risco',
             cell: ({ row }: any) => {
-                const riskLevel = (row.original as Tree).risklevel || 'Não Avaliado';
+                const riskLevel = (row.original as Tree).risco || (row.original as Tree).risklevel || 'Não Avaliado';
                 return (
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
                         ${getRiskStyles(riskLevel)}
@@ -207,9 +207,9 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
                                 </div>
                             </div>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                                ${getRiskStyles(tree.risklevel || 'Não Avaliado')}
+                                ${getRiskStyles(tree.risco || tree.risklevel || 'Não Avaliado')}
                             `}>
-                                {tree.risklevel || 'N/A'}
+                                {tree.risco || tree.risklevel || 'N/A'}
                             </span>
                         </CardHeader>
                         <CardContent className="p-3 pt-2">

@@ -1,0 +1,34 @@
+name: "Deploy OTA Update (Capgo)"
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  deploy-ota:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install dependencies
+        working-directory: apps/arboria-v3
+        run: npm install
+
+      - name: build frontend
+        working-directory: apps/arboria-v3
+        run: npm run build
+
+      - name: upload to capgo
+        uses: Cap-go/capgo-action@v1
+        with:
+          token: ${{ secrets.CAPGO_TOKEN }}
+          app_id: com.arboria.app
+          channel: production
+          bundle_path: apps/arboria-v3/dist

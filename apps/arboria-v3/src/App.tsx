@@ -25,11 +25,21 @@ import { FilterProvider } from './context/FilterContext';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useBackButton } from './hooks/useBackButton';
 import { useDensity } from './hooks/useDensity';
+import { useEffect } from 'react';
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
 
 function AppContent() {
   usePushNotifications();
   useBackButton();
   useDensity();
+
+  useEffect(() => {
+    // Notify the updater that the app is ready and loaded correctly
+    // This prevents the app from rolling back if the update was successful
+    if (window.Capacitor) {
+      CapacitorUpdater.notifyAppReady();
+    }
+  }, []);
 
   return (
     <>

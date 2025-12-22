@@ -17,6 +17,10 @@ const config: CapacitorConfig = {
       splashFullScreen: true,
       splashImmersive: true,
     },
+    CapacitorUpdater: {
+      autoUpdate: true,
+      stats: true
+    }
   },
 };
 
