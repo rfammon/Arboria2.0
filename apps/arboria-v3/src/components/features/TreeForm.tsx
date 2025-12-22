@@ -4,7 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { treeSchema, type TreeFormData } from '../../lib/validations/treeSchema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, X, AlertTriangle } from 'lucide-react';
+import { useTRAQCriteria } from '../../hooks/useTRAQCriteria';
+import { TRAQChecklistModal } from '../traq/TRAQChecklistModal';
+import type { TRAQAssessment } from '../../types/traq';
 import { toast } from 'sonner';
 import { useTreeMutations } from '../../hooks/useTreeMutations';
 import { ClinometerModal } from '../sensors/ClinometerModal';
@@ -24,8 +27,10 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
     const [isLoadingTree, setIsLoadingTree] = useState(false);
     const [showClinometer, setShowClinometer] = useState(false);
     const [showDAPEstimator, setShowDAPEstimator] = useState(false);
+    const [showTRAQ, setShowTRAQ] = useState(false);
+    const { criteria } = useTRAQCriteria();
 
-    const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<TreeFormData>({
+    const { register, handleSubmit, setValue, watch, formState: { errors }, reset } = useForm<TreeFormData>({
         resolver: zodResolver(treeSchema as any),
         defaultValues: {
             especie: '',
@@ -82,6 +87,19 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleTRAQComplete = (assessment: TRAQAssessment) => {
+        setValue('pontuacao', assessment.totalScore);
+        setValue('risco', assessment.initialRisk); // Initial Risk as main risk
+        setValue('risco_falha', assessment.failureProb);
+        setValue('fator_impacto', assessment.impactProb);
+        setValue('categoria_alvo', assessment.targetCategory || 0); // Default to 0 if null
+        setValue('risco_residual', assessment.residualRisk);
+        setValue('fatores_risco', assessment.riskFactors);
+        setValue('intervencao_sugerida', assessment.mitigationAction);
+
+        toast.success(`Avaliação TRAQ concluída: Risco ${assessment.initialRisk}`);
     };
 
     return (
@@ -218,6 +236,42 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                             </div>
                         </div>
                     </div>
+
+                    {/* TRAQ Evaluation Section */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            Avaliação de Risco (TRAQ)
+                        </label>
+
+                        <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full justify-start"
+                                onClick={() => setShowTRAQ(true)}
+                            >
+                                <AlertTriangle className="mr-2 h-4 w-4" />
+                                {treeId ? 'Refazer Avaliação TRAQ' : 'Realizar Avaliação TRAQ'}
+                            </Button>
+
+                            {/* Hidden fields are populated via setValue, but we can visualize current state */}
+                            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-2">
+                                <div className="border p-2 rounded bg-background">
+                                    <span className="block opacity-70">Risco</span>
+                                    <span className="font-medium text-foreground text-sm uppercase">
+                                        {watch('risco') || '-'}
+                                    </span>
+                                </div>
+                                <div className="border p-2 rounded bg-background">
+                                    <span className="block opacity-70">Pontuação</span>
+                                    <span className="font-medium text-foreground text-sm">
+                                        {watch('pontuacao') || 0}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex justify-end pt-4 border-t gap-2 sticky bottom-0 bg-background pb-2 sm:pb-0">
@@ -264,6 +318,13 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                     }}
                 />
             </DAPCamera>
+
+            <TRAQChecklistModal
+                isOpen={showTRAQ}
+                onClose={() => setShowTRAQ(false)}
+                onComplete={handleTRAQComplete}
+                criteria={criteria}
+            />
         </div>
     );
 }

@@ -1,0 +1,14 @@
+description = "Agente Especialista em Git (Git Master) para gerenciar versionamento"
+
+[agent]
+model = "gemini-2.0-flash-thinking-exp-1219"
+system_prompt_file = ".bmad/_cfg/custom/git-master.md"
+temperature = 0.1
+
+[agent.tools]
+# Habilita o acesso ao shell para rodar comandos git
+run_shell_command = true
+# Habilita leitura de arquivos para verificar conflitos ou logs
+read_file = true
+# Habilita listagem para ver novos arquivos não rastreados
+list_directory = true
