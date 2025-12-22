@@ -38,3 +38,13 @@ Thumbs.db
 # Legacy / Deprecated / Nested Repos
 Arboria - deprecated/
 apps/arboria-v3/android/
+
+# Security: Additional sensitive files to ignore
+*.key
+*.pem
+*.crt
+*.cert
+supabase-key*
+*.env.local
+*supabase-client*.js
+config.key
