@@ -20,7 +20,11 @@ import {
 } from "../components/ui/dialog";
 import { Checkbox } from "../components/ui/checkbox";
 
-export default function InstallationSettings() {
+interface InstallationSettingsProps {
+    embedded?: boolean;
+}
+
+export default function InstallationSettings({ embedded = false }: InstallationSettingsProps) {
     const { activeInstallation, refreshInstallations, setActiveInstallation } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -273,10 +277,12 @@ export default function InstallationSettings() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight">Configurações da Instalação</h2>
-                <p className="text-muted-foreground">Gerencie detalhes e membros de {activeInstallation.nome}</p>
-            </div>
+            {!embedded && (
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Configurações da Instalação</h2>
+                    <p className="text-muted-foreground">Gerencie detalhes e membros de {activeInstallation.nome}</p>
+                </div>
+            )}
 
             <div className="grid gap-6">
                 {/* Details Card */}

@@ -48,3 +48,4 @@ supabase-key*
 *.env.local
 *supabase-client*.js
 config.key
+service-account.json

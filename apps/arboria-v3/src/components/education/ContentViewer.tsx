@@ -4,6 +4,10 @@ import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { AlertCircle, CheckCircle, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 
+import { useDefinition } from '../../context/DefinitionContext';
+
+
+
 interface ContentViewerProps {
     content: string;
 }
@@ -15,6 +19,39 @@ export function ContentViewer({ content }: ContentViewerProps) {
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeHighlight]}
                 components={{
+                    // Handle Tooltip links: [Term](tooltip:Definition)
+                    a: ({ href, children }: any) => {
+                        if (href && href.startsWith('tooltip:')) {
+                            const tooltipText = decodeURIComponent(href.replace('tooltip:', ''));
+                            // We need to access the text content of the children, effectively the 'Term'
+                            const term = children && children.toString ? children.toString() : 'Definição';
+
+                            // eslint-disable-next-line
+                            const { openDefinition } = useDefinition();
+
+                            return (
+                                <span
+                                    className="cursor-pointer border-b border-dashed border-blue-500 text-blue-600 dark:text-blue-400 font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        // Detach to be safe
+                                        setTimeout(() => {
+                                            openDefinition(term, tooltipText);
+                                        }, 10);
+                                    }}
+                                >
+                                    {children}
+                                </span>
+                            );
+                        }
+                        return (
+                            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                                {children}
+                            </a>
+                        );
+                    },
+
                     // Custom blockquote rendering for callouts
                     blockquote: ({ children }) => {
                         const text = String(children);
@@ -113,7 +150,6 @@ export function ContentViewer({ content }: ContentViewerProps) {
                     ),
 
                     // Code blocks with better styling
-                    // Code blocks with better styling
                     code: ({ inline, className, children }: any) => {
                         if (inline) {
                             return (
@@ -177,7 +213,10 @@ export function ContentViewer({ content }: ContentViewerProps) {
                     },
                 }}
             >
-                {content}
+                {content.replace(/\[([^\]]+)\]\(tooltip:([^\)]+)\)/g, (_, text, tooltip) => {
+                    // Encode the tooltip content to make it a valid URL
+                    return `[${text}](tooltip:${encodeURIComponent(tooltip)})`;
+                })}
             </ReactMarkdown>
 
             {/* Print-friendly styles */}

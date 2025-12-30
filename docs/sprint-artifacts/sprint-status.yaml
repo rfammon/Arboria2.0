@@ -1,20 +1,21 @@
 # Sprint Status - Arboria 3.0
 # Phase 3 Implementation Progress Tracking
 # Generated: 2025-12-16T08:43:00-03:00
+# Last Updated: 2025-12-23T10:14:00-03:00
 
 project: "Arboria 3.0"
 sprint: "ongoing"
-last_updated: "2025-12-16"
+last_updated: "2025-12-23"
 
 # ============================================
 # OVERALL PROGRESS
 # ============================================
 summary:
   total_requirements: 40  # 26 FRs + 14 NFRs sub-requirements
-  completed: 34
-  in_progress: 3
-  not_started: 3
-  completion_percentage: 85
+  completed: 37
+  in_progress: 2
+  not_started: 1
+  completion_percentage: 88
 
 # ============================================
 # FUNCTIONAL REQUIREMENTS STATUS
@@ -37,7 +38,7 @@ functional_requirements:
       - "RF1.4 - Desativação de instalação (soft delete)"
 
   RF2_Usuarios_Perfis:
-    status: "85%"
+    status: "90%"
     priority: "P0"
     components:
       - name: "Login.tsx"
@@ -48,10 +49,12 @@ functional_requirements:
         notes: "Primeiro acesso e seleção de instalação"
       - name: "AuthContext"
         status: "done"
-        notes: "Contexto de autenticação global"
+        notes: "Contexto de autenticação global + theme save corrigido (22/12)"
     gaps:
       - "RF2.4 - Sistema de convites por email (parcial)"
       - "RF2.5 - Gerenciamento de membros (parcial)"
+    completed_recently:
+      - "Bug de salvamento de tema corrigido (22/12)"
 
   RF3_Selecao_Instalacao:
     status: "100%"
@@ -246,6 +249,14 @@ bonus_features:
   - name: "Gantt Chart"
     status: "done"
     notes: "Visualização de cronograma de planos"
+  
+  - name: "OTA Updates System"
+    status: "done"
+    notes: "Sistema completo de atualizações Over-The-Air com Capawesome Cloud (22-23/12)"
+    components:
+      - "useOTA.ts hook"
+      - "UpdateIndicator.tsx component"
+      - "Auto-check, download com progresso, instalação"
 
 next_priorities:
   high:
@@ -267,17 +278,19 @@ next_priorities:
 # ============================================
 codebase_stats:
   pages: 17
-  components: 97
-  hooks: 21
-  services: 3
+  components: 102
+  hooks: 23
+  services: 4
   types: 7
-  total_src_items: 145
+  total_src_items: 153
+  last_updated: "2025-12-23"
   largest_components:
+    - "PlanForm.tsx: 56KB"
     - "TreeForm.tsx: 32KB"
     - "TreeDetails.tsx: 22KB"
-    - "MapComponent.tsx: 18KB"
-    - "InstallationSettings.tsx: 16KB"
-    - "TaskExecutionForm.tsx: 15KB"
+    - "InterventionPlanReport.tsx: 20KB"
+    - "TaskExecutionForm.tsx: 20KB"
+    - "TaskExecutionCard.tsx: 18KB"
 
 # ============================================
 # DEVELOPMENT STATUS
@@ -285,3 +298,58 @@ codebase_stats:
 development_status:
   2-1-visibilidade-global: "completed"
   2-2-reabertura-work-orders: "completed"
+
+# ============================================
+# RECENT WORK (16/12 - 23/12)
+# ============================================
+recent_work:
+  ota_system:
+    status: "completed"
+    date: "22-23/12/2025"
+    description: "Sistema completo OTA com Capawesome Cloud"
+    deliverables:
+      - "Migração Capgo → Capawesome"
+      - "useOTA.ts hook com auto-check e download"
+      - "UpdateIndicator.tsx component"
+      - "APK v1.0.16 com OTA funcional"
+  
+  bug_fixes:
+    status: "completed"
+    date: "21-22/12/2025"
+    description: "Resolução de bugs críticos"
+    issues_fixed:
+      - "Tema não salvando (404 error) - AuthContext corrigido"
+      - "Coordenadas GPS null/0 - payload e schema validados"
+      - "Fotos ausentes em relatórios - signed URLs implementados"
+      - "Traduções em InterventionPlanReport"
+  
+  mobile_improvements:
+    status: "completed"
+    date: "20-21/12/2025"
+    description: "Melhorias layout mobile"
+    changes:
+      - "Viewport meta tags (viewport-fit=cover)"
+      - "InventoryList.tsx responsive cards"
+      - "TreeForm.tsx safe area padding + dvh units"
+      - "Modal overflow fixes"
+  
+  android_builds:
+    status: "ongoing"
+    date: "18-23/12/2025"
+    description: "Builds e testes Android"
+    milestones:
+      - "Primeira APK debug gerada (18/12)"
+      - "APK v1.0.16 com Capawesome (22/12)"
+      - "Testes OTA end-to-end (23/12)"
+  
+  ux_enhancements:
+    status: "completed"
+    date: "17-18/12/2025"
+    description: "Melhorias UX e notificações"
+    features:
+      - "Notificações role-based"
+      - "Clear All notifications"
+      - "Email preferences UI"
+      - "Privacy controls no dashboard"
+      - "Gantt chart theming dinâmico"
+
