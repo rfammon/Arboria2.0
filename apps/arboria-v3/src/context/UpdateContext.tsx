@@ -96,9 +96,23 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
         setState(s => ({ ...s, status: 'downloading', progress: 0 }));
 
         try {
+            // Import Capacitor to check platform
+            const { Capacitor } = await import('@capacitor/core');
+            const platform = Capacitor.getPlatform();
+
+            console.log('[Update] Platform detected:', platform);
+
+            // On web (browser), we can't download due to CORS - open link directly
+            if (platform === 'web') {
+                toast.info('Abrindo link de download...');
+                window.open(state.apkUrl, '_blank');
+                setState(s => ({ ...s, status: 'idle', progress: 0 }));
+                return;
+            }
+
             toast.info('Iniciando download...');
 
-            // Download the APK using fetch with progress tracking
+            // On native (Android), fetch works without CORS restrictions
             const response = await fetch(state.apkUrl);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -140,11 +154,7 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
             toast.success('Download concluído!');
 
             // Open the APK for installation
-            // Using Android Intent via Capacitor App plugin
             const fileUri = result.uri;
-
-            // Trigger installation using a custom scheme or intent
-            // Note: This requires the app to have REQUEST_INSTALL_PACKAGES permission
             await triggerApkInstall(fileUri);
 
         } catch (e: any) {
