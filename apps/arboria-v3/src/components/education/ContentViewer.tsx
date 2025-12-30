@@ -24,10 +24,15 @@ export function ContentViewer({ content }: ContentViewerProps) {
                 components={{
                     // Handle Tooltip links: [Term](tooltip:Definition)
                     a: ({ href, children }: any) => {
-                        if (href && href.startsWith('tooltip:')) {
-                            const tooltipText = decodeURIComponent(href.replace('tooltip:', ''));
+                        console.log('[ContentViewer] Link clicked:', { href, children });
+
+                        // Check for tooltip links using hash (ReactMarkdown sanitizes unknown protocols)
+                        if (href && href.startsWith('#tooltip:')) {
+                            const tooltipText = decodeURIComponent(href.replace('#tooltip:', ''));
                             // We need to access the text content of the children, effectively the 'Term'
                             const term = children && children.toString ? children.toString() : 'Definição';
+
+                            console.log('[ContentViewer] Tooltip link detected:', { term, tooltipText });
 
                             return (
                                 <span
@@ -213,10 +218,14 @@ export function ContentViewer({ content }: ContentViewerProps) {
                     },
                 }}
             >
-                {content.replace(/\[([^\]]+)\]\(tooltip:([^\)]+)\)/g, (_, text, tooltip) => {
-                    // Encode the tooltip content to make it a valid URL
-                    return `[${text}](tooltip:${encodeURIComponent(tooltip)})`;
-                })}
+                {(() => {
+                    const processed = content.replace(/\[([^\]]+)\]\(tooltip:([^)]+)\)/g, (_, text, tooltip) => {
+                        // Use hash (#tooltip:) instead of protocol to avoid ReactMarkdown sanitization
+                        return `[${text}](#tooltip:${encodeURIComponent(tooltip)})`;
+                    });
+                    console.log('[ContentViewer] Processed content (first 500 chars):', processed.substring(0, 500));
+                    return processed;
+                })()}
             </ReactMarkdown>
 
             {/* Print-friendly styles */}
