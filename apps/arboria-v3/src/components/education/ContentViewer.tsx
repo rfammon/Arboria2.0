@@ -13,6 +13,9 @@ interface ContentViewerProps {
 }
 
 export function ContentViewer({ content }: ContentViewerProps) {
+    // Hook MUST be called at the top level, not inside callbacks
+    const { openDefinition } = useDefinition();
+
     return (
         <div className="prose prose-slate dark:prose-invert max-w-none educational-content">
             <ReactMarkdown
@@ -25,9 +28,6 @@ export function ContentViewer({ content }: ContentViewerProps) {
                             const tooltipText = decodeURIComponent(href.replace('tooltip:', ''));
                             // We need to access the text content of the children, effectively the 'Term'
                             const term = children && children.toString ? children.toString() : 'Definição';
-
-                            // eslint-disable-next-line
-                            const { openDefinition } = useDefinition();
 
                             return (
                                 <span
