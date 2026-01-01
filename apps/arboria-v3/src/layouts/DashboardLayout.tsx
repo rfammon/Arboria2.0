@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { Menu, TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle } from 'lucide-react';
+import { Menu, TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 // import { ModeToggle } from '../components/mode-toggle';
 import { NotificationBell } from '../components/features/notifications/NotificationBell';
@@ -57,6 +57,9 @@ export default function DashboardLayout() {
 
         // Alerts: Everyone for now, or refine? Assuming public for members.
         { name: 'Alertas', href: '/alerts', icon: AlertTriangle },
+
+        // Education: Access to training materials
+        { name: 'Educação', href: '/education', icon: BookOpen },
 
         // Reports: Managers only
         ...(hasPermission('manage_installation')
