@@ -9,30 +9,30 @@ Capacitar o profissional na identificação de riscos e no planejamento seguro d
 
 # 2. Avaliação Clínica e Biomecânica da Árvore
 
-Para o engenheiro experiente, a avaliação da árvore transcende a estética. Trata-se de uma análise clínica da integridade estrutural e da resposta fisiológica da árvore ao stress (compartimentalização).
+Para o engenheiro experiente, a avaliação da árvore transcende a estética. Trata-se de uma análise clínica da integridade estrutural e da resposta fisiológica da árvore ao estresse (compartimentalização).
 
-## 2.1. A Abordagem Sistemática (Visual Tree Assessment - VTA)
+## 2.1. A Abordagem Sistemática (Avaliação Visual da Árvore - AVA)
 
 A inspeção deve ser realizada em 360 graus, do sistema radicular à copa. Ferramentas como binóculos, maços de borracha e sondas metálicas são essenciais para o diagnóstico preliminar.
 
-![Inspeção VTA](/docs/education/images/vta_inspection.png)
+![Inspeção AVA](/docs/education/images/vta_inspection.png)
 
 ### A. Zona Radicular e Colo (A Base da Estabilidade)
 A falha nesta zona é frequentemente catastrófica (tombamento total).
 
 *   **Fisiopatologia**: Procure por [Raízes Estranguladoras](tooltip:Raízes que crescem ao redor do tronco, comprimindo o fluxo de seiva). Estas comprimem o tecido vascular, causando declínio da copa e criando um ponto de fratura na base.
 *   **Sinais Críticos**: Movimentação da placa radicular (levantamento do solo), ausência de alargamento visível do colo (indicando plantio profundo ou aterro) e corpos de frutificação fúngica (Ganoderma spp., Armillaria spp.).
-*   **Zona Crítica da Raiz (CRR)**: O raio crítico para a estabilidade é calculado, geralmente, como 1,5 pés para cada polegada de DAP (Diâmetro à Altura do Peito) ou uma projeção baseada no raio da copa. Danos superiores a 40% das raízes nesta zona indicam alto risco de falha.
+*   **Zona Crítica da Raiz (ZCR)**: O raio crítico para a estabilidade é calculado, geralmente, como 1,5 pés para cada polegada de DAP (Diâmetro à Altura do Peito) ou uma projeção baseada no raio da copa. Danos superiores a 40% das raízes nesta zona indicam alto risco de falha.
 
 ### B. O Tronco (Coluna de Sustentação)
-*   **Fissuras e Fendas**: Diferencie fissuras superficiais de fissuras de cisalhamento (shear cracks) que atravessam o lenho. Fissuras horizontais são sinais de falha iminente (colapso das fibras sob tensão/compressão).
-*   **Decaimento e Cavidades**: Utilize a regra da "Casca Sã" (Shell Thickness). Para árvores sem aberturas, recomenda-se 1 polegada de madeira sã para cada 6 polegadas de diâmetro. Se houver uma abertura na cavidade (>30% da circunferência), a exigência sobe para 2 polegadas de madeira sã.
-*   **Madeira de Reação**: Observe costelas ou "costuras" (seams) no tronco. Elas indicam uma tentativa da árvore de fechar feridas antigas ou estabilizar fissuras internas.
+*   **Fissuras e Fendas**: Diferencie fissuras superficiais de fissuras de cisalhamento que atravessam o lenho. Fissuras horizontais são sinais de falha iminente (colapso das fibras sob tensão/compressão).
+*   **Decaimento e Cavidades**: Utilize a regra da "Espessura da Casca Sã". Para árvores sem aberturas, recomenda-se 1 polegada de madeira sã para cada 6 polegadas de diâmetro. Se houver uma abertura na cavidade (>30% da circunferência), a exigência sobe para 2 polegadas de madeira sã.
+*   **Madeira de Reação**: Observe costelas ou "costuras" no tronco. Elas indicam uma tentativa da árvore de fechar feridas antigas ou estabilizar fissuras internas.
 
 ### C. A Copa e Uniões de Ramos
 *   **[Casca Inclusa](tooltip:Casca que cresce para dentro da união de dois ramos, impedindo a conexão física da madeira)**: Em uniões de ramos ("V" apertado), a casca fica presa entre os tecidos lenhosos, impedindo a conexão física da madeira. Esta é uma das principais causas de falha em tempestades.
-*   **Ramos Epicórmicos**: Rebentos que surgem após podas drásticas ou stress. Têm inserção superficial e tornam-se perigosos à medida que ganham peso.
-*   **Galhos Pendurados (Hangers)**: Ramos quebrados que permanecem suspensos na copa, constituindo risco imediato.
+*   **Ramos Epicórmicos**: Rebentos que surgem após podas drásticas ou estresse. Têm inserção superficial e tornam-se perigosos à medida que ganham peso.
+*   **Galhos Pendurados**: Ramos quebrados que permanecem suspensos na copa, constituindo risco imediato.
 
 ---
 
@@ -56,7 +56,7 @@ Divida a área sob sua responsabilidade em zonas de prioridade:
 *   **Categoria II (Uso Infrequente)**: Inspeções a cada 3-5 anos ou reativas.
 *   **Categoria III (Uso Raro)**: Inspeções reativas ou antes de épocas de tempestade.
 
-## 3.3. Sistema de Triagem (Triage)
+## 3.3. Sistema de Triagem
 Em zonas de alta prioridade (Categoria I), aplique um sistema de cores para ação imediata:
 
 *   **Preto (Perigo Iminente)**: Árvores mortas ou com falha irreversível. Remoção imediata ou isolamento da área.
@@ -85,7 +85,7 @@ Para evitar o rasgamento da casca e danos ao tecido do tronco:
 
 1.  **Corte de Alívio (Inferior)**: Um corte de baixo para cima, a cerca de 30 cm do tronco, penetrando 1/3 do ramo.
 2.  **Corte de Queda (Superior)**: Um corte de cima para baixo, ligeiramente à frente do corte de alívio, para remover o peso do ramo.
-3.  **Corte Final (Acabamento)**: Corte final junto ao colar do ramo (branch collar) e crista da casca, sem deixar tocos (stub) e sem cortar rente ao tronco (flush cut), preservando a zona de proteção natural da árvore.
+3.  **Corte Final (Acabamento)**: Corte final junto ao colar do galho (branch collar) e crista da casca, sem deixar tocos e sem cortar rente ao tronco (corte rente), preservando a zona de proteção natural da árvore.
 
 ## 4.3. Autorizações e Licenciamento
 Verifique a necessidade de Autorização de Supressão de Vegetação (ASV), especialmente em Áreas de Preservação Permanente (APP). A supressão sem licença pode configurar crime ambiental.
@@ -98,13 +98,13 @@ A gestão de risco exige a transição da "reação a crises" para a "manutenç�
 
 ---
 
-# 6. "Cheat Sheet" do Engenheiro
+# 6. Referência Técnica do Engenheiro
 
 | Fase | Ação Crítica | Regra de Ouro |
 | :--- | :--- | :--- |
 | **Diagnóstico** | Sondagem de Decaimento | Regra t/R < 0.3: Parede de madeira sã < 1/3 do raio = Risco Alto. |
 | **Diagnóstico** | Uniões de Ramos | Atenção a formas em "V" com casca inclusa. Prefira formas em "U". |
-| **Diagnóstico** | Raízes (RCR) | DAP x 1,5 (em pés). Danos > 40% = Falha Provável. |
+| **Diagnóstico** | Raízes (ZCR) | DAP x 1,5 (em pés). Danos > 40% = Falha Provável. |
 | **Alvos** | Priorização | Categoria I: Inspeção anual obrigatória. |
 | **Planeamento** | Zona de Trabalho | Raio de 1,5x a altura da árvore. |
 | **Execução** | Técnica de Corte | 3 Cortes: Alívio, Queda e Final. |

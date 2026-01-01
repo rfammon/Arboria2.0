@@ -4,15 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Upload, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/context/AuthContext';
 
 export function BackupManager() {
+    const { activeInstallation } = useAuth();
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
 
     const handleExport = async () => {
         setIsExporting(true);
         try {
-            await BackupService.exportData();
+            await BackupService.exportData(activeInstallation?.id);
         } finally {
             setIsExporting(false);
         }

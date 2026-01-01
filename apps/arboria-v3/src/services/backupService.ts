@@ -16,16 +16,21 @@ export const BackupService = {
     /**
      * Export all data to a ZIP file
      */
-    exportData: async (): Promise<void> => {
+    exportData: async (installationId?: string): Promise<void> => {
         try {
             const zip = new JSZip();
 
             // 1. Fetch Trees from Supabase
-            // TODO: Also fetch from offline queue if needed? For now assuming specific "Backup" button uses current state
-            const { data: trees, error } = await supabase.from('trees').select('*');
+            let query = supabase.from('arvores').select('*');
+
+            if (installationId) {
+                query = query.eq('instalacao_id', installationId);
+            }
+
+            const { data: trees, error } = await query;
 
             if (error) throw error;
-            if (!trees) throw new Error('No trees found');
+            if (!trees) throw new Error('Nenhuma árvore encontrada para exportação');
 
             // 2. Fetch Photos from IndexedDB
             const photos = await getAllPhotos();
@@ -73,9 +78,12 @@ export const BackupService = {
 
             toast.success('Backup exportado com sucesso!');
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Export failed:', error);
-            toast.error('Erro ao exportar backup');
+
+            // Extract detailed message from error object
+            const detailedError = error instanceof Error ? error.message : JSON.stringify(error);
+            toast.error(`Erro ao exportar backup: ${detailedError}`);
             throw error;
         }
     },
@@ -100,7 +108,7 @@ export const BackupService = {
 
             // 2. Restore Trees (Upsert)
             const { error: treeError } = await supabase
-                .from('trees')
+                .from('arvores')
                 .upsert(trees, { onConflict: 'id' });
 
             if (treeError) throw treeError;
