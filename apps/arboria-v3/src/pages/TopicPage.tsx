@@ -88,39 +88,40 @@ export default function TopicPage() {
             {/* Header with breadcrumbs and actions */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 print:hidden">
                 <div className="max-w-4xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => navigate('/education')}
+                                className="flex-shrink-0"
                             >
                                 <ChevronLeft className="h-4 w-4 mr-1" />
-                                Tópicos
+                                <span className="hidden xs:inline">Tópicos</span>
                             </Button>
 
-                            {/* Breadcrumbs */}
-                            <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            {/* Breadcrumbs - Hidden on very small screens to prevent overflow */}
+                            <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap overflow-hidden">
                                 <button
                                     onClick={() => navigate('/education')}
-                                    className="hover:text-gray-700 dark:hover:text-gray-300"
+                                    className="hover:text-gray-700 dark:hover:text-gray-300 hidden sm:inline"
                                 >
                                     Educação
                                 </button>
-                                <span>/</span>
-                                <span className="text-gray-900 dark:text-gray-100 font-medium">
+                                <span className="hidden sm:inline">/</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-medium truncate max-w-[150px] sm:max-w-none">
                                     {currentTopic.title}
                                 </span>
                             </nav>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={handlePrint}>
-                                <Printer className="h-4 w-4 mr-2" />
-                                Imprimir
+                        <div className="flex items-center gap-2 ml-auto sm:ml-0">
+                            <Button variant="outline" size="sm" onClick={handlePrint} className="flex-shrink-0">
+                                <Printer className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Imprimir</span>
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+                            <Button variant="outline" size="sm" onClick={() => navigate('/')} className="flex-shrink-0">
                                 <Home className="h-4 w-4" />
                             </Button>
                         </div>
