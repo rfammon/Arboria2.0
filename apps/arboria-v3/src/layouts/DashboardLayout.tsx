@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { Menu, TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { ModeToggle } from '../components/mode-toggle';
+// import { ModeToggle } from '../components/mode-toggle';
 import { NotificationBell } from '../components/features/notifications/NotificationBell';
 import { useAuth } from '../context/AuthContext';
 import { OfflineSyncIndicator } from '../components/features/OfflineSyncIndicator';
@@ -64,7 +64,7 @@ export default function DashboardLayout() {
 
         // Settings: Managers only
         ...(activeInstallation && hasPermission('manage_installation')
-            ? [{ name: 'Configurações da Instalação', href: '/settings', icon: Settings }] : []),
+            ? [{ name: 'Configurações', href: '/settings', icon: Settings }] : []),
     ];
 
     return (
@@ -119,6 +119,7 @@ export default function DashboardLayout() {
                                 <Link
                                     key={item.name}
                                     to={item.href}
+                                    onClick={() => setIsSidebarOpen(false)}
                                     className={cn(
                                         "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
                                         isActive
@@ -137,7 +138,7 @@ export default function DashboardLayout() {
                     <div className="p-4 border-t border-border space-y-2">
                         <div className="flex items-center justify-between px-4 py-2">
                             <div className="flex items-center gap-2">
-                                <ModeToggle />
+                                {/* <ModeToggle /> - Moved to Settings */}
                                 <NotificationBell />
                             </div>
                         </div>
@@ -185,7 +186,7 @@ export default function DashboardLayout() {
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <ModeToggle />
+                        {/* <ModeToggle /> */}
                         <NotificationBell />
                     </div>
                 </header>

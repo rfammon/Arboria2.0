@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useFilters } from '../context/FilterContext';
-import { Plus, Search, Filter, Zap } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { cn } from '../lib/utils';
 import InventoryList from '../components/features/InventoryList';
 import ClusteredMapComponent from '../components/features/ClusteredMapComponent';
@@ -10,7 +10,6 @@ import { PageContainer } from '../components/layout/PageContainer';
 import { FieldAction } from '../components/common/FieldAction';
 import { TreeDrawer } from '../components/features/TreeDrawer';
 import TreeBlade from '../components/features/TreeBlade';
-import { QuickRegisterForm } from '../components/features/QuickRegisterForm';
 import { useDensity } from '../hooks/useDensity';
 import { useTrees } from '../hooks/useTrees';
 import { SyncStatusIndicator } from '../components/features/SyncStatusIndicator';
@@ -30,8 +29,7 @@ export default function Inventory() {
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editTreeId, setEditTreeId] = useState<string | null>(null);
-    const [isQuickRegisterOpen, setIsQuickRegisterOpen] = useState(false);
-    const { refetch: refetchTrees } = useTrees();
+    useTrees();
 
     const selectedTreeId = searchParams.get('selectedTree');
 
@@ -70,16 +68,7 @@ export default function Inventory() {
                 </div>
                 <p className="text-muted-foreground">Gerencie e monitorize o arvoredo urbano.</p>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    {density === 'field' && (
-                        <FieldAction
-                            variant="outline"
-                            onClick={() => setIsQuickRegisterOpen(true)}
-                            className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white border-none shadow-[0_0_15px_rgba(245,158,11,0.4)]"
-                        >
-                            <Zap className="w-5 h-5 mr-2 fill-current" />
-                            Cadastro Rápido
-                        </FieldAction>
-                    )}
+
                     <FieldAction
                         isPrimary
                         onClick={() => setIsFormOpen(true)}
@@ -188,12 +177,7 @@ export default function Inventory() {
                 </SheetContent>
             </Sheet>
 
-            {/* Quick Registration Modal */}
-            <QuickRegisterForm
-                isOpen={isQuickRegisterOpen}
-                onClose={() => setIsQuickRegisterOpen(false)}
-                onSuccess={refetchTrees}
-            />
+
         </PageContainer>
     );
 }

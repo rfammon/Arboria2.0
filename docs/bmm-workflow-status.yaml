@@ -148,10 +148,22 @@ workflow_status:
       status: "docs/sprint-artifacts/sprint-status.yaml"
       agent: "sm"
       command: "/bmad:bmm:workflows:sprint-planning"
-      note: "🔄 80% COMPLETO: RF1-RF6 ~90%, RF7 ~70%. 17 pages, 97 components, 21 hooks implementados."
-      last_updated: "2025-12-16T08:43:00-03:00"
+      note: "🔄 88% COMPLETO: RF1-RF6 ~92%, RF7 ~90%. 17 pages, 100+ components, 22+ hooks implementados."
+      last_updated: "2025-12-23T10:14:00-03:00"
       progress:
-        completed: 32
-        in_progress: 5
-        not_started: 3
-        percentage: 80
+        completed: 35
+        in_progress: 3
+        not_started: 2
+        percentage: 88
+      recent_work:
+        - "Sistema OTA (Capawesome Cloud) - completo"
+        - "Correções críticas: tema, GPS, fotos em relatórios"
+        - "Build Android v1.0.16 + testes OTA"
+        - "Melhorias layout mobile (viewport, safe area)"
+        - "Notificações role-based + preferências"
+        - "Privacy controls no dashboard"
+        - "Gantt chart theming"
+      next_priorities:
+        - "Push Notifications (RF5.3)"
+        - "Cobertura de testes 80%"
+        - "GPS turn-by-turn (RF7.8)"

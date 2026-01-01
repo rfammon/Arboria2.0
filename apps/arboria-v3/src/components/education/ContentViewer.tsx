@@ -4,17 +4,59 @@ import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { AlertCircle, CheckCircle, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 
+import { useDefinition } from '../../context/DefinitionContext';
+
+
+
 interface ContentViewerProps {
     content: string;
 }
 
 export function ContentViewer({ content }: ContentViewerProps) {
+    // Hook MUST be called at the top level, not inside callbacks
+    const { openDefinition } = useDefinition();
+
     return (
         <div className="prose prose-slate dark:prose-invert max-w-none educational-content">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeHighlight]}
                 components={{
+                    // Handle Tooltip links: [Term](tooltip:Definition)
+                    a: ({ href, children }: any) => {
+                        console.log('[ContentViewer] Link clicked:', { href, children });
+
+                        // Check for tooltip links using hash (ReactMarkdown sanitizes unknown protocols)
+                        if (href && href.startsWith('#tooltip:')) {
+                            const tooltipText = decodeURIComponent(href.replace('#tooltip:', ''));
+                            // We need to access the text content of the children, effectively the 'Term'
+                            const term = children && children.toString ? children.toString() : 'Definição';
+
+                            console.log('[ContentViewer] Tooltip link detected:', { term, tooltipText });
+
+                            return (
+                                <span
+                                    className="cursor-pointer border-b border-dashed border-blue-500 text-blue-600 dark:text-blue-400 font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        // Detach to be safe
+                                        setTimeout(() => {
+                                            openDefinition(term, tooltipText);
+                                        }, 10);
+                                    }}
+                                >
+                                    {children}
+                                </span>
+                            );
+                        }
+                        return (
+                            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                                {children}
+                            </a>
+                        );
+                    },
+
                     // Custom blockquote rendering for callouts
                     blockquote: ({ children }) => {
                         const text = String(children);
@@ -113,7 +155,6 @@ export function ContentViewer({ content }: ContentViewerProps) {
                     ),
 
                     // Code blocks with better styling
-                    // Code blocks with better styling
                     code: ({ inline, className, children }: any) => {
                         if (inline) {
                             return (
@@ -177,7 +218,14 @@ export function ContentViewer({ content }: ContentViewerProps) {
                     },
                 }}
             >
-                {content}
+                {(() => {
+                    const processed = content.replace(/\[([^\]]+)\]\(tooltip:([^)]+)\)/g, (_, text, tooltip) => {
+                        // Use hash (#tooltip:) instead of protocol to avoid ReactMarkdown sanitization
+                        return `[${text}](#tooltip:${encodeURIComponent(tooltip)})`;
+                    });
+                    console.log('[ContentViewer] Processed content (first 500 chars):', processed.substring(0, 500));
+                    return processed;
+                })()}
             </ReactMarkdown>
 
             {/* Print-friendly styles */}

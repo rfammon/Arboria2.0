@@ -26,7 +26,7 @@ export function ThemeProvider({
     defaultTheme = "system",
     storageKey = "vite-ui-theme",
 }: ThemeProviderProps) {
-    const { userTheme, updateUserTheme } = useAuth();
+    const { userTheme } = useAuth();
 
     const [theme, setTheme] = useState<Theme>(() => {
         return (localStorage.getItem(storageKey) as Theme) || defaultTheme
@@ -62,7 +62,7 @@ export function ThemeProvider({
         setTheme: (theme: Theme) => {
             localStorage.setItem(storageKey, theme)
             setTheme(theme)
-            updateUserTheme(theme)
+            // updateUserTheme(theme) - Removed to allow manual save confirmation
         },
     }
 

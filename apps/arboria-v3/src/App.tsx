@@ -1,5 +1,6 @@
 import { Routes, Route, HashRouter } from 'react-router-dom';
 import { OfflineSyncProvider } from './context/OfflineSyncContext';
+import { UpdateProvider } from './context/UpdateContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import Inventory from './pages/Inventory';
@@ -8,7 +9,9 @@ import Education from './pages/Education';
 import TopicPage from './pages/TopicPage';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
+import { TooltipProvider } from './components/ui/tooltip';
 import InstallationSettings from './pages/InstallationSettings';
+import Settings from './pages/Settings';
 import InstallationSelector from './pages/InstallationSelector';
 import ActivityHistory from './pages/ActivityHistory';
 import PlanManager from './pages/PlanManager';
@@ -26,8 +29,11 @@ import { usePushNotifications } from './hooks/usePushNotifications';
 import { useBackButton } from './hooks/useBackButton';
 import { useDensity } from './hooks/useDensity';
 
+import { useDeepLinking } from './hooks/useDeepLinking';
+
 function AppContent() {
   usePushNotifications();
+  useDeepLinking();
   useBackButton();
   useDensity();
 
@@ -45,7 +51,7 @@ function AppContent() {
           <Route path="activity-history" element={<ActivityHistory />} />
           <Route path="reports" element={<Reports />} />
           <Route path="alerts" element={<AlertsCenter />} />
-          <Route path="settings" element={<InstallationSettings />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="execution" element={
             <ExecutionPageGuard>
               <Execution />
@@ -69,14 +75,24 @@ function AppContent() {
   );
 }
 
+import { DefinitionProvider } from './context/DefinitionContext';
+import { DefinitionModal } from './components/education/DefinitionModal';
+
 function App() {
   return (
     <HashRouter>
-      <OfflineSyncProvider>
-        <FilterProvider>
-          <AppContent />
-        </FilterProvider>
-      </OfflineSyncProvider>
+      <UpdateProvider>
+        <OfflineSyncProvider>
+          <TooltipProvider>
+            <DefinitionProvider>
+              <FilterProvider>
+                <AppContent />
+                <DefinitionModal />
+              </FilterProvider>
+            </DefinitionProvider>
+          </TooltipProvider>
+        </OfflineSyncProvider>
+      </UpdateProvider>
     </HashRouter>
   );
 }
