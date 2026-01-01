@@ -125,7 +125,8 @@ function GeneralSettings() {
 function UpdateSettings() {
     const {
         checkForUpdates,
-        downloadAndInstall,
+        downloadApk,
+        installApk,
         currentVersion,
         latestVersion,
         releaseNotes,
@@ -139,6 +140,7 @@ function UpdateSettings() {
     const downloading = status === 'downloading';
     const available = status === 'available';
     const readyToInstall = status === 'ready-to-install';
+    const installing = status === 'installing';
 
     return (
         <Card>
@@ -161,9 +163,12 @@ function UpdateSettings() {
                         <div className={`px-2 py-1 rounded text-xs font-medium ${readyToInstall ? 'bg-green-100 text-green-700' :
                             available ? 'bg-blue-100 text-blue-700' :
                                 downloading ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-gray-100 text-gray-700'
+                                    installing ? 'bg-purple-100 text-purple-700' :
+                                        'bg-gray-100 text-gray-700'
                             }`}>
-                            {status.toUpperCase().replace('-', ' ')}
+                            {status === 'ready-to-install' ? 'PRONTO' :
+                                status === 'installing' ? 'INSTALANDO' :
+                                    status.toUpperCase().replace('-', ' ')}
                         </div>
                     </div>
                 </div>
@@ -201,11 +206,20 @@ function UpdateSettings() {
                     <div className="p-4 border rounded-lg bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
                         <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                             <CheckCircle2 className="h-5 w-5" />
-                            <span className="font-medium">APK baixado! Abra o arquivo para instalar.</span>
+                            <span className="font-medium">APK baixado com sucesso!</span>
                         </div>
                         <p className="text-sm text-green-600 dark:text-green-400 mt-1 ml-7">
-                            Localize o arquivo APK no gerenciador de arquivos para concluir a instalação.
+                            Clique em "Instalar" para iniciar a instalação.
                         </p>
+                    </div>
+                )}
+
+                {installing && (
+                    <div className="p-4 border rounded-lg bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span className="font-medium">Abrindo instalador...</span>
+                        </div>
                     </div>
                 )}
 
@@ -228,13 +242,18 @@ function UpdateSettings() {
                 )}
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-2">
-                {available ? (
-                    <Button onClick={downloadAndInstall} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                {readyToInstall ? (
+                    <Button onClick={installApk} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white">
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Instalar Atualização
+                    </Button>
+                ) : available ? (
+                    <Button onClick={downloadApk} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                         <Download className="mr-2 h-4 w-4" />
-                        Baixar e Instalar v{latestVersion}
+                        Baixar v{latestVersion}
                     </Button>
                 ) : (
-                    <Button onClick={checkForUpdates} variant="outline" disabled={checking || downloading} className="w-full sm:w-auto">
+                    <Button onClick={checkForUpdates} variant="outline" disabled={checking || downloading || installing} className="w-full sm:w-auto">
                         {checking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                         Verificar Atualizações
                     </Button>

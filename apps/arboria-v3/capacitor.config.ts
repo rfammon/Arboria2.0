@@ -4,7 +4,11 @@ const config: CapacitorConfig = {
   appId: 'com.arboria.app',
   appName: 'Arboria',
   webDir: 'dist',
+  // Enable native HTTP plugin to bypass CORS
   plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,

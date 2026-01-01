@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { App } from '@capacitor/app';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import { toast } from 'sonner';
 import { supabase } from '../lib/supabase';
 
 // --- Types ---
 
-type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'ready-to-install' | 'error';
+type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'ready-to-install' | 'installing' | 'error';
 
 interface UpdateState {
     status: UpdateStatus;
@@ -16,12 +15,15 @@ interface UpdateState {
     latestVersion: string | null;
     releaseNotes: string | null;
     apkUrl: string | null;
+    apkFilePath: string | null; // Local file path of downloaded APK
     hasUpdate: boolean;
 }
 
 interface UpdateContextType extends UpdateState {
     checkForUpdates: () => Promise<void>;
-    downloadAndInstall: () => Promise<void>;
+    downloadApk: () => Promise<void>;
+    installApk: () => Promise<void>;
+    cleanupApk: () => Promise<void>;
 }
 
 const UpdateContext = createContext<UpdateContextType | null>(null);
@@ -37,15 +39,39 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
         latestVersion: null,
         releaseNotes: null,
         apkUrl: null,
+        apkFilePath: null,
         hasUpdate: false,
     });
 
-    // Initialize - get current app version
+    // Initialize - get current app version and cleanup old APKs
     useEffect(() => {
         const init = async () => {
             try {
                 const appInfo = await App.getInfo().catch(() => ({ version: 'Unknown' }));
                 setState(s => ({ ...s, currentVersion: appInfo.version }));
+
+                // Cleanup any residual APKs in cache
+                const { Filesystem, Directory } = await import('@capacitor/filesystem');
+                try {
+                    const result = await Filesystem.readdir({
+                        path: '',
+                        directory: Directory.Cache
+                    });
+
+                    for (const file of result.files) {
+                        if (file.name.endsWith('.apk')) {
+                            await Filesystem.deleteFile({
+                                path: file.name,
+                                directory: Directory.Cache
+                            }).catch(() => { });
+                            console.log('[Update] Residual APK cleaned up:', file.name);
+                        }
+                    }
+                } catch (e) {
+                    // Ignore readdir errors
+                    console.log('[Update] Storage cleanup skipped or failed');
+                }
+
             } catch (error) {
                 console.error('[Update] Init failed:', error);
             }
@@ -86,76 +112,72 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
         }
     }, [state.currentVersion, state.status]);
 
-    // Download APK and trigger installation
-    const downloadAndInstall = useCallback(async () => {
+    // Download APK to local storage
+    const downloadApk = useCallback(async () => {
         if (!state.apkUrl) {
             toast.error('URL do APK não disponível.');
             return;
         }
 
-        setState(s => ({ ...s, status: 'downloading', progress: 0 }));
+        setState(s => ({ ...s, status: 'downloading', progress: 0, error: null }));
 
         try {
-            // Import Capacitor to check platform
             const { Capacitor } = await import('@capacitor/core');
+            const { Filesystem, Directory } = await import('@capacitor/filesystem');
             const platform = Capacitor.getPlatform();
 
             console.log('[Update] Platform detected:', platform);
+            console.log('[Update] Downloading APK from:', state.apkUrl);
 
-            // On web (browser), we can't download due to CORS - open link directly
+            // On web, just open the link
             if (platform === 'web') {
-                toast.info('Abrindo link de download...');
                 window.open(state.apkUrl, '_blank');
                 setState(s => ({ ...s, status: 'idle', progress: 0 }));
                 return;
             }
 
-            toast.info('Iniciando download...');
+            toast.info('Baixando atualização...');
+            const fileName = `arboria-update-${state.latestVersion}.apk`;
 
-            // On native (Android), fetch works without CORS restrictions
-            const response = await fetch(state.apkUrl);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            console.log('[Update] Starting native download to:', fileName);
 
-            const contentLength = response.headers.get('content-length');
-            const total = contentLength ? parseInt(contentLength, 10) : 0;
-            const reader = response.body?.getReader();
-
-            if (!reader) throw new Error('Failed to get response reader');
-
-            const chunks: Uint8Array[] = [];
-            let received = 0;
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                chunks.push(value);
-                received += value.length;
-
-                if (total > 0) {
-                    const progress = Math.round((received / total) * 100);
-                    setState(s => ({ ...s, progress }));
-                }
-            }
-
-            // Combine chunks into a single blob
-            const blob = new Blob(chunks as BlobPart[], { type: 'application/vnd.android.package-archive' });
-            const base64 = await blobToBase64(blob);
-
-            // Save to filesystem
-            const fileName = `arboria-${state.latestVersion}.apk`;
-            const result = await Filesystem.writeFile({
+            // Use native downloadFile for binary safety and better performance
+            const downloadResult = await Filesystem.downloadFile({
+                url: state.apkUrl,
                 path: fileName,
-                data: base64,
                 directory: Directory.Cache,
             });
 
-            setState(s => ({ ...s, status: 'ready-to-install', progress: 100 }));
-            toast.success('Download concluído!');
+            console.log('[Update] Download result:', JSON.stringify(downloadResult));
 
-            // Open the APK for installation
-            const fileUri = result.uri;
-            await triggerApkInstall(fileUri);
+            // Verify file exists and has size
+            const fileInfo = await Filesystem.stat({
+                path: fileName,
+                directory: Directory.Cache
+            });
+            console.log('[Update] Downloaded file size:', fileInfo.size, 'bytes');
+
+            if (fileInfo.size < 1000000) { // Less than 1MB is suspicious for this APK
+                throw new Error(`Arquivo baixado parece incompleto (${(fileInfo.size / 1024).toFixed(0)} KB)`);
+            }
+
+            const stats = await Filesystem.getUri({
+                path: fileName,
+                directory: Directory.Cache
+            });
+
+            // Strip file:// prefix just in case FileOpener prefers raw path on some versions
+            const rawPath = stats.uri.replace(/^file:\/\//, '');
+            console.log('[Update] APK URIs:', { uri: stats.uri, rawPath });
+
+            setState(s => ({
+                ...s,
+                status: 'ready-to-install',
+                progress: 100,
+                apkFilePath: stats.uri
+            }));
+
+            toast.success('Download concluído! Clique em Instalar.');
 
         } catch (e: any) {
             console.error('[Update] Download failed:', e);
@@ -164,8 +186,81 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
         }
     }, [state.apkUrl, state.latestVersion]);
 
+    // Install the downloaded APK
+    const installApk = useCallback(async () => {
+        if (!state.apkFilePath) {
+            toast.error('APK não encontrado. Faça o download primeiro.');
+            return;
+        }
+
+        setState(s => ({ ...s, status: 'installing' }));
+
+        try {
+            const { FileOpener } = await import('@capacitor-community/file-opener');
+
+            console.log('[Update] Opening APK for installation:', state.apkFilePath);
+            toast.info('Abrindo instalador...');
+
+            await FileOpener.open({
+                filePath: state.apkFilePath,
+                contentType: 'application/vnd.android.package-archive',
+            });
+
+            console.log('[Update] FileOpener.open() succeeded');
+
+            // Keep the status as installing - user will restart app after install
+            toast.success('Instalador aberto! Siga as instruções do Android.', {
+                duration: 10000,
+            });
+
+        } catch (e: any) {
+            console.error('[Update] Install failed:', e);
+            console.error('[Update] Error details:', JSON.stringify(e));
+            setState(s => ({ ...s, status: 'error', error: e.message }));
+            toast.error('Erro ao abrir instalador: ' + e.message);
+        }
+    }, [state.apkFilePath]);
+
+    // Cleanup - delete downloaded APK
+    const cleanupApk = useCallback(async () => {
+        if (!state.apkFilePath) return;
+
+        try {
+            const { Filesystem } = await import('@capacitor/filesystem');
+
+            // Extract filename from URI
+            const fileName = state.apkFilePath.split('/').pop();
+            if (!fileName) return;
+
+            await Filesystem.deleteFile({
+                path: fileName,
+                directory: (await import('@capacitor/filesystem')).Directory.Cache,
+            });
+
+            console.log('[Update] APK cleaned up:', fileName);
+
+            setState(s => ({
+                ...s,
+                status: 'idle',
+                progress: 0,
+                apkFilePath: null,
+                hasUpdate: false
+            }));
+
+        } catch (e: any) {
+            // Ignore cleanup errors - file may already be deleted
+            console.warn('[Update] Cleanup warning:', e.message);
+        }
+    }, [state.apkFilePath]);
+
     return (
-        <UpdateContext.Provider value={{ ...state, checkForUpdates, downloadAndInstall }}>
+        <UpdateContext.Provider value={{
+            ...state,
+            checkForUpdates,
+            downloadApk,
+            installApk,
+            cleanupApk
+        }}>
             {children}
         </UpdateContext.Provider>
     );
@@ -177,47 +272,4 @@ export function useUpdate() {
         throw new Error('useUpdate must be used within an UpdateProvider');
     }
     return context;
-}
-
-// --- Helpers ---
-
-async function blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64 = reader.result as string;
-            // Remove data URL prefix if present
-            const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
-            resolve(base64Data);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
-async function triggerApkInstall(fileUri: string): Promise<void> {
-    // On Android, we need to use an intent to install the APK
-    // This works with Capacitor by opening a content:// or file:// URI
-    // The FileOpener plugin or native code is typically needed here
-
-    // For now, we'll try using the App plugin's openUrl
-    // This may need to be replaced with a custom plugin or @capacitor-community/file-opener
-    try {
-        // Convert file URI to content URI if needed for Android 7+
-        const { Capacitor } = await import('@capacitor/core');
-
-        if (Capacitor.getPlatform() === 'android') {
-            // Show instructions to user - user must open file manager to install
-            toast.info('APK baixado! Abra o gerenciador de arquivos para instalar.', {
-                duration: 10000,
-                description: `Arquivo: ${fileUri}`,
-            });
-
-            // TODO: Integrate @capacitor-community/file-opener for seamless installation
-            console.log('[Update] APK saved to:', fileUri);
-        }
-    } catch (e) {
-        console.error('[Update] Failed to trigger install:', e);
-        throw e;
-    }
 }

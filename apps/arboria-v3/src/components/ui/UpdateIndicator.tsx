@@ -10,7 +10,8 @@ export function UpdateIndicator() {
         status,
         progress,
         checkForUpdates,
-        downloadAndInstall,
+        downloadApk,
+        installApk,
         currentVersion,
         latestVersion,
         hasUpdate,
@@ -36,11 +37,13 @@ export function UpdateIndicator() {
     const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
 
-    const handleAction = () => {
-        if (available) {
-            downloadAndInstall();
-        }
-        // If ready to install, user needs to manually install the APK
+    const handleDownload = () => {
+        downloadApk();
+    };
+
+    const handleInstall = () => {
+        installApk();
+        handleClose();
     };
 
     return (
@@ -98,7 +101,7 @@ export function UpdateIndicator() {
 
                         {readyToInstall && (
                             <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800 text-sm text-green-800 dark:text-green-300">
-                                APK baixado! Localize o arquivo no gerenciador de arquivos para instalar.
+                                APK baixado! Clique em "Instalar" para continuar.
                             </div>
                         )}
                     </div>
@@ -108,9 +111,14 @@ export function UpdateIndicator() {
                             {readyToInstall ? 'Fechar' : 'Cancelar'}
                         </Button>
                         {available && (
-                            <Button onClick={handleAction}>
+                            <Button onClick={handleDownload}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Baixar APK
+                            </Button>
+                        )}
+                        {readyToInstall && (
+                            <Button onClick={handleInstall} className="bg-green-600 hover:bg-green-700">
+                                Instalar Agora
                             </Button>
                         )}
                         {!available && !downloading && !readyToInstall && (
