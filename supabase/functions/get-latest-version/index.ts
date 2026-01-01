@@ -28,6 +28,25 @@ serve(async (req: Request) => {
     try {
         const { currentVersion } = await req.json().catch(() => ({}));
 
+        // --- MOCK LOGIC FOR TESTING ---
+        // Always return 1.1.0 if not already on 1.1.0
+        if (currentVersion !== "1.1.0") {
+            return new Response(
+                JSON.stringify({
+                    latestVersion: "1.1.0",
+                    apkUrl: "https://github.com/rfammon/Arboria2.0/releases/download/v1.0.49/app-debug.apk",
+                    releaseNotes: "TESTE MOCK: Verificando fluxo de download, botão instalar e limpeza automática (v1.1.0).",
+                    releaseName: "Mock Update for Test",
+                    hasUpdate: true,
+                }),
+                {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    status: 200,
+                }
+            );
+        }
+        // --- END MOCK LOGIC ---
+
         // Fetch latest release from GitHub API
         const response = await fetch(
             `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`,
