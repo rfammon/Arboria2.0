@@ -15,20 +15,27 @@ import { useToast } from '../../hooks/use-toast';
 type PermissionStatus = 'granted' | 'denied' | 'prompt';
 
 interface NotificationPreferences {
+    push_task_completion: boolean;
+    push_plan_completion: boolean;
+    push_invite_accepted: boolean;
+    push_app_update: boolean;
+    push_alerts: boolean;
+    // Keeping some UI-only or legacy ones if needed, but primarily aligning with backend
     task_assigned: boolean;
-    task_completed: boolean;
     plan_updated: boolean;
     comment_added: boolean;
-    urgent_alert: boolean;
     system_update: boolean;
 }
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
+    push_task_completion: true,
+    push_plan_completion: true,
+    push_invite_accepted: true,
+    push_app_update: true,
+    push_alerts: true,
     task_assigned: true,
-    task_completed: true,
     plan_updated: true,
     comment_added: true,
-    urgent_alert: true,
     system_update: true,
 };
 
@@ -266,50 +273,63 @@ export function PushNotificationSettings() {
 
                             <div className="flex items-center space-x-2">
                                 <Checkbox
-                                    id="task_completed"
-                                    checked={preferences.task_completed}
+                                    id="push_task_completion"
+                                    checked={preferences.push_task_completion}
                                     onCheckedChange={(checked) =>
-                                        handlePreferenceChange('task_completed', checked as boolean)
+                                        handlePreferenceChange('push_task_completion', checked as boolean)
                                     }
                                 />
-                                <Label htmlFor="task_completed" className="font-normal cursor-pointer">
-                                    Tarefas Completadas
+                                <Label htmlFor="push_task_completion" className="font-normal cursor-pointer">
+                                    Conclusão de Tarefas
                                 </Label>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <Checkbox
-                                    id="plan_updated"
-                                    checked={preferences.plan_updated}
+                                    id="push_plan_completion"
+                                    checked={preferences.push_plan_completion}
                                     onCheckedChange={(checked) =>
-                                        handlePreferenceChange('plan_updated', checked as boolean)
+                                        handlePreferenceChange('push_plan_completion', checked as boolean)
                                     }
                                 />
-                                <Label htmlFor="plan_updated" className="font-normal cursor-pointer">
-                                    Planos Atualizados
+                                <Label htmlFor="push_plan_completion" className="font-normal cursor-pointer">
+                                    Planos Finalizados
                                 </Label>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <Checkbox
-                                    id="comment_added"
-                                    checked={preferences.comment_added}
+                                    id="push_invite_accepted"
+                                    checked={preferences.push_invite_accepted}
                                     onCheckedChange={(checked) =>
-                                        handlePreferenceChange('comment_added', checked as boolean)
+                                        handlePreferenceChange('push_invite_accepted', checked as boolean)
                                     }
                                 />
-                                <Label htmlFor="comment_added" className="font-normal cursor-pointer">
-                                    Comentários
+                                <Label htmlFor="push_invite_accepted" className="font-normal cursor-pointer">
+                                    Convites Aceitos
                                 </Label>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <Checkbox
-                                    id="urgent_alert"
-                                    checked={preferences.urgent_alert}
-                                    disabled // Always enabled
+                                    id="push_app_update"
+                                    checked={preferences.push_app_update}
+                                    onCheckedChange={(checked) =>
+                                        handlePreferenceChange('push_app_update', checked as boolean)
+                                    }
                                 />
-                                <Label htmlFor="urgent_alert" className="font-normal text-muted-foreground">
+                                <Label htmlFor="push_app_update" className="font-normal cursor-pointer">
+                                    Atualizações do Aplicativo
+                                </Label>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="push_alerts"
+                                    checked={preferences.push_alerts}
+                                    disabled // Always enabled for now
+                                />
+                                <Label htmlFor="push_alerts" className="font-normal text-muted-foreground">
                                     Alertas Urgentes (sempre ativo)
                                 </Label>
                             </div>
@@ -323,7 +343,7 @@ export function PushNotificationSettings() {
                                     }
                                 />
                                 <Label htmlFor="system_update" className="font-normal cursor-pointer">
-                                    Atualizações do Sistema
+                                    Notificações do Sistema
                                 </Label>
                             </div>
                         </div>

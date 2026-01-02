@@ -78,7 +78,7 @@ A segurança operacional exige o estabelecimento de perímetros físicos:
 ## 4.2. Especificação Técnica da Poda
 A prescrição da poda deve ser cirúrgica para evitar danos futuros (iatrogenia). Nunca utilizar "esporas" em árvores que serão preservadas.
 
-![Técnica dos Três Cortes](/docs/education/images/three_cut_technique.png)
+![Técnica dos Três Cortes](/docs/education/images/three_cut_technique_v3.png)
 
 ### A Técnica dos Três Cortes (Obrigatória para Ramos Grandes)
 Para evitar o rasgamento da casca e danos ao tecido do tronco:

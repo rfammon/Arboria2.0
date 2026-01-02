@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { Menu, TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen } from 'lucide-react';
+import { TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 // import { ModeToggle } from '../components/mode-toggle';
-import { NotificationBell } from '../components/features/notifications/NotificationBell';
 import { useAuth } from '../context/AuthContext';
 import { OfflineSyncIndicator } from '../components/features/OfflineSyncIndicator';
 import { InstallationSwitchDialog } from '../components/features/InstallationSwitchDialog';
+import { TopHeader } from '../components/layout/TopHeader';
 
 
 export default function DashboardLayout() {
-    const { user, loading, signOut, activeInstallation, installations, setActiveInstallation, userDisplayName, activeProfileNames, hasPermission } = useAuth();
+    const { user, loading, signOut, activeInstallation, installations, setActiveInstallation, hasPermission } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSwitchDialogOpen, setIsSwitchDialogOpen] = useState(false);
     const location = useLocation();
@@ -138,26 +138,10 @@ export default function DashboardLayout() {
                     </nav>
 
                     {/* Footer */}
-                    <div className="p-4 border-t border-border space-y-2">
-                        <div className="flex items-center justify-between px-4 py-2">
-                            <div className="flex items-center gap-2">
-                                {/* <ModeToggle /> - Moved to Settings */}
-                                <NotificationBell />
-                            </div>
-                        </div>
-
-                        {/* User Info */}
-                        <div className="px-4 py-2 mb-2 border-b border-border/50 pb-4">
-                            <p className="text-sm font-medium leading-none truncate" title={userDisplayName}>
-                                {userDisplayName}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1 truncate" title={activeProfileNames}>
-                                {activeProfileNames}
-                            </p>
-                        </div>
+                    <div className="p-4 border-t border-border">
                         <button
                             onClick={() => signOut()}
-                            className="flex items-center w-full px-4 py-2 text-sm font-medium text-destructive hover:text-destructive-foreground hover:bg-destructive/10 rounded-lg"
+                            className="flex items-center w-full px-4 py-3 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                         >
                             <LogOut className="w-5 h-5 mr-3" />
                             Sair
@@ -174,25 +158,8 @@ export default function DashboardLayout() {
                     paddingRight: 'var(--safe-area-right)'
                 }}
             >
-                {/* Mobile Header */}
-                <header className="bg-card dark:bg-card border-b border-border h-16 flex items-center justify-between px-4 lg:hidden">
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => setIsSidebarOpen(true)}
-                            className="p-2 text-muted-foreground hover:bg-muted rounded-md"
-                        >
-                            <Menu className="w-6 h-6" />
-                        </button>
-                        <span className="ml-4 text-lg font-semibold">
-                            <span className="text-blue-600 dark:text-blue-500">Arbor</span>
-                            <span className="text-green-600 dark:text-green-500">IA</span>
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {/* <ModeToggle /> */}
-                        <NotificationBell />
-                    </div>
-                </header>
+                {/* Global Top Header */}
+                <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
                 {/* Page Content */}
                 <main

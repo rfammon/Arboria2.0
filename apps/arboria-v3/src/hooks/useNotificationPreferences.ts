@@ -13,6 +13,9 @@ export interface NotificationPreferences {
     email_task_completion: boolean;
     push_enabled: boolean;
     push_task_completion: boolean;
+    push_plan_completion: boolean;
+    push_invite_accepted: boolean;
+    push_app_update: boolean;
     push_alerts: boolean;
 }
 
@@ -24,6 +27,9 @@ const defaultPreferences: Omit<NotificationPreferences, 'user_id'> = {
     email_task_completion: true,
     push_enabled: true,
     push_task_completion: true,
+    push_plan_completion: true,
+    push_invite_accepted: true,
+    push_app_update: true,
     push_alerts: true,
 };
 

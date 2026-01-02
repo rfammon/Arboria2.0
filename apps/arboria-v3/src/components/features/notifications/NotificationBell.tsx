@@ -1,69 +1,36 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
-import { NotificationService, type Notification } from '../../../lib/notificationService';
-import { useRealtime } from '../../../hooks/useRealtime';
+import { useNotifications } from '../../../hooks/useNotifications';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '../../../lib/utils';
 // import { Badge } from '../../ui/badge';
 
 export function NotificationBell() {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const {
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead,
+        clearAll,
+        refresh
+    } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
-    const { isConnected } = useRealtime(); // Just to trigger subscription
-
-    useEffect(() => {
-        loadNotifications();
-        // Set up a poller just in case realtime misses or to refresh counts
-        const interval = setInterval(loadNotifications, 30000);
-        return () => clearInterval(interval);
-    }, [isConnected]);
-
-    const loadNotifications = async () => {
-        try {
-            const [notifs, count] = await Promise.all([
-                NotificationService.getNotifications(),
-                NotificationService.getUnreadCount()
-            ]);
-            setNotifications(notifs || []);
-            setUnreadCount(count);
-        } catch (e) {
-            console.error(e);
-        }
-    };
 
     const handleOpen = (open: boolean) => {
         setIsOpen(open);
         if (open) {
-            // Refresh on open
-            loadNotifications();
+            refresh();
         }
     };
 
-    const handleMarkAllRead = async () => {
-        await NotificationService.markAllAsRead();
-        await loadNotifications();
-    };
-
-    const handleClearAll = async () => {
-        await NotificationService.clearAll();
-        // Optimistic update
-        setNotifications([]);
-        setUnreadCount(0);
-        await loadNotifications();
-    };
-
     const handleMarkRead = async (id: string, link?: string) => {
-        await NotificationService.markAsRead(id);
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-        setUnreadCount(prev => Math.max(0, prev - 1));
-
+        await markAsRead(id);
         if (link) {
-            window.location.href = link; // Simple navigation
+            window.location.href = link;
         }
     };
 
@@ -84,12 +51,12 @@ export function NotificationBell() {
                     <h4 className="font-semibold">Notificações</h4>
                     <div className="flex gap-2">
                         {notifications.length > 0 && (
-                            <Button variant="ghost" size="sm" className="h-auto px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleClearAll}>
+                            <Button variant="ghost" size="sm" className="h-auto px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={clearAll}>
                                 Limpar
                             </Button>
                         )}
                         {unreadCount > 0 && (
-                            <Button variant="ghost" size="sm" className="h-auto px-2 text-xs" onClick={handleMarkAllRead}>
+                            <Button variant="ghost" size="sm" className="h-auto px-2 text-xs" onClick={markAllAsRead}>
                                 Marcar lidas
                             </Button>
                         )}

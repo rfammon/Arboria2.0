@@ -2,7 +2,7 @@ import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import { Switch } from '../../ui/switch';
 import { Label } from '../../ui/label';
-import { Mail, CheckCircle, UserPlus, Send, ClipboardCheck } from 'lucide-react';
+import { Mail, CheckCircle, UserPlus, Send, ClipboardCheck, Bell } from 'lucide-react';
 import { Skeleton } from '../../ui/skeleton';
 import { PushNotificationSettings } from '../PushNotificationSettings';
 
@@ -24,6 +24,40 @@ export function NotificationPreferencesCard() {
             </Card>
         );
     }
+
+    const pushTypes = [
+        {
+            key: 'push_enabled' as const,
+            label: 'Ativar Notificações Push',
+            description: 'Receber alertas no centro de notificações',
+            icon: Bell,
+            isMain: true,
+        },
+        {
+            key: 'push_task_completion' as const,
+            label: 'Conclusão de Tarefas',
+            description: 'Quando tarefas da sua instalação são concluídas',
+            icon: ClipboardCheck,
+        },
+        {
+            key: 'push_plan_completion' as const,
+            label: 'Planos Finalizados',
+            description: 'Quando um plano de intervenção é finalizado',
+            icon: CheckCircle,
+        },
+        {
+            key: 'push_invite_accepted' as const,
+            label: 'Convites Aceitos',
+            description: 'Quando um novo membro aceita o convite',
+            icon: UserPlus,
+        },
+        {
+            key: 'push_app_update' as const,
+            label: 'Atualizações do App',
+            description: 'Notificações sobre novas versões e correções',
+            icon: Send,
+        },
+    ];
 
     const emailTypes = [
         {
@@ -111,6 +145,64 @@ export function NotificationPreferencesCard() {
                                     id={item.key}
                                     checked={preferences[item.key]}
                                     onCheckedChange={() => togglePreference(item.key)}
+                                    disabled={isUpdating}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Bell className="h-5 w-5" />
+                        Preferências Globais de Push
+                    </CardTitle>
+                    <CardDescription>
+                        Configure quais eventos devem disparar notificações push para seus dispositivos
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {/* Main Push Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg border">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-full text-primary">
+                                <Bell className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <Label htmlFor="push_enabled" className="font-semibold cursor-pointer">
+                                    Notificações Push
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Habilitar/desabilitar todos os alertas push
+                                </p>
+                            </div>
+                        </div>
+                        <Switch
+                            id="push_enabled"
+                            checked={preferences.push_enabled}
+                            onCheckedChange={() => togglePreference('push_enabled')}
+                            disabled={isUpdating}
+                        />
+                    </div>
+
+                    <div className={`space-y-4 ${!preferences.push_enabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {pushTypes.slice(1).map((item) => (
+                            <div key={item.key} className="flex items-center justify-between py-3 border-b last:border-0 border-border/50">
+                                <div className="flex items-center gap-3">
+                                    <item.icon className="h-4 w-4 text-muted-foreground" />
+                                    <div>
+                                        <Label htmlFor={item.key} className="font-medium cursor-pointer">
+                                            {item.label}
+                                        </Label>
+                                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                                    </div>
+                                </div>
+                                <Switch
+                                    id={item.key}
+                                    checked={preferences[item.key as keyof typeof preferences] as boolean}
+                                    onCheckedChange={() => togglePreference(item.key as any)}
                                     disabled={isUpdating}
                                 />
                             </div>

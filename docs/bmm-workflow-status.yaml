@@ -16,6 +16,7 @@
 #   - skipped: Optional/conditional workflow that was skipped
 
 generated: "2025-12-11T17:31:30-03:00"
+last_synced: "2026-01-02T08:00:00-03:00"
 project: "Arboria 3.0"
 project_description: |
   Recriação completa do sistema ArborIA usando tecnologias modernas e seguras.
@@ -98,8 +99,6 @@ workflow_status:
       command: "/bmad:bmm:workflows:create-ux-design"
       note: "✅ COMPLETO: 7 steps concluídos. Spec com 670+ linhas (Design System, Core Interactions, Visual Identity). Pronto para implementação."
       started: "2025-12-12T15:29:32-03:00"
-      step6_completed: "2025-12-12T18:25:04-03:00"
-      step7_completed: "2025-12-12T18:33:22-03:00"
       completed: "2025-12-12T18:36:28-03:00"
 
   # ============================================
@@ -148,22 +147,19 @@ workflow_status:
       status: "docs/sprint-artifacts/sprint-status.yaml"
       agent: "sm"
       command: "/bmad:bmm:workflows:sprint-planning"
-      note: "🔄 88% COMPLETO: RF1-RF6 ~92%, RF7 ~90%. 17 pages, 100+ components, 22+ hooks implementados."
-      last_updated: "2025-12-23T10:14:00-03:00"
+      note: "🔄 88% COMPLETO. Foco atual: RF5.3 - Push Notifications e estabilidade Android/OTA."
+      last_updated: "2026-01-02T08:00:00-03:00"
       progress:
-        completed: 35
-        in_progress: 3
-        not_started: 2
+        completed: 37
+        in_progress: 2
+        not_started: 1
         percentage: 88
       recent_work:
-        - "Sistema OTA (Capawesome Cloud) - completo"
-        - "Correções críticas: tema, GPS, fotos em relatórios"
-        - "Build Android v1.0.16 + testes OTA"
-        - "Melhorias layout mobile (viewport, safe area)"
-        - "Notificações role-based + preferências"
-        - "Privacy controls no dashboard"
-        - "Gantt chart theming"
+        - "Sistema de Push Notifications (Firebase/Capacitor) - backend e frontend core completo (v1.0.46)"
+        - "Refatoração Tooltip para Modal (v1.0.44) - Resolvendo crash WebView"
+        - "Sincronização de versão automática e Downgrade Prevention no OTA"
+        - "Resolução de bugs críticos: GPS null, theme save, signed URLs para fotos"
       next_priorities:
-        - "Push Notifications (RF5.3)"
-        - "Cobertura de testes 80%"
-        - "GPS turn-by-turn (RF7.8)"
+        - "Finalizar RF5.3 - Push Notifications (testes em device real e canais)"
+        - "Aumentar cobertura de testes para 80%"
+        - "RF7.8 - Navegação GPS turn-by-turn"

@@ -10,9 +10,14 @@ export interface SearchResult {
 
 // Map of topics to their content file paths
 const TOPICS = [
+    { id: 'concepts', title: 'Conceitos Fundamentais', path: '/docs/education/content/concepts/index.md' },
     { id: 'pruning', title: 'Técnicas de Poda', path: '/docs/education/content/pruning/index.md' },
-    { id: 'risk', title: 'Avaliação de Risco', path: '/docs/education/content/risk/index.md' },
+    { id: 'planning', title: 'Planejamento e Risco', path: '/docs/education/content/planning/index.md' },
     { id: 'safety', title: 'Segurança no Trabalho', path: '/docs/education/content/safety/index.md' },
+    { id: 'preparation', title: 'Preparação e Ferramentas', path: '/docs/education/content/preparation/index.md' },
+    { id: 'waste', title: 'Gestão de Resíduos', path: '/docs/education/content/waste/index.md' },
+    { id: 'legal', title: 'Legislação e Normas', path: '/docs/education/content/legal/index.md' },
+    { id: 'glossary', title: 'Glossário Técnico', path: '/docs/education/content/glossary/index.md' },
 ];
 
 class SearchService {

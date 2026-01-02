@@ -82,7 +82,7 @@ functional_requirements:
       - "RF4.2 - Algumas permissões granulares faltando"
 
   RF5_Notificacoes:
-    status: "100%"
+    status: "95%"
     priority: "P1"
     components:
       - name: "AlertsCenter.tsx"
@@ -102,14 +102,20 @@ functional_requirements:
         notes: "Gera notificação ao completar tarefa"
       - name: "useNotificationPreferences.ts"
         status: "done"
-        notes: "Hook para preferências de email"
+        notes: "Hook para preferências (Email/Push) + Unit Tests"
+      - name: "usePushNotifications.ts"
+        status: "done"
+        notes: "Hook para registro FCM e Deep Linking + Unit Tests"
       - name: "NotificationPreferencesCard.tsx"
         status: "done"
-        notes: "UI para configurar preferências"
+        notes: "UI para configurar preferências globais"
+      - name: "PushNotificationSettings.tsx"
+        status: "done"
+        notes: "UI detalhada para push settings mobile"
     gaps:
       - "Badge de notificações não lidas no header"
-    completed_today:
-      - "RF5.2 - Email notifications via Resend (2025-12-16)"
+    completed_recently:
+      - "RF5.3 - Sistema de Push Notifications completo (Backend triggers + Hooks + UI + Tests) (2026-01-02)"
 
   RF6_Migracao_Dados:
     status: "100%"
@@ -260,8 +266,8 @@ bonus_features:
 
 next_priorities:
   high:
+    - "Badge de notificações não lidas no header (FE)"
     - "Aumentar cobertura de testes para 80% (RNF4.2)"
-    - "RF5.3 - Notificações Push (Capacitor/Firebase)"
   
   medium:
     - "RF7.8 - Navegação GPS turn-by-turn"
