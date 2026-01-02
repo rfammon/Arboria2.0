@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { toast } from 'sonner';
 import { Users, Building, Plus, Trash2, Pencil, Check, AlertTriangle } from 'lucide-react';
 import type { Profile, Member } from '../types/installation';
-import { BackupManager } from '../components/features/backup/BackupManager';
 import {
     Dialog,
     DialogContent,
@@ -435,8 +434,6 @@ export default function InstallationSettings({ embedded = false }: InstallationS
                     </Card>
                 )}
 
-                {/* Backup & Data Portability */}
-                <BackupManager />
             </div>
 
             {/* Edit Profiles Dialog */}

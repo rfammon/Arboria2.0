@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { utmToLatLon } from '../../lib/utils/utmToLatLon';
+import { utmToLatLon } from '../../lib/coordinateUtils';
 import { cn } from '../../lib/utils';
 
 import { Ruler, Trees, AlertTriangle, Calendar, Image, Edit, FileText, ClipboardList, Upload, ArrowLeft, Expand, X, Trash2 } from 'lucide-react';
@@ -119,12 +119,12 @@ export default function TreeDetailContent({ treeId, onClose, isBlade = false }: 
             if (match) {
                 const zoneNum = parseInt(match[1]);
                 const zoneLetter = match[2] || 'K'; // Default to K (SP/South) if missing
-                const converted = utmToLatLon({
-                    easting: Number(t.utm_e),
-                    northing: Number(t.utm_n),
+                const converted = utmToLatLon(
+                    Number(t.utm_e),
+                    Number(t.utm_n),
                     zoneNum,
                     zoneLetter
-                });
+                );
                 if (converted) return converted;
             }
         }

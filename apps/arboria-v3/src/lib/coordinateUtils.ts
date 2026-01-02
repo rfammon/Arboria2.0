@@ -9,6 +9,47 @@ import proj4 from 'proj4';
 const DEFAULT_UTM_ZONE = 23; // São Paulo, Brasil
 const DEFAULT_UTM_LETTER = 'K'; // Hemisfério Sul
 
+/**
+ * Validates UTM coordinates
+ */
+export function isValidUTM(easting: number, northing: number, zoneNum: number): boolean {
+    // Easting: 166,000 to 834,000 meters (for most zones)
+    if (easting < 100000 || easting > 900000) {
+        return false;
+    }
+
+    // Northing: 0 to 10,000,000 meters
+    if (northing < 0 || northing > 10000000) {
+        return false;
+    }
+
+    // Zone: 1 to 60
+    if (zoneNum < 1 || zoneNum > 60) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Lista de zonas UTM disponíveis (para Brasil: 18-25)
+ */
+export const UTM_ZONES_BRAZIL = [
+    { num: 18, label: '18' },
+    { num: 19, label: '19' },
+    { num: 20, label: '20' },
+    { num: 21, label: '21' },
+    { num: 22, label: '22' },
+    { num: 23, label: '23' },
+    { num: 24, label: '24' },
+    { num: 25, label: '25' }
+];
+
+/**
+ * Letras de zona UTM comuns no Brasil
+ */
+export const UTM_ZONE_LETTERS = ['K', 'L', 'M', 'H'];
+
 export interface UTMCoordinates {
     easting: number;
     northing: number;
@@ -102,4 +143,29 @@ export function latLonToUTM(
  */
 export function hasValidCoordinates(easting?: number | null, northing?: number | null): boolean {
     return !!(easting && northing && easting !== 0 && northing !== 0);
+}
+
+/**
+ * Gets the UTM zone letter based on latitude
+ * Simplified version compatible with original system
+ */
+export function getZoneLetter(lat: number): string {
+    if (lat < -32) return 'H'; // Far South
+    if (lat < 0) return 'K';   // Central/South Brazil
+    if (lat >= 0) return 'M';  // North of Equator
+    return 'N'; // Default
+}
+
+/**
+ * Formats UTM coordinates as a readable string
+ */
+export function formatUTM(utm: UTMCoordinates): string {
+    return `${utm.utmZoneNum}${utm.utmZoneLetter} ${utm.easting}E ${utm.northing}N`;
+}
+
+/**
+ * Validates if coordinates are within reasonable bounds
+ */
+export function isValidCoordinate(lat: number, lon: number): boolean {
+    return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }

@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { latLonToUTM, type UTMCoordinates } from '../lib/utils/utm';
+import { latLonToUTM, type UTMCoordinates } from '../lib/coordinateUtils';
 import Gnss, { type GnssMeasurementEvent } from '../lib/plugins/GnssPlugin';
 import { Capacitor } from '@capacitor/core';
 

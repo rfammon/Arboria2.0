@@ -5,8 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useGPS } from '../../hooks/useGPS';
-import { latLonToUTM } from '../../lib/utils/utm';
-import { utmToLatLon, isValidUTM, UTM_ZONES_BRAZIL, UTM_ZONE_LETTERS } from '../../lib/utils/utmToLatLon';
+import { latLonToUTM, utmToLatLon, isValidUTM, UTM_ZONES_BRAZIL, UTM_ZONE_LETTERS } from '../../lib/coordinateUtils';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -34,7 +33,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
     const [useAdvancedMode, setUseAdvancedMode] = useState(false);
     const [manualInputType, setManualInputType] = useState<'latlon' | 'utm'>('latlon');
 
-    // ... (keep manual inputs state)
     // Lat/Lon inputs
     const [manualLat, setManualLat] = useState('');
     const [manualLon, setManualLon] = useState('');
@@ -53,7 +51,10 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
             stopAdvancedGPS();
         } else if (utmCoords && coordinates) {
             onCoordinatesCaptured({
-                ...utmCoords,
+                easting: utmCoords.easting,
+                northing: utmCoords.northing,
+                zoneNum: utmCoords.utmZoneNum,
+                zoneLetter: utmCoords.utmZoneLetter,
                 accuracy: coordinates.accuracy,
                 latitude: coordinates.latitude,
                 longitude: coordinates.longitude
@@ -72,7 +73,10 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
         if (utmCoords && coordinates) {
             console.log('[GPSCapture] Auto-syncing coordinates to parent:', utmCoords);
             onCoordinatesCaptured({
-                ...utmCoords,
+                easting: utmCoords.easting,
+                northing: utmCoords.northing,
+                zoneNum: utmCoords.utmZoneNum,
+                zoneLetter: utmCoords.utmZoneLetter,
                 accuracy: coordinates.accuracy,
                 latitude: coordinates.latitude,
                 longitude: coordinates.longitude
@@ -80,14 +84,12 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
         }
     }, [utmCoords, coordinates, onCoordinatesCaptured]);
 
-    // ... (keep manual submit handlers)
     const handleManualLatLonSubmit = () => {
         setManualError(null);
 
         const lat = parseFloat(manualLat);
         const lon = parseFloat(manualLon);
 
-        // Validate
         if (isNaN(lat) || isNaN(lon)) {
             setManualError('Por favor, insira coordenadas válidas');
             return;
@@ -103,22 +105,22 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
             return;
         }
 
-        // Convert to UTM
         const utm = latLonToUTM(lat, lon);
         if (!utm) {
             setManualError('Erro ao converter coordenadas para UTM');
             return;
         }
 
-        // Call callback with manual coordinates (accuracy = 0 for manual entry)
         onCoordinatesCaptured({
-            ...utm,
+            easting: utm.easting,
+            northing: utm.northing,
+            zoneNum: utm.utmZoneNum,
+            zoneLetter: utm.utmZoneLetter,
             accuracy: 0,
             latitude: lat,
             longitude: lon
         });
 
-        // Clear inputs and close
         setManualLat('');
         setManualLon('');
         setIsManualMode(false);
@@ -131,7 +133,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
         const northing = parseFloat(manualNorthing);
         const zoneNum = parseInt(manualZoneNum);
 
-        // Validate
         if (isNaN(easting) || isNaN(northing) || isNaN(zoneNum)) {
             setManualError('Por favor, insira coordenadas UTM válidas');
             return;
@@ -142,20 +143,18 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
             return;
         }
 
-        // Convert to Lat/Lon first (for validation)
-        const latLon = utmToLatLon({
+        const latLon = utmToLatLon(
             easting,
             northing,
             zoneNum,
-            zoneLetter: manualZoneLetter
-        });
+            manualZoneLetter
+        );
 
         if (!latLon) {
             setManualError('Erro ao converter coordenadas UTM');
             return;
         }
 
-        // Call callback with UTM coordinates directly
         onCoordinatesCaptured({
             easting: Math.round(easting),
             northing: Math.round(northing),
@@ -166,7 +165,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
             longitude: latLon.longitude
         });
 
-        // Clear inputs and close
         setManualEasting('');
         setManualNorthing('');
         setIsManualMode(false);
@@ -174,7 +172,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
 
     return (
         <div className="space-y-3">
-            {/* Mode Toggle */}
             <div className="flex gap-2">
                 <Button
                     type="button"
@@ -198,10 +195,8 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                 </Button>
             </div>
 
-            {/* Automatic GPS Capture Mode */}
             {!isManualMode && (
                 <>
-                    {/* Advanced Toggle */}
                     <div className="flex items-center space-x-2 mb-2 px-1">
                         <input
                             type="checkbox"
@@ -276,7 +271,7 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                             <div className="space-y-1 text-green-700 dark:text-green-400">
                                 <div>E: {utmCoords.easting.toLocaleString()}m</div>
                                 <div>N: {utmCoords.northing.toLocaleString()}m</div>
-                                <div>Zona: {utmCoords.zoneNum}{utmCoords.zoneLetter}</div>
+                                <div>Zona: {utmCoords.utmZoneNum}{utmCoords.utmZoneLetter}</div>
                                 <div className="text-xs mt-1">Precisão: ±{coordinates?.accuracy.toFixed(1)}m</div>
                             </div>
                         </div>
@@ -315,17 +310,14 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                 </>
             )}
 
-            {/* Manual Entry Mode */}
             {isManualMode && (
                 <div className="space-y-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    {/* ... (Keep existing manual entry UI) */}
                     <Tabs value={manualInputType} onValueChange={(v: string) => setManualInputType(v as 'latlon' | 'utm')}>
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="latlon">Lat/Lon</TabsTrigger>
                             <TabsTrigger value="utm">UTM</TabsTrigger>
                         </TabsList>
 
-                        {/* Lat/Lon Tab */}
                         <TabsContent value="latlon" className="space-y-3">
                             <div>
                                 <Label htmlFor="manual-lat">Latitude (°)</Label>
@@ -338,9 +330,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                     onChange={(e) => setManualLat(e.target.value)}
                                     className="mt-1"
                                 />
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Exemplo: -23.550520 (Sul = negativo)
-                                </p>
                             </div>
 
                             <div>
@@ -354,9 +343,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                     onChange={(e) => setManualLon(e.target.value)}
                                     className="mt-1"
                                 />
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Exemplo: -46.633308 (Oeste = negativo)
-                                </p>
                             </div>
 
                             <Button
@@ -370,7 +356,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                             </Button>
                         </TabsContent>
 
-                        {/* UTM Tab */}
                         <TabsContent value="utm" className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
@@ -387,9 +372,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Padrão: 23 (SP)
-                                    </p>
                                 </div>
 
                                 <div>
@@ -406,9 +388,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Padrão: K
-                                    </p>
                                 </div>
                             </div>
 
@@ -423,9 +402,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                     onChange={(e) => setManualEasting(e.target.value)}
                                     className="mt-1"
                                 />
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Coordenada Leste (Ex: 323000)
-                                </p>
                             </div>
 
                             <div>
@@ -439,9 +415,6 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                     onChange={(e) => setManualNorthing(e.target.value)}
                                     className="mt-1"
                                 />
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Coordenada Norte (Ex: 7395000)
-                                </p>
                             </div>
 
                             <Button

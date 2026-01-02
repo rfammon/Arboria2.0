@@ -1,26 +1,11 @@
 // Plan Form Component - Create/Edit Intervention Plans
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, Save, Calendar, Users, Wrench, ShieldCheck, Check, ChevronsUpDown, TreeDeciduous } from 'lucide-react';
+import { ArrowLeft, Save, Wrench, ShieldCheck, TreeDeciduous } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "../ui/command";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "../ui/popover";
-import { cn } from '../../lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import {
     Select,
@@ -29,15 +14,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../ui/select";
-import { Checkbox } from '../ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import type { InterventionPlan, PlanFormData, InterventionType } from '../../types/plan';
-import { INTERVENTION_LABELS, TOOLS_LIST, EPIS_LIST, SAFETY_PROCEDURES, RISK_LABELS, WASTE_DESTINATIONS } from '../../lib/planUtils';
+import { INTERVENTION_LABELS, TOOLS_LIST, EPIS_LIST, SAFETY_PROCEDURES } from '../../lib/planUtils';
 import { usePlans } from '../../hooks/usePlans';
+import { usePlanConflicts } from '../../hooks/usePlanConflicts';
 import { useTrees } from '../../hooks/useTrees';
 import { useTreePhotos } from '../../hooks/useTreePhotos';
 import { useToast } from '../../hooks/use-toast';
 import { InterventionGantt } from './schedule/InterventionGantt';
+import { ArrayFieldSection } from './sections/ArrayFieldSection';
+import { TreeSelectorField } from './sections/TreeSelectorField';
+import { ScheduleSection } from './sections/ScheduleSection';
+import { ResponsibleSection } from './sections/ResponsibleSection';
+import { ConclusionSection } from './sections/ConclusionSection';
 
 interface PlanFormProps {
     plan?: InterventionPlan | null;
@@ -51,8 +41,7 @@ export function PlanForm({ plan, initialTreeId, onCancel, onSuccess }: PlanFormP
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Tree selection state
-    const [openTreeSelect, setOpenTreeSelect] = useState(false);
+    // Simplified: Tree selection state handled by sub-component
 
     // Fetch trees for selection
     // We pass empty filters to get all trees for the current installation
@@ -83,63 +72,18 @@ export function PlanForm({ plan, initialTreeId, onCancel, onSuccess }: PlanFormP
     const scheduleStart = watch('schedule.start');
     const responsibleName = watch('responsible');
 
-    // Ensure trees is an array before finding
-    const selectedTree = Array.isArray(trees) ? trees.find(t => t.id === selectedTreeId) : undefined;
-
     // Fetch photos for selected tree
     const { data: treePhotos = [] } = useTreePhotos(selectedTreeId, { limit: 5 });
 
-    // Conflict detection
-    const [conflictWarning, setConflictWarning] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!scheduleStart || !existingPlans) {
-            setConflictWarning(null);
-            return;
-        }
-
-        const date = new Date(scheduleStart);
-        date.setHours(0, 0, 0, 0);
-
-        // Check for conflicts
-        const conflicts = existingPlans.filter(p => {
-            // Skip current plan if editing
-            if (isEdit && plan && p.id === plan.id) return false;
-
-            const pDateStr = p.schedule.start || p.schedule.startDate;
-            if (!pDateStr) return false;
-
-            const pDate = new Date(pDateStr);
-            pDate.setHours(0, 0, 0, 0);
-
-            if (pDate.getTime() !== date.getTime()) return false;
-
-            // Check responsible conflict
-            if (responsibleName && p.responsible &&
-                p.responsible.toLowerCase() === responsibleName.toLowerCase()) {
-                return true;
-            }
-
-            // Check tree conflict
-            if (selectedTreeId && p.tree_id === selectedTreeId) {
-                return true;
-            }
-
-            return false;
-        });
-
-        if (conflicts.length > 0) {
-            const conflict = conflicts[0];
-            if (conflict.tree_id === selectedTreeId) {
-                setConflictWarning(`Atenção: Já existe um plano (${conflict.plan_id}) para esta árvore nesta data.`);
-            } else {
-                setConflictWarning(`Atenção: O responsável ${conflict.responsible} já tem outro plano (${conflict.plan_id}) nesta data.`);
-            }
-        } else {
-            setConflictWarning(null);
-        }
-
-    }, [scheduleStart, responsibleName, selectedTreeId, existingPlans, isEdit, plan]);
+    // Conflict detection using custom hook
+    const conflictWarning = usePlanConflicts(
+        scheduleStart,
+        responsibleName,
+        selectedTreeId,
+        existingPlans,
+        isEdit,
+        plan?.id
+    );
 
     // Handle form submission
     const onSubmit = async (data: PlanFormData) => {
@@ -194,39 +138,7 @@ export function PlanForm({ plan, initialTreeId, onCancel, onSuccess }: PlanFormP
         }
     };
 
-    // Handle array inputs (techniques, tools, epis)
-    const [techniquesInput, setTechniquesInput] = useState('');
-    const [toolsInput, setToolsInput] = useState('');
-    const [episInput, setEpisInput] = useState('');
-
-    const handleAddTechnique = () => {
-        if (techniquesInput.trim()) {
-            const current = watch('techniques') || [];
-            setValue('techniques', [...current, techniquesInput.trim()]);
-            setTechniquesInput('');
-        }
-    };
-
-    const handleRemoveTechnique = (index: number) => {
-        const current = watch('techniques') || [];
-        setValue('techniques', current.filter((_, i) => i !== index));
-    };
-
-    const handleAddTool = () => {
-        if (toolsInput.trim()) {
-            const current = watch('tools') || [];
-            setValue('tools', [...current, toolsInput.trim()]);
-            setToolsInput('');
-        }
-    };
-
-    const handleAddEpi = () => {
-        if (episInput.trim()) {
-            const current = watch('epis') || [];
-            setValue('epis', [...current, episInput.trim()]);
-            setEpisInput('');
-        }
-    };
+    // Simplified: No more local state for array inputs
 
 
     return (
@@ -266,141 +178,14 @@ export function PlanForm({ plan, initialTreeId, onCancel, onSuccess }: PlanFormP
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="flex flex-col space-y-2">
-                                <Label>Buscar Árvore</Label>
-                                <Popover open={openTreeSelect} onOpenChange={setOpenTreeSelect}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={openTreeSelect}
-                                            className="w-full justify-between"
-                                            disabled={isEdit} // Disable tree change on edit to prevent issues
-                                        >
-                                            {selectedTree
-                                                ? `${selectedTree.especie || 'Espécie Desconhecida'} (ID: ${selectedTree.id.slice(0, 8)}...)`
-                                                : "Selecione uma árvore..."}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                        <Command>
-                                            <CommandInput placeholder="Buscar por espécie ou ID..." />
-                                            <CommandList>
-                                                <CommandEmpty>Nenhuma árvore encontrada.</CommandEmpty>
-                                                <CommandGroup heading="Árvores Disponíveis" className="max-h-[300px] overflow-auto">
-                                                    {trees.map((tree) => (
-                                                        <CommandItem
-                                                            key={tree.id}
-                                                            value={`${tree.especie || ''} ${tree.id}`}
-                                                            onSelect={() => {
-                                                                setValue('tree_id', tree.id, { shouldValidate: true, shouldDirty: true });
-                                                                setOpenTreeSelect(false);
-                                                            }}
-                                                            className="cursor-pointer p-0 !pointer-events-auto" // Remove padding to let inner div fill space
-                                                        >
-                                                            <div className="flex items-center w-full h-full px-2 py-1.5">
-                                                                <Check
-                                                                    className={cn(
-                                                                        "mr-2 h-4 w-4",
-                                                                        watch('tree_id') === tree.id ? "opacity-100" : "opacity-0"
-                                                                    )}
-                                                                />
-                                                                <div className="flex flex-col">
-                                                                    <span>{tree.especie || 'Espécie Desconhecida'}</span>
-                                                                    <span className="text-xs text-muted-foreground">ID: {tree.id}</span>
-                                                                </div>
-                                                            </div>
-                                                        </CommandItem>
-                                                    ))}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-                                {errors.tree_id && (
-                                    <p className="text-sm text-destructive">Selecione uma árvore para continuar</p>
-                                )}
-                            </div>
-
-                            {/* Selected Tree Preview */}
-                            {selectedTree && (
-                                <div className="space-y-3">
-                                    <div className="bg-muted p-4 rounded-md flex items-start gap-4">
-                                        {/* Tree Photo Preview */}
-                                        <div className="w-20 h-20 bg-background rounded border flex-shrink-0 overflow-hidden">
-                                            {treePhotos.length > 0 ? (
-                                                <img
-                                                    src={treePhotos[0].signedUrl}
-                                                    alt="Foto da árvore"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                                                    <TreeDeciduous className="w-8 h-8 opacity-50" />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-lg">{selectedTree.especie || 'Espécie Desconhecida'}</h4>
-                                            <p className="text-sm text-muted-foreground">{selectedTree.local || 'Localização não especificada'}</p>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {selectedTree.dap && <span className="text-xs bg-background px-2 py-1 rounded border font-mono">DAP: {selectedTree.dap}cm</span>}
-                                                {selectedTree.altura && <span className="text-xs bg-background px-2 py-1 rounded border font-mono">Alt: {selectedTree.altura}m</span>}
-                                                {/* Show risk info if available */}
-                                                {(selectedTree.pontuacao || selectedTree.risklevel) && (
-                                                    <span className={cn(
-                                                        "text-xs px-2 py-1 rounded border font-bold",
-                                                        selectedTree.risklevel === 'Alto' ? "bg-red-100 text-red-800 border-red-200" :
-                                                            selectedTree.risklevel === 'Médio' ? "bg-orange-100 text-orange-800 border-orange-200" :
-                                                                "bg-green-100 text-green-800 border-green-200"
-                                                    )}>
-                                                        Risco: {selectedTree.risklevel || 'N/A'} (TRAQ: {selectedTree.pontuacao || '-'})
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Risk Factors Display */}
-                                    {selectedTree.risk_factors && selectedTree.risk_factors.length > 0 && (
-                                        <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 p-3 rounded-md">
-                                            <h5 className="text-xs font-semibold text-red-800 dark:text-red-300 uppercase mb-2">Fatores de Risco Identificados:</h5>
-                                            <div className="flex flex-wrap gap-1">
-                                                {selectedTree.risk_factors.map((factor, idx) => {
-                                                    // Convert binary string/number to boolean check
-                                                    const isRiskPresent = String(factor) === '1';
-                                                    if (!isRiskPresent) return null;
-
-                                                    const label = idx < RISK_LABELS.length ? RISK_LABELS[idx] : `Risco ${idx + 1}`;
-
-                                                    return (
-                                                        <span key={idx} className="text-xs bg-white dark:bg-black/20 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-2 py-0.5 rounded">
-                                                            {label}
-                                                        </span>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Photos Gallery (Mini) */}
-                                    {treePhotos.length > 1 && (
-                                        <div className="flex gap-2 overflow-x-auto pb-2">
-                                            {treePhotos.slice(1).map((photo) => (
-                                                <img
-                                                    key={photo.id}
-                                                    src={photo.signedUrl}
-                                                    alt="Foto adicional"
-                                                    className="w-16 h-16 object-cover rounded border flex-shrink-0"
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            <TreeSelectorField
+                                trees={trees}
+                                selectedTreeId={selectedTreeId}
+                                onSelect={(id) => setValue('tree_id', id, { shouldValidate: true, shouldDirty: true })}
+                                treePhotos={treePhotos}
+                                error={errors.tree_id}
+                                isEdit={isEdit}
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -483,508 +268,56 @@ export function PlanForm({ plan, initialTreeId, onCancel, onSuccess }: PlanFormP
                     </div>
                 )}
 
-                {/* Schedule & Durations - Unified Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5" />
-                            Cronograma e Duração
-                        </CardTitle>
-                        <CardDescription>Defina os prazos e a duração estimada de cada etapa</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        {/* Dates Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="schedule_start">Data de Início *</Label>
-                                <Input
-                                    id="schedule_start"
-                                    type="date"
-                                    {...register('schedule.start', {
-                                        required: 'Data de início é obrigatória',
-                                        onChange: (e) => {
-                                            // Auto-calculate end date based on start + duration
-                                            const start = e.target.value;
-                                            const durations = watch('durations');
-                                            if (start && durations) {
-                                                const totalDays = (durations.mobilization || 0) + (durations.execution || 0) + (durations.demobilization || 0);
-                                                if (totalDays > 0) {
-                                                    const startDate = new Date(start);
-                                                    const endDate = new Date(startDate);
-                                                    endDate.setDate(startDate.getDate() + Math.max(0, totalDays - 1)); // -1 because start day counts
-                                                    setValue('schedule.end', endDate.toISOString().split('T')[0]);
-                                                }
-                                            }
-                                        }
-                                    })}
-                                />
-                                {errors.schedule?.start && (
-                                    <p className="text-sm text-destructive">{errors.schedule.start.message}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="schedule_end">Data de Término</Label>
-                                <Input
-                                    id="schedule_end"
-                                    type="date"
-                                    {...register('schedule.end', {
-                                        onChange: (e) => {
-                                            // Recalculate execution duration based on end - start - (mob + demob)
-                                            const end = e.target.value;
-                                            const start = watch('schedule.start');
-                                            const mobil = watch('durations.mobilization') || 0;
-                                            const demobil = watch('durations.demobilization') || 0;
-
-                                            if (end && start) {
-                                                const startDate = new Date(start);
-                                                const endDate = new Date(end);
-                                                const diffTime = endDate.getTime() - startDate.getTime();
-                                                const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include start date
-
-                                                if (totalDays > 0) {
-                                                    const newExecution = Math.max(1, totalDays - mobil - demobil);
-                                                    setValue('durations.execution', newExecution);
-                                                }
-                                            }
-                                        }
-                                    })}
-                                />
-                                <p className="text-xs text-muted-foreground">Calculada automaticamente</p>
-                            </div>
-                        </div>
-
-                        <div className="border-t pt-4">
-                            <Label className="text-sm font-semibold mb-3 block">Detalhamento da Duração (dias)</Label>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="mobilization" className="text-xs">Mobilização</Label>
-                                    <Input
-                                        id="mobilization"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        {...register('durations.mobilization', {
-                                            valueAsNumber: true,
-                                            onChange: () => {
-                                                // Update end date when mobilization changes
-                                                const start = watch('schedule.start');
-                                                const mobil = watch('durations.mobilization') || 0;
-                                                const exec = watch('durations.execution') || 0;
-                                                const demobil = watch('durations.demobilization') || 0;
-
-                                                if (start) {
-                                                    const totalDays = mobil + exec + demobil;
-                                                    const startDate = new Date(start);
-                                                    const endDate = new Date(startDate);
-                                                    endDate.setDate(startDate.getDate() + Math.max(0, totalDays - 1));
-                                                    setValue('schedule.end', endDate.toISOString().split('T')[0]);
-                                                }
-                                            }
-                                        })}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="execution" className="text-xs">Execução *</Label>
-                                    <Input
-                                        id="execution"
-                                        type="number"
-                                        min="1"
-                                        placeholder="1"
-                                        {...register('durations.execution', {
-                                            valueAsNumber: true,
-                                            required: 'Duração de execução é obrigatória',
-                                            min: { value: 1, message: 'Mínimo 1 dia' },
-                                            onChange: () => {
-                                                // Update end date when execution changes
-                                                const start = watch('schedule.start');
-                                                const mobil = watch('durations.mobilization') || 0;
-                                                const exec = watch('durations.execution') || 0;
-                                                const demobil = watch('durations.demobilization') || 0;
-
-                                                if (start) {
-                                                    const totalDays = mobil + exec + demobil;
-                                                    const startDate = new Date(start);
-                                                    const endDate = new Date(startDate);
-                                                    endDate.setDate(startDate.getDate() + Math.max(0, totalDays - 1));
-                                                    setValue('schedule.end', endDate.toISOString().split('T')[0]);
-                                                }
-                                            }
-                                        })}
-                                    />
-                                    {errors.durations?.execution && (
-                                        <p className="text-sm text-destructive">{errors.durations.execution.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="demobilization" className="text-xs">Desmobilização</Label>
-                                    <Input
-                                        id="demobilization"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        {...register('durations.demobilization', {
-                                            valueAsNumber: true,
-                                            onChange: () => {
-                                                // Update end date when demobilization changes
-                                                const start = watch('schedule.start');
-                                                const mobil = watch('durations.mobilization') || 0;
-                                                const exec = watch('durations.execution') || 0;
-                                                const demobil = watch('durations.demobilization') || 0;
-
-                                                if (start) {
-                                                    const totalDays = mobil + exec + demobil;
-                                                    const startDate = new Date(start);
-                                                    const endDate = new Date(startDate);
-                                                    endDate.setDate(startDate.getDate() + Math.max(0, totalDays - 1));
-                                                    setValue('schedule.end', endDate.toISOString().split('T')[0]);
-                                                }
-                                            }
-                                        })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Schedule & Duration */}
+                <ScheduleSection
+                    register={register}
+                    watch={watch}
+                    setValue={setValue}
+                    errors={errors}
+                    conflictWarning={conflictWarning}
+                />
 
                 {/* Team & Responsible */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="w-5 h-5" />
-                            Equipe Responsável
-                        </CardTitle>
-                        <CardDescription>Pessoa responsável pela execução</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="responsible">Nome do Responsável</Label>
-                                <Input
-                                    id="responsible"
-                                    placeholder="Nome completo"
-                                    {...register('responsible')}
-                                />
-                            </div>
+                <ResponsibleSection
+                    register={register}
+                />
 
-                            <div className="space-y-2">
-                                <Label htmlFor="responsible_title">Cargo/Função</Label>
-                                <Input
-                                    id="responsible_title"
-                                    placeholder="Ex: Supervisor de Campo"
-                                    {...register('responsible_title')}
-                                />
-                            </div>
-                        </div>
+                <ArrayFieldSection
+                    title="Técnicas Previstas"
+                    description="Técnicas que serão aplicadas na intervenção"
+                    icon={Wrench}
+                    placeholder="Ex: Poda de formação"
+                    selectedValues={watch('techniques') || []}
+                    onValueChange={(vals) => setValue('techniques', vals, { shouldDirty: true })}
+                />
 
+                <ArrayFieldSection
+                    title="Ferramentas Necessárias"
+                    description="Selecione os equipamentos para execução"
+                    options={TOOLS_LIST}
+                    columns={3}
+                    placeholder="Ex: Guincho, Caminhão Munck"
+                    selectedValues={watch('tools') || []}
+                    onValueChange={(vals) => setValue('tools', vals, { shouldDirty: true })}
+                />
 
-                        <div className="pt-2 border-t mt-2">
-                            <Label className="text-sm font-semibold mb-2 block">Composição da Equipe</Label>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="team_supervisors" className="text-xs">Encarregados</Label>
-                                    <Input
-                                        id="team_supervisors"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        {...register('team_composition.supervisors', { valueAsNumber: true })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="team_chainsaw_operators" className="text-xs">Motosserristas</Label>
-                                    <Input
-                                        id="team_chainsaw_operators"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        {...register('team_composition.chainsaw_operators', { valueAsNumber: true })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="team_helpers" className="text-xs">Auxiliares</Label>
-                                    <Input
-                                        id="team_helpers"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        {...register('team_composition.helpers', { valueAsNumber: true })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <ArrayFieldSection
+                    title="EPIs Necessários"
+                    description="Equipamentos de Proteção Individual obrigatórios"
+                    icon={ShieldCheck}
+                    options={EPIS_LIST}
+                    placeholder="Ex: Luvas de alta tensão"
+                    selectedValues={watch('epis') || []}
+                    onValueChange={(vals) => setValue('epis', vals, { shouldDirty: true })}
+                />
 
-                {/* Techniques */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Wrench className="w-5 h-5" />
-                            Técnicas Previstas
-                        </CardTitle>
-                        <CardDescription>Técnicas que serão aplicadas na intervenção</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Ex: Poda de formação"
-                                value={techniquesInput}
-                                onChange={(e) => setTechniquesInput(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTechnique())}
-                            />
-                            <Button type="button" onClick={handleAddTechnique} variant="secondary">
-                                Adicionar
-                            </Button>
-                        </div>
-
-                        {watch('techniques') && watch('techniques')!.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {watch('techniques')!.map((technique, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm"
-                                    >
-                                        <span>{technique}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveTechnique(index)}
-                                            className="text-muted-foreground hover:text-foreground"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Tools */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>🛠️ Ferramentas Necessárias</CardTitle>
-                        <CardDescription>Selecione os equipamentos para execução</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                            {TOOLS_LIST.map((tool) => {
-                                const tools = watch('tools') || [];
-                                const isChecked = tools.includes(tool);
-                                return (
-                                    <div key={tool} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`tool-${tool}`}
-                                            checked={isChecked}
-                                            onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setValue('tools', [...tools, tool]);
-                                                } else {
-                                                    setValue('tools', tools.filter(t => t !== tool));
-                                                }
-                                            }}
-                                        />
-                                        <label
-                                            htmlFor={`tool-${tool}`}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                        >
-                                            {tool}
-                                        </label>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        <div className="pt-2 border-t mt-2">
-                            <Label className="text-xs text-muted-foreground mb-2 block">Outros equipamentos:</Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    placeholder="Ex: Guincho, Caminhão Munck"
-                                    value={toolsInput}
-                                    onChange={(e) => setToolsInput(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTool())}
-                                />
-                                <Button type="button" onClick={handleAddTool} variant="secondary" size="sm">
-                                    Adicionar
-                                </Button>
-                            </div>
-                            {watch('tools') && watch('tools')!.filter(t => !TOOLS_LIST.includes(t)).length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {watch('tools')!.filter(t => !TOOLS_LIST.includes(t)).map((tool, index) => (
-                                        <div
-                                            key={`custom-tool-${index}`}
-                                            className="flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm"
-                                        >
-                                            <span>{tool}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const current = watch('tools') || [];
-                                                    setValue('tools', current.filter(t => t !== tool));
-                                                }}
-                                                className="text-muted-foreground hover:text-foreground"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* EPIs */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5" />
-                            EPIs Necessários
-                        </CardTitle>
-                        <CardDescription>Equipamentos de Proteção Individual obrigatórios</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
-                            {EPIS_LIST.map((epi) => {
-                                const epis = watch('epis') || [];
-                                const isChecked = epis.includes(epi);
-                                return (
-                                    <div key={epi} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`epi-${epi}`}
-                                            checked={isChecked}
-                                            onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setValue('epis', [...epis, epi]);
-                                                } else {
-                                                    setValue('epis', epis.filter(e => e !== epi));
-                                                }
-                                            }}
-                                        />
-                                        <label
-                                            htmlFor={`epi-${epi}`}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                        >
-                                            {epi}
-                                        </label>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        <div className="pt-2 border-t mt-2">
-                            <Label className="text-xs text-muted-foreground mb-2 block">Outros EPIs:</Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    placeholder="Ex: Luvas de alta tensão"
-                                    value={episInput}
-                                    onChange={(e) => setEpisInput(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddEpi())}
-                                />
-                                <Button type="button" onClick={handleAddEpi} variant="secondary" size="sm">
-                                    Adicionar
-                                </Button>
-                            </div>
-                            {watch('epis') && watch('epis')!.filter(e => !EPIS_LIST.includes(e)).length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {watch('epis')!.filter(e => !EPIS_LIST.includes(e)).map((epi, index) => (
-                                        <div
-                                            key={`custom-epi-${index}`}
-                                            className="flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm"
-                                        >
-                                            <span>{epi}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const current = watch('epis') || [];
-                                                    setValue('epis', current.filter(e => e !== epi));
-                                                }}
-                                                className="text-muted-foreground hover:text-foreground"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Waste Destination & Closing */}
-                {interventionType !== 'monitoramento' && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <span className="">🏁</span>
-                                Encerramento
-                            </CardTitle>
-                            <CardDescription>Destinação de resíduos e instruções finais</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="waste_destination">Destinação de Resíduos *</Label>
-                                <Select
-                                    value={watch('waste_destination')}
-                                    onValueChange={(value) => setValue('waste_destination', value)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione a destinação" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {WASTE_DESTINATIONS.map((opt) => (
-                                            <SelectItem key={opt} value={opt}>
-                                                {opt}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {watch('waste_destination') === 'Outro' && (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                    <Label htmlFor="custom_waste">Especifique a Destinação *</Label>
-                                    <Input
-                                        id="custom_waste"
-                                        placeholder="Descreva a destinação..."
-                                        {...register('custom_waste', {
-                                            required: watch('waste_destination') === 'Outro' ? 'Especifique a destinação' : false
-                                        })}
-                                    />
-                                    {errors.custom_waste && (
-                                        <p className="text-sm text-destructive">{errors.custom_waste.message}</p>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="space-y-2 pt-2">
-                                <Label className="text-sm font-medium">Orientações de Execução</Label>
-                                <Textarea
-                                    placeholder="Instruções adicionais para a equipe de campo..."
-                                    className="h-24"
-                                // Using justification field or adding a new one?
-                                // The legacy code used 'executionInstructions'. 
-                                // Currently PlanFormData doesn't have it, reusing justification or adding?
-                                // PlanFormData has 'justification'. Let's stick to adding it as a separate comment if needed, 
-                                // but for now, we only implement what's in PlanFormData.
-                                // Waait, 'orietações' usually goes into justification or we add a new field.
-                                // The user request was "Final Waste Destination".
-                                // I'll leave the Textarea out for now to strictly follow the requirement 
-                                // or just reuse justification if appropriate, but justification is already above.
-                                // The legacy form had "Orientações de Execução".
-                                // I didn't add that to types. I'll skip it to match strict scope.
-                                // Just Waste Destination.
-                                />
-                                <p className="text-xs text-muted-foreground">Utilize o campo de Justificativa para observações gerais.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-
+                <ConclusionSection
+                    register={register}
+                    watch={watch}
+                    setValue={setValue}
+                    errors={errors}
+                    interventionType={interventionType}
+                />
 
                 {/* Actions */}
                 <div className="flex justify-end gap-4">
