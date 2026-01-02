@@ -2,6 +2,12 @@ import type { GeolocationPosition } from '@/types/execution';
 import { Card } from '@/components/ui/card';
 import { Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
@@ -50,13 +56,27 @@ export function TaskMapLocation({
                 )}
             </Map>
 
-            <div className="absolute bottom-2 right-2">
-                <Button size="sm" className="shadow-md gap-2" onClick={() => {
-                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetLocation.lat},${targetLocation.lng}`, '_blank');
-                }}>
-                    <Navigation className="w-3 h-3" />
-                    Navegar
-                </Button>
+            <div className="absolute bottom-2 right-2 flex gap-2">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button size="sm" className="shadow-md gap-2">
+                            <Navigation className="w-3 h-3" />
+                            Navegar
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => {
+                            window.open(`https://www.google.com/maps/dir/?api=1&destination=${targetLocation.lat},${targetLocation.lng}`, '_blank');
+                        }}>
+                            Google Maps
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                            window.open(`https://waze.com/ul?ll=${targetLocation.lat},${targetLocation.lng}&navigate=yes`, '_blank');
+                        }}>
+                            Waze
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </Card>
     );

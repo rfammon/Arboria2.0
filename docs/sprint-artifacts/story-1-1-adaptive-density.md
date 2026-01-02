@@ -12,17 +12,18 @@
 - [ ] Desktop (office) shows 44px touch targets.
 
 ## Tasks
-- [ ] **Planning**
+- [x] **Planning**
   - [x] Create story file (this document)
-  - [ ] Define Implementation Plan
-- [ ] **Technical Foundation**
-  - [ ] Implement `:root` variables in `index.css`
-  - [ ] Create/Update device detection utility/hook
-- [ ] **Implementation**
-  - [ ] Apply `--touch-target` to Button component
-  - [ ] Apply `--touch-target` to Input/Select components
-  - [ ] Adjust global spacing using `--spacing-unit`
-- [ ] **Verification**
-  - [ ] Verify `data-density` attribute correctly set on different platforms
-  - [ ] Visual verification of touch target sizes
-  - [ ] Unit tests for device detection logic
+  - [x] Define Implementation Plan
+- [x] **Technical Foundation**
+  - [x] Implement `:root` variables in `index.css` (Pre-existing)
+  - [x] Create/Update device detection utility/hook (Pre-existing)
+- [x] **Implementation**
+  - [x] Apply `--touch-target` to Button component
+  - [x] Apply `--touch-target` to Input/Select components
+  - [x] Adjust global spacing using `--spacing-unit`
+  - [x] Fix Textarea and Checkbox tokens
+- [x] **Verification**
+  - [x] Verify `data-density` attribute correctly set on different platforms
+  - [x] Visual verification of touch target sizes
+  - [x] Unit tests for device detection logic

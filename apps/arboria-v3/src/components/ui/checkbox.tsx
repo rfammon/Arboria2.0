@@ -9,7 +9,7 @@ export function Checkbox({ onCheckedChange, ...props }: CheckboxProps) {
         <input
             type="checkbox"
             onChange={(e) => onCheckedChange?.(e.target.checked)}
-            className={`h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${props.className || ''}`}
+            className={`h-[calc(var(--touch-target,40px)/2.5)] w-[calc(var(--touch-target,40px)/2.5)] min-h-[16px] min-w-[16px] rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all ${props.className || ''}`}
             {...props}
         />
     );

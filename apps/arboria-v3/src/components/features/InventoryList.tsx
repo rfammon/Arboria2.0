@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-table';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useTrees } from '../../hooks/useTrees';
 import { useTreeMutations } from '../../hooks/useTreeMutations';
 import type { Tree } from '../../types/tree';
@@ -45,6 +46,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { data: trees, isLoading, error } = useTrees();
+    const { hasPermission } = useAuth();
     const { deleteTree } = useTreeMutations();
     const [sorting, setSorting] = useState<SortingState>([]);
     const density = useDensity();
@@ -138,17 +140,21 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
                                 <Edit className="mr-2 h-4 w-4" />
                                 Detalhes e Edição
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteId(tree.id);
-                                }}
-                                className="text-destructive focus:text-destructive"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Excluir
-                            </DropdownMenuItem>
+                            {hasPermission('manage_installation') && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteId(tree.id);
+                                        }}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Excluir
+                                    </DropdownMenuItem>
+                                </>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 );
@@ -176,14 +182,16 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <TreesIcon className="w-16 h-16 mb-4 opacity-20" />
             <p className="text-lg font-medium">Nenhuma árvore encontrada</p>
-            <div className="mt-6">
-                <FieldAction
-                    isPrimary
-                    onClick={() => onCreate && onCreate()}
-                >
-                    Adicionar Árvore
-                </FieldAction>
-            </div>
+            {hasPermission('create_trees') && (
+                <div className="mt-6">
+                    <FieldAction
+                        isPrimary
+                        onClick={() => onCreate && onCreate()}
+                    >
+                        Adicionar Árvore
+                    </FieldAction>
+                </div>
+            )}
         </div>
     );
 
@@ -236,12 +244,14 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
                                         <DropdownMenuItem onClick={() => navigate(`/inventory/${tree.id}`)}>
                                             <Edit className="w-4 h-4 mr-2" /> Editar
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => setDeleteId(tree.id)}
-                                            className="text-destructive"
-                                        >
-                                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
-                                        </DropdownMenuItem>
+                                        {hasPermission('manage_installation') && (
+                                            <DropdownMenuItem
+                                                onClick={() => setDeleteId(tree.id)}
+                                                className="text-destructive"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

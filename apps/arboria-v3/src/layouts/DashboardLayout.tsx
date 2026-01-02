@@ -75,14 +75,14 @@ export default function DashboardLayout() {
             {/* Mobile Sidebar Backdrop */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-[55] bg-black/50 lg:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border shadow-sm transform transition-transform duration-200 ease-in-out lg:static lg:transform-none",
+                "fixed inset-y-0 left-0 z-[60] w-64 bg-card border-r border-border shadow-sm transform transition-transform duration-200 ease-in-out lg:static lg:transform-none",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}
                 style={{

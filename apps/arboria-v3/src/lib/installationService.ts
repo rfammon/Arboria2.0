@@ -12,10 +12,11 @@ export const InstallationService = {
             .from('instalacao_membros')
             .select(`
                 *,
-                instalacao:instalacoes(*)
+                instalacao:instalacoes!inner(*)
             `)
             .eq('user_id', user.id)
-            .eq('status', 'ativo');
+            .eq('status', 'ativo')
+            .eq('instalacao.ativo', true);
 
         if (memberError) throw memberError;
 

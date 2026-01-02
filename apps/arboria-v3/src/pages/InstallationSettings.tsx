@@ -130,7 +130,7 @@ export default function InstallationSettings({ embedded = false }: InstallationS
     const handleDeleteInstallation = async () => {
         if (!activeInstallation) return;
 
-        const confirmName = prompt('Esta ação é IRREVERSÍVEL. Todos os dados da instalação (inventário, ordens, planos) serão apagados.\n\nPara confirmar, digite o nome da instalação: ' + activeInstallation.nome);
+        const confirmName = prompt('Esta ação irá DESATIVAR a instalação. Os dados não serão apagados, mas a instalação ficará invisível para todos os membros.\n\nPara confirmar, digite o nome da instalação: ' + activeInstallation.nome);
 
         if (confirmName !== activeInstallation.nome) {
             toast.error('Nome incorreto. Ação cancelada.');
@@ -139,11 +139,11 @@ export default function InstallationSettings({ embedded = false }: InstallationS
 
         try {
             await InstallationService.deleteInstallation(activeInstallation.id);
-            toast.success('Instalação excluída com sucesso.');
+            toast.success('Instalação desativada com sucesso.');
             window.location.href = '/';
         } catch (error: any) {
-            console.error('Error deleting installation:', error);
-            toast.error(error.message || 'Erro ao excluir instalação.');
+            console.error('Error deactivating installation:', error);
+            toast.error(error.message || 'Erro ao desativar instalação.');
         }
     };
 
@@ -419,16 +419,16 @@ export default function InstallationSettings({ embedded = false }: InstallationS
                         <CardContent>
                             <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100">
                                 <div>
-                                    <p className="font-medium text-red-900">Excluir Instalação</p>
+                                    <p className="font-medium text-red-900">Desativar Instalação</p>
                                     <p className="text-sm text-red-700 mt-1">
-                                        Apaga permanentemente a instalação e todos os dados associados (Inventário, Planos, Histórico).
+                                        Oculta a instalação para todos os usuários. Os dados (Inventário, Planos, Histórico) são preservados no banco de dados.
                                     </p>
                                 </div>
                                 <Button
                                     variant="destructive"
                                     onClick={handleDeleteInstallation}
                                 >
-                                    Excluir Instalação
+                                    Desativar Instalação
                                 </Button>
                             </div>
                         </CardContent>

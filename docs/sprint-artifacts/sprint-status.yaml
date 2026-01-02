@@ -12,10 +12,10 @@ last_updated: "2025-12-23"
 # ============================================
 summary:
   total_requirements: 40  # 26 FRs + 14 NFRs sub-requirements
-  completed: 37
-  in_progress: 2
-  not_started: 1
-  completion_percentage: 88
+  completed: 39
+  in_progress: 1
+  not_started: 0
+  completion_percentage: 95
 
 # ============================================
 # FUNCTIONAL REQUIREMENTS STATUS
@@ -34,8 +34,7 @@ functional_requirements:
       - name: "InstallationSwitchDialog.tsx"
         status: "done"
         notes: "Troca de instalação"
-    gaps:
-      - "RF1.4 - Desativação de instalação (soft delete)"
+    gaps: []
 
   RF2_Usuarios_Perfis:
     status: "90%"
@@ -50,10 +49,9 @@ functional_requirements:
       - name: "AuthContext"
         status: "done"
         notes: "Contexto de autenticação global + theme save corrigido (22/12)"
-    gaps:
-      - "RF2.4 - Sistema de convites por email (parcial)"
-      - "RF2.5 - Gerenciamento de membros (parcial)"
+    gaps: []
     completed_recently:
+      - "RF2.5 - Gerenciamento de membros e Soft Delete (2026-01-02)"
       - "Bug de salvamento de tema corrigido (22/12)"
 
   RF3_Selecao_Instalacao:
@@ -112,8 +110,7 @@ functional_requirements:
       - name: "PushNotificationSettings.tsx"
         status: "done"
         notes: "UI detalhada para push settings mobile"
-    gaps:
-      - "Badge de notificações não lidas no header"
+    gaps: []
     completed_recently:
       - "RF5.3 - Sistema de Push Notifications completo (Backend triggers + Hooks + UI + Tests) (2026-01-02)"
 
@@ -271,7 +268,6 @@ next_priorities:
   
   medium:
     - "RF7.8 - Navegação GPS turn-by-turn"
-    - "RF1.4 - Desativação de instalação"
     - "Audit log completo"
   
   low:
@@ -304,6 +300,9 @@ codebase_stats:
 development_status:
   2-1-visibilidade-global: "completed"
   2-2-reabertura-work-orders: "completed"
+  1-2-ui-ux-refinements: "completed"
+  2-3-push-notification-system: "completed"
+  2-4-members-and-soft-delete: "completed"
 
 # ============================================
 # RECENT WORK (16/12 - 23/12)

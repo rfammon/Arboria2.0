@@ -159,7 +159,7 @@ export default function Execution() {
         <div className="min-h-screen bg-slate-50/50">
             {/* Header Section */}
             <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm supports-[backdrop-filter]:bg-white/60">
-                <div className="container max-w-7xl mx-auto px-4 py-3 space-y-3">
+                <div className="container max-w-7xl mx-auto px-4 py-2 space-y-2">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-xl font-bold text-slate-900">
@@ -179,7 +179,7 @@ export default function Execution() {
                         </Button>
                     </div>
 
-                    <div className="flex gap-2 relative">
+                    <div className="flex flex-col sm:flex-row gap-2 relative">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <Input
@@ -191,7 +191,7 @@ export default function Execution() {
                         </div>
                         {isManager && (
                             <Select value={selectedUser} onValueChange={setSelectedUser}>
-                                <SelectTrigger className="w-[200px] bg-slate-100/50 border-slate-200 h-10 rounded-xl">
+                                <SelectTrigger className="w-full sm:w-[200px] bg-slate-100/50 border-slate-200 h-10 rounded-xl">
                                     <Users className="w-4 h-4 mr-2 text-slate-500" />
                                     <span className="truncate text-sm">
                                         {selectedUser === 'all'

@@ -3,6 +3,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { useFilters } from '../context/FilterContext';
 import { Plus, Search, Filter } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../context/AuthContext';
 import InventoryList from '../components/features/InventoryList';
 import ClusteredMapComponent from '../components/features/ClusteredMapComponent';
 import { TreeForm } from '../components/features/TreeForm';
@@ -22,6 +23,7 @@ import {
 } from '../components/ui/sheet';
 
 export default function Inventory() {
+    const { hasPermission } = useAuth();
     const density = useDensity();
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -68,15 +70,16 @@ export default function Inventory() {
                 </div>
                 <p className="text-muted-foreground">Gerencie e monitorize o arvoredo urbano.</p>
                 <div className="flex gap-2 w-full sm:w-auto">
-
-                    <FieldAction
-                        isPrimary
-                        onClick={() => setIsFormOpen(true)}
-                        className="flex-1 sm:flex-none"
-                    >
-                        <Plus className="w-5 h-5 mr-2" />
-                        Nova Árvore
-                    </FieldAction>
+                    {hasPermission('create_trees') && (
+                        <FieldAction
+                            isPrimary
+                            onClick={() => setIsFormOpen(true)}
+                            className="flex-1 sm:flex-none"
+                        >
+                            <Plus className="w-5 h-5 mr-2" />
+                            Nova Árvore
+                        </FieldAction>
+                    )}
                 </div>
             </div>
 

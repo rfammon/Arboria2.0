@@ -172,13 +172,13 @@ export function ContentViewer({ content }: ContentViewerProps) {
 
                     // Headings with anchor links
                     h1: ({ children }) => (
-                        <h1 className="text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100">
+                        <h1 className="text-2xl sm:text-3xl font-bold mt-2 mb-4 text-gray-900 dark:text-gray-100">
                             {children}
                         </h1>
                     ),
 
                     h2: ({ children }) => (
-                        <h2 className="text-2xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <h2 className="text-xl sm:text-2xl font-semibold mt-4 mb-3 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
                             {children}
                         </h2>
                     ),

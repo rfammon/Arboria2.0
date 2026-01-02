@@ -147,18 +147,30 @@ export function TaskExecutionCard({
                             </Badge>
                         </div>
                         {task.tree?.latitude && task.tree?.longitude && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    openNavigationApp(task.tree!.latitude!, task.tree!.longitude!);
-                                }}
-                            >
-                                <Navigation className="w-3 h-3 mr-1" />
-                                Navegar
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    >
+                                        <Navigation className="w-3 h-3 mr-1" />
+                                        Navegar
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                    <DropdownMenuItem onClick={() => {
+                                        openNavigationApp(task.tree!.latitude!, task.tree!.longitude!, 'google');
+                                    }}>
+                                        Google Maps
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => {
+                                        openNavigationApp(task.tree!.latitude!, task.tree!.longitude!, 'waze');
+                                    }}>
+                                        Waze
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                         {task.rejection_reason && task.status === 'IN_PROGRESS' && (
                             <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-100 mt-1">

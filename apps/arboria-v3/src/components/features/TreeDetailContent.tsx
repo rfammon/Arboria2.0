@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { utmToLatLon } from '../../lib/utils/utmToLatLon';
 import { cn } from '../../lib/utils';
 
-import { Ruler, Trees, AlertTriangle, Calendar, Image, Edit, FileText, ClipboardList, Upload, ArrowLeft, Expand, X } from 'lucide-react';
+import { Ruler, Trees, AlertTriangle, Calendar, Image, Edit, FileText, ClipboardList, Upload, ArrowLeft, Expand, X, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTRAQCriteria } from '../../hooks/useTRAQCriteria';
 import { Button } from '../ui/button';
@@ -37,6 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 export default function TreeDetailContent({ treeId, onClose, isBlade = false }: TreeDetailContentProps) {
     const navigate = useNavigate();
+    const { hasPermission } = useAuth();
     const { criteria } = useTRAQCriteria();
     const { presences } = usePresence(treeId);
     const usersViewing = presences[treeId] || [];
@@ -186,17 +188,19 @@ export default function TreeDetailContent({ treeId, onClose, isBlade = false }: 
                     <TabsContent value="status" className="p-6 m-0 space-y-8 outline-none animate-in fade-in-50 duration-300">
                         {/* Actions Grid */}
                         <div className="grid grid-cols-2 gap-3">
-                            <FieldAction
-                                className={cn(
-                                    "w-full justify-start shrink-0",
-                                    isBlade ? "h-10 text-xs" : "h-14 text-sm"
-                                )}
-                                isPrimary
-                                onClick={() => navigate('/inventory', { state: { editTreeId: tree.id } })}
-                            >
-                                <Edit className={cn("mr-2 shrink-0", isBlade ? "w-4 h-4" : "w-5 h-5")} />
-                                Editar
-                            </FieldAction>
+                            {hasPermission('edit_trees') && (
+                                <FieldAction
+                                    className={cn(
+                                        "w-full justify-start shrink-0",
+                                        isBlade ? "h-10 text-xs" : "h-14 text-sm"
+                                    )}
+                                    isPrimary
+                                    onClick={() => navigate('/inventory', { state: { editTreeId: tree.id } })}
+                                >
+                                    <Edit className={cn("mr-2 shrink-0", isBlade ? "w-4 h-4" : "w-5 h-5")} />
+                                    Editar
+                                </FieldAction>
+                            )}
 
                             <FieldAction
                                 className={cn(
@@ -209,6 +213,20 @@ export default function TreeDetailContent({ treeId, onClose, isBlade = false }: 
                                 <ClipboardList className={cn("mr-2 shrink-0", isBlade ? "w-4 h-4" : "w-5 h-5")} />
                                 Plano
                             </FieldAction>
+
+                            {hasPermission('manage_installation') && (
+                                <FieldAction
+                                    className={cn(
+                                        "w-full justify-start shrink-0 col-span-2",
+                                        isBlade ? "h-10 text-xs" : "h-14 text-sm"
+                                    )}
+                                    variant="outline"
+                                    onClick={() => setDeleteDialogOpen(true)}
+                                >
+                                    <Trash2 className={cn("mr-2 shrink-0 text-destructive", isBlade ? "w-4 h-4" : "w-5 h-5")} />
+                                    Excluir Árvore
+                                </FieldAction>
+                            )}
                         </div>
 
                         {/* Metadata */}
@@ -296,17 +314,21 @@ export default function TreeDetailContent({ treeId, onClose, isBlade = false }: 
                                     <Image className="w-4 h-4" />
                                     FOTOS ({photos.length})
                                 </h2>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-[10px] px-2"
-                                    disabled={isUploading || !tree.instalacao_id}
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    {isUploading ? <span className="animate-spin">⏳</span> : <Upload className="w-3 h-3 mr-1" />}
-                                    {isUploading ? `${uploadProgress}%` : 'ADICIONAR'}
-                                </Button>
-                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
+                                {hasPermission('edit_trees') && (
+                                    <>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 text-[10px] px-2"
+                                            disabled={isUploading || !tree.instalacao_id}
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            {isUploading ? <span className="animate-spin">⏳</span> : <Upload className="w-3 h-3 mr-1" />}
+                                            {isUploading ? `${uploadProgress}%` : 'ADICIONAR'}
+                                        </Button>
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileSelect} disabled={isUploading} />
+                                    </>
+                                )}
                             </div>
 
                             {photos.length === 0 ? (

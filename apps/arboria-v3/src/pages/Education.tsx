@@ -75,11 +75,11 @@ export default function Education() {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Educação e Treinamento</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">Recursos e conteúdos para sua formação técnica em manejo florestal</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Educação e Treinamento</h1>
+                    <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm sm:text-base">Recursos e conteúdos para sua formação técnica em manejo florestal</p>
                 </div>
                 <div className="flex flex-col md:flex-row items-end gap-3 w-full md:w-auto">
                     <Button variant="outline" onClick={() => navigate('/')}>
@@ -89,7 +89,7 @@ export default function Education() {
             </div>
 
             {/* Search Bar */}
-            <div className="flex justify-center py-4">
+            <div className="flex justify-center py-2">
                 <EducationSearch />
             </div>
 

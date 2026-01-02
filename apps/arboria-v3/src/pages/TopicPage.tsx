@@ -87,8 +87,8 @@ export default function TopicPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header with breadcrumbs and actions */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 print:hidden">
-                <div className="max-w-4xl mx-auto px-4 py-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="max-w-3xl mx-auto px-4 py-1.5">
+                    <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                             <Button
                                 variant="ghost"
@@ -100,16 +100,10 @@ export default function TopicPage() {
                                 <span className="hidden xs:inline">Tópicos</span>
                             </Button>
 
-                            {/* Breadcrumbs - Hidden on very small screens to prevent overflow */}
-                            <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap overflow-hidden">
-                                <button
-                                    onClick={() => navigate('/education')}
-                                    className="hover:text-gray-700 dark:hover:text-gray-300 hidden sm:inline"
-                                >
-                                    Educação
-                                </button>
+                            <nav className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap overflow-hidden mr-auto">
+                                <span className="hidden sm:inline">Educação</span>
                                 <span className="hidden sm:inline">/</span>
-                                <span className="text-gray-900 dark:text-gray-100 font-medium truncate max-w-[150px] sm:max-w-none">
+                                <span className="text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">
                                     {currentTopic.title}
                                 </span>
                             </nav>
@@ -130,13 +124,13 @@ export default function TopicPage() {
             </div>
 
             {/* Content */}
-            <div className="max-w-4xl mx-auto px-4 py-8 bg-white dark:bg-white">
+            <div className="max-w-3xl mx-auto px-4 pt-4 pb-8 bg-white dark:bg-white min-h-screen">
                 <ContentViewer content={content} />
             </div>
 
             {/* Navigation Footer */}
             <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 print:hidden">
-                <div className="max-w-4xl mx-auto px-4 py-6">
+                <div className="max-w-3xl mx-auto px-4 py-6">
                     <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                         <div className="w-full sm:w-auto">
                             {previousTopic && (

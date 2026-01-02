@@ -34,7 +34,7 @@ interface TaskAlert {
 }
 
 export default function AlertsCenter() {
-    const { activeInstallation } = useAuth();
+    const { activeInstallation, hasPermission } = useAuth();
     const navigate = useNavigate();
 
     const [filterMode, setFilterMode] = useState<'all' | 'unresolved'>('unresolved');
@@ -128,10 +128,10 @@ export default function AlertsCenter() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Central de Alertas</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Central de Alertas</h1>
                     <p className="text-muted-foreground">Monitore e resolva problemas reportados em campo.</p>
                 </div>
                 <div className="flex gap-2">
@@ -241,7 +241,7 @@ export default function AlertsCenter() {
                                         </button>
                                     )}
                                 </div>
-                                {!alert.resolved && (
+                                {!alert.resolved && hasPermission('manage_team') && (
                                     <Button size="sm" variant="secondary" onClick={() => handleResolve(alert.id)}>
                                         <CheckCircle className="w-4 h-4 mr-2" />
                                         Marcar como Resolvido
