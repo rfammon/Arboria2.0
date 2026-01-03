@@ -75,14 +75,14 @@ export default function DashboardLayout() {
             {/* Mobile Sidebar Backdrop */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 z-[55] bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-[55] bg-black/20 backdrop-blur-sm lg:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[60] w-64 bg-card border-r border-border shadow-sm transform transition-transform duration-200 ease-in-out lg:static lg:transform-none",
+                "fixed inset-y-0 left-0 z-[60] w-64 bg-card/80 backdrop-blur-xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-transform duration-200 ease-in-out lg:static lg:transform-none",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}
                 style={{
@@ -91,7 +91,7 @@ export default function DashboardLayout() {
                     paddingLeft: 'var(--safe-area-left)'
                 }}
             >
-                <div className="flex flex-col h-full bg-card text-card-foreground">
+                <div className="flex flex-col h-full bg-transparent text-card-foreground">
                     {/* Logo */}
                     <div className="h-16 flex items-center px-6 border-b border-border">
                         <TreeDeciduous className="w-8 h-8 text-green-600 dark:text-green-500 mr-2" />
@@ -124,10 +124,10 @@ export default function DashboardLayout() {
                                     to={item.href}
                                     onClick={() => setIsSidebarOpen(false)}
                                     className={cn(
-                                        "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
+                                        "flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all active:scale-95",
                                         isActive
-                                            ? "bg-primary/10 text-primary"
-                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            ? "bg-primary/10 text-primary shadow-inner"
+                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:shadow-sm"
                                     )}
                                 >
                                     <item.icon className="w-5 h-5 mr-3" />

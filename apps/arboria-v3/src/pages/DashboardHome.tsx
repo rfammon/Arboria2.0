@@ -74,11 +74,11 @@ export default function DashboardHome() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="text-center space-y-4 py-8">
-                <h1 className="text-4xl font-bold tracking-tight text-foreground">
-                    Bem-vindo ao <span className="text-blue-600 dark:text-blue-500">Arbor</span><span className="text-green-600 dark:text-green-500">IA</span>
+            <div className="text-center space-y-4 py-12">
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground transition-all">
+                    Bem-vindo ao <span className="text-blue-600 dark:text-blue-400">Arbor</span><span className="text-green-600 dark:text-green-400">IA</span>
                 </h1>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
                     Sua Plataforma de Manejo Integrado de Árvores
                 </p>
             </div>
@@ -92,7 +92,8 @@ export default function DashboardHome() {
                     // Alerts and Education are visible to all (or add specific checks if needed)
                     return true;
                 }).map((feature) => (
-                    <Card key={feature.id} className="hover:shadow-lg transition-shadow duration-300 border-t-4" style={{ borderTopColor: 'currentColor' }}>
+                    <Card key={feature.id} className="hover:shadow-[var(--shadow-deep)] hover:-translate-y-1 transition-all duration-300 border-none group">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-20" style={{ color: 'currentColor' }} />
                         <CardHeader className="space-y-1">
                             <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4`}>
                                 <feature.icon className={`w-6 h-6 ${feature.color}`} />
@@ -105,7 +106,8 @@ export default function DashboardHome() {
                             </CardDescription>
                             <Button
                                 onClick={feature.action}
-                                className="w-full bg-slate-900 hover:bg-slate-800"
+                                className="w-full shadow-sm hover:shadow-md transition-all active:scale-[0.97]"
+                                variant="default"
                             >
                                 {feature.btnText}
                             </Button>
