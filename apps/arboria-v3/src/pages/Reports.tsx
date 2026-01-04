@@ -103,29 +103,35 @@ export default function Reports() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Relatórios e Documentos</h1>
-                    <p className="text-gray-500 mt-2">Gere relatórios profissionais em PDF</p>
+                    <h1 className="text-3xl font-extrabold tracking-tight font-display">
+                        Relatórios & <span className="text-primary italic">Documentos</span>
+                    </h1>
+                    <p className="text-muted-foreground font-medium mt-1">Gere relatórios profissionais e gerencie dados do sistema</p>
                 </div>
             </div>
 
-            <Tabs defaultValue="generate" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="generate">Gerar Relatórios</TabsTrigger>
-                    <TabsTrigger value="export">Exportar Dados</TabsTrigger>
+            <Tabs defaultValue="generate" className="w-full space-y-6">
+                <TabsList className="inline-flex h-12 items-center justify-center rounded-2xl bg-muted/50 p-1 text-muted-foreground border border-white/5 shadow-inner">
+                    <TabsTrigger value="generate" className="rounded-xl px-8 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Gerar Relatórios</TabsTrigger>
+                    <TabsTrigger value="export" className="rounded-xl px-8 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Exportar Dados</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="generate" className="space-y-4">
-                    <Card>
+                    <Card className="bg-card/70 backdrop-blur-md border-white/10 shadow-[var(--shadow-soft)] overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                         <CardHeader>
-                            <CardTitle>Relatórios Disponíveis</CardTitle>
-                            <CardDescription>
-                                Selecione o tipo de relatório e gere um PDF profissional
+                            <CardTitle className="font-bold flex items-center gap-2">
+                                <Download className="w-5 h-5 text-primary" />
+                                Relatórios Disponíveis
+                            </CardTitle>
+                            <CardDescription className="font-medium">
+                                Selecione o tipo de relatório e gere um PDF profissional com um clique
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="relative z-10">
                             <ReportSelector onGenerate={handleGenerateReport} />
                         </CardContent>
                     </Card>

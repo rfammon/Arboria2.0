@@ -17,16 +17,16 @@ export default function Settings() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Configurações</h2>
-                <p className="text-muted-foreground">Gerencie suas preferências, aparência e instalação.</p>
+                <h2 className="text-3xl font-extrabold tracking-tight font-display">Configurações</h2>
+                <p className="text-muted-foreground font-medium">Gerencie suas preferências, aparência e instalação do sistema.</p>
             </div>
 
             <Tabs defaultValue="general" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="general">Geral</TabsTrigger>
-                    <TabsTrigger value="updates">Atualizações</TabsTrigger>
+                <TabsList className="inline-flex h-12 items-center justify-center rounded-2xl bg-muted/50 p-1 text-muted-foreground border border-white/5 shadow-inner">
+                    <TabsTrigger value="general" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Geral</TabsTrigger>
+                    <TabsTrigger value="updates" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Atualizações</TabsTrigger>
                     {activeInstallation && hasPermission('manage_installation') && (
-                        <TabsTrigger value="installation">Instalação</TabsTrigger>
+                        <TabsTrigger value="installation" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Instalação</TabsTrigger>
                     )}
                 </TabsList>
 
@@ -85,20 +85,29 @@ function GeneralSettings() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {themes.map((t) => (
                         <button
                             key={t.id}
                             onClick={() => handleThemeSelect(t.id)}
                             className={cn(
-                                "flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all hover:bg-accent",
-                                theme === t.id ? "border-primary bg-accent" : "border-transparent bg-muted/50"
+                                "flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all active:scale-95 group relative overflow-hidden",
+                                theme === t.id
+                                    ? "border-primary bg-primary/5 shadow-[var(--shadow-soft)] ring-2 ring-primary/20"
+                                    : "border-transparent bg-muted/30 hover:bg-muted/50"
                             )}
                         >
-                            <div className={cn("h-10 w-10 rounded-full flex items-center justify-center mb-2 border", t.color)}>
-                                <t.icon className="h-5 w-5" />
+                            <div className={cn(
+                                "h-12 w-12 rounded-2xl flex items-center justify-center mb-3 border shadow-sm transition-transform group-hover:scale-110",
+                                t.color,
+                                theme === t.id && "shadow-lg shadow-primary/10"
+                            )}>
+                                <t.icon className="h-6 w-6" />
                             </div>
-                            <span className="text-sm font-medium">{t.name}</span>
+                            <span className={cn(
+                                "text-xs font-bold uppercase tracking-wider",
+                                theme === t.id ? "text-primary" : "text-muted-foreground"
+                            )}>{t.name}</span>
                         </button>
                     ))}
                 </div>
