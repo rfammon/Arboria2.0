@@ -129,51 +129,61 @@ export default function AlertsCenter() {
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Central de Alertas</h1>
-                    <p className="text-muted-foreground">Monitore e resolva problemas reportados em campo.</p>
+                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Avisos e Alertas</h1>
+                    <p className="text-muted-foreground font-medium">Monitore e resolva problemas reportados em campo.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant={filterMode === 'unresolved' ? 'default' : 'outline'}
+                <div className="flex bg-muted/50 p-1.5 rounded-xl border border-white/5 shadow-inner">
+                    <button
+                        className={cn(
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all",
+                            filterMode === 'unresolved'
+                                ? "bg-background shadow-md text-foreground scale-105"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
                         onClick={() => setFilterMode('unresolved')}
                     >
                         Pendentes
-                    </Button>
-                    <Button
-                        variant={filterMode === 'all' ? 'default' : 'outline'}
+                    </button>
+                    <button
+                        className={cn(
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all",
+                            filterMode === 'all'
+                                ? "bg-background shadow-md text-foreground scale-105"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
                         onClick={() => setFilterMode('all')}
                     >
                         Todos
-                    </Button>
+                    </button>
                 </div>
             </div>
 
             {/* Filters Bar - Only in 'all' mode */}
             {filterMode === 'all' && (
-                <div className="bg-muted/40 p-4 rounded-lg border flex flex-col sm:flex-row gap-4 items-end sm:items-center">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mr-2">
-                        <Filter className="w-4 h-4" /> Filtros:
+                <div className="bg-card/70 backdrop-blur-md p-6 rounded-2xl border border-white/10 flex flex-col sm:flex-row gap-6 items-end sm:items-center shadow-[var(--shadow-soft)] mb-6 transition-all hover:shadow-[var(--shadow-deep)]">
+                    <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground mr-2">
+                        <Filter className="w-5 h-5 text-primary" /> Filtros
                     </div>
 
                     <div className="w-full sm:w-auto min-w-[150px]">
-                        <label className="text-xs mb-1 block text-muted-foreground">Data</label>
+                        <label className="text-xs font-bold mb-1.5 block text-muted-foreground/70 uppercase">Data</label>
                         <Input
                             type="date"
                             value={dateFilter}
                             onChange={(e) => setDateFilter(e.target.value)}
-                            className="bg-background"
+                            className="bg-muted/40 border-none shadow-inner h-11"
                         />
                     </div>
 
                     <div className="w-full sm:w-auto min-w-[180px]">
-                        <label className="text-xs mb-1 block text-muted-foreground">Tipo de Alerta</label>
+                        <label className="text-xs font-bold mb-1.5 block text-muted-foreground/70 uppercase">Tipo</label>
                         <Select value={typeFilter} onValueChange={setTypeFilter}>
-                            <SelectTrigger className="bg-background">
+                            <SelectTrigger className="bg-muted/40 border-none shadow-inner h-11 rounded-xl">
                                 <SelectValue placeholder="Todos os tipos" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-2xl border-white/10 shadow-2xl">
                                 <SelectItem value="all">Todos os tipos</SelectItem>
                                 {uniqueTypes.map(type => (
                                     <SelectItem key={type} value={type}>{getAlertLabel(type)}</SelectItem>
@@ -183,12 +193,12 @@ export default function AlertsCenter() {
                     </div>
 
                     <div className="w-full sm:w-auto min-w-[200px]">
-                        <label className="text-xs mb-1 block text-muted-foreground">Executante</label>
+                        <label className="text-xs font-bold mb-1.5 block text-muted-foreground/70 uppercase">Executante</label>
                         <Select value={reporterFilter} onValueChange={setReporterFilter}>
-                            <SelectTrigger className="bg-background">
+                            <SelectTrigger className="bg-muted/40 border-none shadow-inner h-11 rounded-xl">
                                 <SelectValue placeholder="Todos os executantes" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-2xl border-white/10 shadow-2xl">
                                 <SelectItem value="all">Todos os executantes</SelectItem>
                                 {uniqueReporters.map(r => (
                                     <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
@@ -198,8 +208,8 @@ export default function AlertsCenter() {
                     </div>
 
                     {(dateFilter || typeFilter !== 'all' || reporterFilter !== 'all') && (
-                        <Button variant="ghost" size="icon" onClick={resetFilters} className="mb-0.5">
-                            <X className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" onClick={resetFilters} className="mb-0.5 hover:bg-destructive/10 hover:text-destructive rounded-full">
+                            <X className="w-5 h-5" />
                         </Button>
                     )}
                 </div>
