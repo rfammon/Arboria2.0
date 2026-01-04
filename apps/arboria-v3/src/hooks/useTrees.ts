@@ -21,7 +21,9 @@ export const useTrees = () => {
                 .from('arvores')
                 .select('*')
                 .eq('instalacao_id', activeInstallation.id)
-                .limit(100);
+                .is('deleted_at', null)
+                .order('codigo', { ascending: true })
+                .limit(1000);
 
             if (error) throw error;
 

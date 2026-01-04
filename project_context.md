@@ -13,6 +13,11 @@
 3.  **Strict Types:** No `any`. Define interfaces for all props and data.
 4.  **TDD:** Write tests for logic-heavy components (e.g., Quizzes, Calculators).
 
+## Search & Discovery (MANDATORY)
+- **Primary Tool:** `mgrep` must be used for all file discovery and semantic searches.
+- **Usage:** Use `mgrep "query" [path]` to find relevant code patterns or specific logic.
+- **Why:** `mgrep` provides a semantic layer that is more effective for this codebase's architecture than simple keyword search.
+
 ## Directory Structure
 - `src/components/education/`: All education-related components.
 - `src/stores/`: Zustand stores (`useEducationStore`).

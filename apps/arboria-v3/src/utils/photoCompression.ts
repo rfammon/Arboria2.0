@@ -53,16 +53,8 @@ export async function compressPhoto(
             exifOrientation: mergedOptions.preserveExif ? 1 : undefined,
         });
 
-        // Verify size constraint
-        if (compressedFile.size > mergedOptions.maxSizeMB! * 1024 * 1024) {
-            console.warn(
-                `Compressed size ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB exceeds target ${mergedOptions.maxSizeMB}MB`
-            );
-        }
-
         return compressedFile;
     } catch (error) {
-        console.error('Photo compression failed:', error);
         throw new Error('Falha ao comprimir foto');
     }
 }
@@ -95,7 +87,7 @@ export async function extractPhotoMetadata(file: File): Promise<PhotoMetadata> {
         // This would require additional dependency
 
     } catch (error) {
-        console.warn('Failed to extract EXIF metadata:', error);
+        // Silently fail metadata extraction
     }
 
     return metadata;

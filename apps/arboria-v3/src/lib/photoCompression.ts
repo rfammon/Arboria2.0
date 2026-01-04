@@ -194,7 +194,6 @@ export async function extractExifData(file: File): Promise<ExifData | null> {
                                     // Convert from [degrees, minutes, seconds] to decimal
                                     latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
                                     longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
-                                    console.log('[EXIF] ✓ Extracted GPS:', { latitude, longitude });
                                 }
 
                                 // Extract timestamp
@@ -209,8 +208,6 @@ export async function extractExifData(file: File): Promise<ExifData | null> {
                                     timestamp = new Date(formatted);
                                     if (isNaN(timestamp.getTime())) {
                                         timestamp = null;
-                                    } else {
-                                        console.log('[EXIF] ✓ Extracted timestamp:', timestamp);
                                     }
                                 }
 
@@ -218,10 +215,6 @@ export async function extractExifData(file: File): Promise<ExifData | null> {
                                 const make = EXIF.getTag(this, 'Make');
                                 const model = EXIF.getTag(this, 'Model');
                                 const cameraModel = [make, model].filter(Boolean).join(' ').trim() || null;
-
-                                if (cameraModel) {
-                                    console.log('[EXIF] ✓ Extracted camera model:', cameraModel);
-                                }
 
                                 URL.revokeObjectURL(url);
                                 resolve({

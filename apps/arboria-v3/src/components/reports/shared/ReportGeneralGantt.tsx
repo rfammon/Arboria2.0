@@ -14,6 +14,15 @@ export function ReportGeneralGantt({ plans }: ReportGeneralGanttProps) {
             p.schedule?.end || p.schedule?.endDate
         ]).filter(Boolean).map(d => new Date(d as string).getTime());
 
+        if (dates.length === 0) {
+            const now = new Date();
+            const start = new Date(now);
+            start.setDate(now.getDate() - 2);
+            const end = new Date(now);
+            end.setDate(now.getDate() + 2);
+            return { startDate: start, endDate: end, totalDays: 4, timeline: Array.from({ length: 4 }) };
+        }
+
         const minTime = Math.min(...dates);
         const maxTime = Math.max(...dates);
 

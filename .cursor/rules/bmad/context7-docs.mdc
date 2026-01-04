@@ -1,0 +1,17 @@
+---
+description: Use Context7 MCP when needing documentation, code generation, or setup steps
+globs: **/*
+alwaysApply: true
+---
+
+# Context7 Documentation Rule
+
+Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+
+## Usage
+- **Specific Library:** If you know the library, append `use context7` or specify the library ID (e.g., `/supabase/supabase`).
+- **Specific Version:** Mention the version in your prompt (e.g., "Next.js 14 middleware use context7").
+
+## Examples
+- "How do I set up authentication with Supabase? use context7"
+- "Show me the docs for Pinecone vector search use context7"

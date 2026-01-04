@@ -14,15 +14,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const queryClient = new QueryClient();
 
 // Initialize PWA Elements for Capacitor Camera
-// Initialize PWA Elements for Capacitor Camera
 try {
   defineCustomElements(window);
-  console.log('PWA Elements initialized');
 } catch (e) {
   console.error('Error initializing PWA elements', e);
 }
-
-console.log('Mounting React App...');
 const rootElement = document.getElementById('root');
 if (!rootElement) console.error('Root element not found!');
 

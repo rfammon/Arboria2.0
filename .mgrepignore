@@ -1,0 +1,27 @@
+# Robust excludes for mgrep (Monorepo friendly)
+**/node_modules/
+**/.git/
+**/dist/
+**/build/
+**/.next/
+**/.expo/
+**/android/
+**/ios/
+**/.tauri/
+**/coverage/
+**/server/
+**/.opencode/
+**/.bmad/
+**/.gemini/
+**/.cursor/
+**/.agent/
+**/Arboria - deprecated/
+
+# File type excludes
+*.exe
+*.dll
+*.pyc
+*.log
+*.zip
+*.tar.gz
+*.map

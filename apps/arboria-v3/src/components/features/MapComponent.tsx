@@ -40,37 +40,29 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
 
     // Zoom to selected tree when selectedTreeId changes
     useEffect(() => {
-        console.log('[MapComponent] Zoom useEffect triggered', { selectedTreeId, treesCount: trees?.length, isMapLoaded });
-
-        if (!selectedTreeId || !trees || !isMapLoaded) {
-            console.log('[MapComponent] Skipping zoom - missing requirements');
-            return;
-        }
+        if (!selectedTreeId || !trees || !isMapLoaded) return;
 
         const tree = trees.find(t => t.id === selectedTreeId);
-        console.log('[MapComponent] Found tree:', tree);
 
         if (tree && tree.latitude && tree.longitude) {
-            console.log('[MapComponent] Flying to selected tree:', { id: selectedTreeId, lat: tree.latitude, lng: tree.longitude });
             const map = mapRef.current?.getMap();
-            console.log('[MapComponent] Map instance:', !!map);
 
             if (map) {
-                console.log(`[MapComponent] Flying to: [${tree.longitude}, ${tree.latitude}]`);
                 map.flyTo({
                     center: [tree.longitude!, tree.latitude!],
                     zoom: 18,
                     duration: 1500
                 });
-                setTimeout(() => {
-                    console.log('[MapComponent] Setting selected tree for popup');
+
+                const timer = setTimeout(() => {
                     setSelectedTree(tree);
                     setHighlightedTree(tree);
-                    setTimeout(() => setHighlightedTree(null), 3000); // Clear highlight after 3s
+                    const highlightTimer = setTimeout(() => setHighlightedTree(null), 3000);
+                    return () => clearTimeout(highlightTimer);
                 }, 1600);
+
+                return () => clearTimeout(timer);
             }
-        } else {
-            console.log('[MapComponent] Tree not found or missing coordinates', { tree, selectedTreeId });
         }
     }, [selectedTreeId, trees, isMapLoaded]);
 
@@ -81,28 +73,15 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
         console.log('[MapComponent] Creating GeoJSON from trees:', trees.length);
 
         const features = trees
-            .filter(tree => {
-                const hasCoords = tree.latitude && tree.longitude;
-                if (!hasCoords) {
-                    console.log('[MapComponent] Tree missing coords:', tree.id, { lat: tree.latitude, lng: tree.longitude });
-                }
-                return hasCoords;
-            })
+            .filter(tree => tree.latitude && tree.longitude)
             .map(tree => {
                 const symbol = getTreeSymbol(tree);
-
-                console.log('[MapComponent] Adding tree to map:', {
-                    id: tree.id,
-                    lat: tree.latitude,
-                    lng: tree.longitude,
-                    species: tree.especie
-                });
 
                 return {
                     type: 'Feature' as const,
                     geometry: {
                         type: 'Point' as const,
-                        coordinates: [tree.longitude!, tree.latitude!]  // MapLibre expects [lng, lat]
+                        coordinates: [tree.longitude!, tree.latitude!]
                     },
                     properties: {
                         id: tree.id,
@@ -110,7 +89,6 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
                         color: symbol.color,
                         radius: symbol.radius,
                         riskLevel: symbol.riskLevel,
-                        // Store tree data for popup
                         altura: tree.altura,
                         pontuacao: tree.pontuacao,
                         dap: tree.dap,

@@ -1,0 +1,16 @@
+---
+description: MANDATORY - Use mgrep for all file searches and semantic discovery
+globs: **/*
+alwaysApply: true
+---
+
+# Search & Discovery Rule
+
+CRITICAL: All agents MUST use the `mgrep` tool as the primary method for discovering files and searching for code patterns within this project.
+
+## Instructions
+1.  **Prioritize mgrep:** Before using `grep_search` or `find_by_name`, you SHOULD use `mgrep` (semantic search) to locate logic.
+2.  **Semantic Context:** Use natural language queries in `mgrep` (e.g., `mgrep "where is the tree location handled?"`) to find relevant files.
+3.  **Path Filtering:** Narrow down searches by providing specific directories if known (e.g., `mgrep "notification logic" src/hooks`).
+
+This rule is mandatory to ensure all agents benefit from the semantic indexing provided by Mixedbread AI.

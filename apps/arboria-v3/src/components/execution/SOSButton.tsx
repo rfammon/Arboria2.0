@@ -29,26 +29,22 @@ export function SOSButton({ userId, className, taskId = null }: SOSButtonProps) 
 
     const handleSOS = async (type: AlertType, message: string) => {
         setIsSending(true);
-        // Get location
-        const location = undefined;
         try {
-            // Mock geolocation for component demo
-            // In real use, we'd use navigator.geolocation
-        } catch (e) { }
-
-        createAlert.mutate({
-            taskId,
-            userId,
-            type,
-            message,
-            location
-        }, {
-            onSuccess: () => {
-                setIsOpen(false);
-                setIsSending(false);
-            },
-            onError: () => setIsSending(false)
-        });
+            await createAlert.mutateAsync({
+                taskId,
+                userId,
+                type,
+                message,
+                location: undefined // Geolocation handled by backend/higher level if needed
+            });
+            setIsOpen(false);
+            toast.success('Alerta de SOS enviado!');
+        } catch (e) {
+            console.error('Erro ao enviar SOS:', e);
+            toast.error('Falha ao enviar alerta de SOS.');
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (

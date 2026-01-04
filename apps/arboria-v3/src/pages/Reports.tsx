@@ -6,10 +6,17 @@ import { ReportSelector, type ReportType } from '../components/reports/ReportSel
 import { ReportService } from '../api/reportService';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
+import { usePlans } from '../hooks/usePlans';
+import { useTrees } from '../hooks/useTrees';
 import { supabase } from '../lib/supabase';
+import { BackupService } from '../services/backupService';
+import { useRef } from 'react';
 
 export default function Reports() {
     const { activeInstallation } = useAuth();
+    const { plans } = usePlans();
+    const { data: trees = [] } = useTrees();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleGenerateReport = async (type: ReportType, selectedId?: string) => {
         if (!activeInstallation) {
@@ -28,8 +35,13 @@ export default function Reports() {
                         return;
                     }
                     toast.info('Gerando relatório de plano de intervenção...');
-                    pdfBlob = await ReportService.generateInterventionPlanReport(selectedId);
-                    filename = `Plano_Intervencao_${selectedId}.pdf`;
+                    const planBlob = await ReportService.generateInterventionPlanReport(selectedId);
+                    pdfBlob = new Blob([planBlob], { type: 'application/pdf' });
+
+                    // Try to find human readable ID
+                    const plan = (plans || []).find(p => p.id === selectedId);
+                    const planCode = plan?.plan_id || selectedId.slice(0, 8);
+                    filename = `Plano_${planCode}.pdf`;
                     break;
 
                 case 'tree-individual':
@@ -38,52 +50,62 @@ export default function Reports() {
                         return;
                     }
                     toast.info('Gerando ficha individual...');
-                    pdfBlob = await ReportService.generateTreeReport(selectedId);
-                    filename = `Arvore_${selectedId}.pdf`;
+                    const treeBlob = await ReportService.generateTreeReport(selectedId);
+                    pdfBlob = new Blob([treeBlob], { type: 'application/pdf' });
+
+                    const tree = (trees || []).find(t => t.id === selectedId);
+                    const treeCode = tree?.codigo || selectedId.slice(0, 8);
+                    filename = `Ficha_${treeCode}.pdf`;
                     break;
 
                 case 'schedule':
                     toast.info('Gerando cronograma...');
-                    pdfBlob = await ReportService.generateScheduleReport();
-                    filename = `Cronograma_${new Date().toISOString().split('T')[0]}.pdf`;
+                    const scheduleBlob = await ReportService.generateScheduleReport();
+                    pdfBlob = new Blob([scheduleBlob], { type: 'application/pdf' });
+                    filename = `Cronograma_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
                     break;
 
                 case 'risk-inventory':
                 default:
                     toast.info('Gerando inventário de risco...');
                     // Fetch trees for the installation
-                    const { data: trees } = await supabase
+                    const { data: treesData } = await supabase
                         .from('arvores')
                         .select('*')
                         .eq('instalacao_id', activeInstallation.id)
                         .is('deleted_at', null);
 
-                    if (!trees) throw new Error('Falha ao carregar dados das árvores');
+                    if (!treesData) throw new Error('Falha ao carregar dados das árvores');
 
                     // Calculate stats
                     const stats = {
-                        totalTrees: trees.length,
-                        highRiskCount: trees.filter(t => t.risklevel === 'Alto').length,
-                        totalSpecies: new Set(trees.map(t => t.especie)).size,
-                        avgDap: trees.reduce((acc, t) => acc + (t.dap || 0), 0) / (trees.length || 1),
-                        avgHeight: trees.reduce((acc, t) => acc + (t.altura || 0), 0) / (trees.length || 1)
+                        totalTrees: treesData.length,
+                        highRiskCount: treesData.filter(t => t.risklevel === 'Alto').length,
+                        totalSpecies: new Set(treesData.map(t => t.especie)).size,
+                        avgDap: treesData.reduce((acc, t) => acc + (t.dap || 0), 0) / (treesData.length || 1),
+                        avgHeight: treesData.reduce((acc, t) => acc + (t.altura || 0), 0) / (treesData.length || 1)
                     };
 
                     const payload = {
                         installation: activeInstallation,
-                        trees: trees,
+                        trees: treesData,
                         stats: stats
                     };
-                    pdfBlob = await ReportService.generateRiskInventoryReport(payload);
-                    filename = `Relatorio_${activeInstallation.nome?.replace(/\s+/g, '_') || 'Inventario'}.pdf`;
+                    const inventoryBlob = await ReportService.generateRiskInventoryReport(payload);
+                    pdfBlob = new Blob([inventoryBlob], { type: 'application/pdf' });
+
+                    const safeInstallName = activeInstallation.nome?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_');
+                    filename = `Inventario_Risco_${safeInstallName || 'Geral'}.pdf`;
                     break;
             }
 
             // Download PDF
+            console.log('Downloading PDF:', filename, 'Size:', pdfBlob.size);
             const url = window.URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', filename);
+            link.download = filename;
+            link.setAttribute('download', filename); // Double insurance
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -97,9 +119,39 @@ export default function Reports() {
         }
     };
 
-    const handleAction = (action: string) => {
-        toast.info(`Ação iniciada: ${action}`);
-        // Implement actual logic later
+    const handleAction = async (action: string) => {
+        try {
+            switch (action) {
+                case 'Exportar CSV':
+                    toast.info('Iniciando exportação CSV...');
+                    await BackupService.exportTreesCSV(activeInstallation?.id);
+                    break;
+                case 'Baixar Backup':
+                    toast.info('Gerando backup ZIP...');
+                    await BackupService.exportData(activeInstallation?.id);
+                    break;
+                case 'Importar Dados':
+                    fileInputRef.current?.click();
+                    break;
+            }
+        } catch (error: any) {
+            console.error(`Action ${action} failed:`, error);
+            toast.error(`Falha na ação: ${error.message}`);
+        }
+    };
+
+    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        toast.info('Iniciando importação de backup...');
+        try {
+            await BackupService.importData(file);
+            // Clear input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        } catch (error: any) {
+            toast.error(`Erro na importação: ${error.message}`);
+        }
     };
 
     return (
@@ -198,6 +250,15 @@ export default function Reports() {
                     </div>
                 </TabsContent>
             </Tabs>
+
+            {/* Hidden Input for Backup Import */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".zip"
+                onChange={handleImportFile}
+            />
         </div>
     );
 }

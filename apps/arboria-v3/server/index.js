@@ -43,15 +43,11 @@ app.post('/generate-report', async (req, res) => {
     }
 
     let browser;
+    let page;
     try {
         console.log('Launching Puppeteer browser (Per-Request)...');
-        browser = await getBrowser(); // Use the shared config function
-
-
-        console.log('Puppeteer launched successfully.');
-
-
-        const page = await browser.newPage();
+        browser = await getBrowser();
+        page = await browser.newPage();
 
         // Debugging: Pipe browser logs to Node console
         page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
@@ -355,6 +351,7 @@ app.post('/generate-pdf-from-html', async (req, res) => {
     }
 
     let browser;
+    let page;
     try {
         console.log('Using per-request browser...');
         browser = await getBrowser();
@@ -458,8 +455,8 @@ app.post('/generate-pdf-from-html', async (req, res) => {
 </html>
         `;
 
-        // Use domcontentloaded for stability - waiting for all tiles (load/networkidle) is risky
-        await page.setContent(fullHtml, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        // Use networkidle0 for stability - ensure all assets/tiles are loaded
+        await page.setContent(fullHtml, { waitUntil: 'networkidle0', timeout: 60000 });
 
         try {
             if (mapData && mapData.containerId) {

@@ -170,6 +170,25 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
         }
     };
 
+    const handleDeleteWorkOrder = async (woId: string) => {
+        if (!confirm('Tem certeza que deseja apagar esta Ordem de Serviço? This action is irreversible.')) return;
+
+        try {
+            await executionService.deleteWorkOrder(woId);
+            toast({
+                title: 'O.S. Removida',
+                description: 'A ordem de serviço foi excluída com sucesso.',
+            });
+            if (onUpdate) onUpdate();
+        } catch (error) {
+            toast({
+                title: 'Erro ao remover',
+                description: error instanceof Error ? error.message : 'Falha ao excluir O.S.',
+                variant: 'destructive'
+            });
+        }
+    };
+
     const icon = INTERVENTION_ICONS[plan.intervention_type] || '📌';
     const color = INTERVENTION_COLORS[plan.intervention_type] || '#666';
     const daysUntil = getDaysUntilExecution(plan.schedule);
@@ -327,43 +346,84 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
-                            {plan.work_orders.map((wo, idx) => (
-                                <div key={wo.id || idx} className="flex justify-between items-center p-3 bg-muted rounded-md border">
-                                    <div className="flex flex-col">
-                                        <span className="font-semibold text-sm">O.S. #{wo.id ? wo.id.slice(0, 8) : 'N/A'}</span>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Badge variant={
-                                                wo.status === 'COMPLETED' ? 'default' :
-                                                    wo.status === 'IN_PROGRESS' ? 'secondary' :
-                                                        wo.status === 'CANCELLED' ? 'destructive' : 'outline'
-                                            }>
-                                                {wo.status === 'COMPLETED' ? 'Concluída' :
-                                                    wo.status === 'IN_PROGRESS' ? 'Em Andamento' :
-                                                        wo.status === 'CANCELLED' ? 'Cancelada' : wo.status}
-                                            </Badge>
-                                            {wo.tasks && wo.tasks.length > 0 && (
-                                                <span className="text-xs text-muted-foreground">
-                                                    Progresso Médio: {Math.round(wo.tasks.reduce((acc, t) => acc + (t.progress_percent || 0), 0) / wo.tasks.length)}%
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Reopen Action */}
-                                    {isManager && (wo.status === 'COMPLETED' || wo.status === 'CANCELLED') && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="ml-2 gap-1 text-orange-600 border-orange-200 hover:bg-orange-50"
-                                            onClick={() => handleOpenReopenDialog(wo.id)}
-                                        >
-                                            <RotateCcw className="w-3.5 h-3.5" />
-                                            Reabrir
-                                        </Button>
-                                    )}
+                        <div className="space-y-6">
+                            {/* Pending / In Progress Group */}
+                            {plan.work_orders.some(wo => wo.status !== 'COMPLETED' && wo.status !== 'CANCELLED') && (
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">Tarefas Pendentes ou em Andamento</h4>
+                                    {plan.work_orders
+                                        .filter(wo => wo.status !== 'COMPLETED' && wo.status !== 'CANCELLED')
+                                        .map((wo, idx) => (
+                                            <div key={wo.id || idx} className="flex justify-between items-center p-3 bg-muted/30 rounded-md border hover:border-primary/50 transition-colors group">
+                                                <div className="flex flex-col cursor-pointer flex-1" onClick={() => navigate && (window.location.hash = `#/execution/${wo.id}`)}>
+                                                    <span className="font-semibold text-sm group-hover:text-primary">O.S. #{wo.id ? wo.id.slice(0, 8) : 'N/A'}</span>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Badge variant={wo.status === 'IN_PROGRESS' ? 'secondary' : 'outline'}>
+                                                            {wo.status === 'IN_PROGRESS' ? 'Em Andamento' : 'Pendente'}
+                                                        </Badge>
+                                                        {wo.tasks && wo.tasks.length > 0 && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {Math.round(wo.tasks.reduce((acc, t) => acc + (t.progress_percent || 0), 0) / wo.tasks.length)}%
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                        onClick={() => handleDeleteWorkOrder(wo.id)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
                                 </div>
-                            ))}
+                            )}
+
+                            {/* Completed Group */}
+                            {plan.work_orders.some(wo => wo.status === 'COMPLETED' || wo.status === 'CANCELLED') && (
+                                <div className="space-y-3 pt-2">
+                                    <h4 className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-2">Tarefas Finalizadas</h4>
+                                    {plan.work_orders
+                                        .filter(wo => wo.status === 'COMPLETED' || wo.status === 'CANCELLED')
+                                        .map((wo, idx) => (
+                                            <div key={wo.id || idx} className="flex justify-between items-center p-3 bg-green-50/10 rounded-md border opacity-80 group">
+                                                <div className="flex flex-col cursor-pointer flex-1" onClick={() => navigate && (window.location.hash = `#/execution/${wo.id}`)}>
+                                                    <span className="font-semibold text-sm group-hover:text-primary">O.S. #{wo.id ? wo.id.slice(0, 8) : 'N/A'}</span>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Badge variant={wo.status === 'COMPLETED' ? 'default' : 'destructive'}>
+                                                            {wo.status === 'COMPLETED' ? 'Concluída' : 'Cancelada'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {isManager && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-8 gap-1 text-orange-600 border-orange-200 hover:bg-orange-50"
+                                                            onClick={() => handleOpenReopenDialog(wo.id)}
+                                                        >
+                                                            <RotateCcw className="w-3.5 h-3.5" />
+                                                            Reabrir
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                        onClick={() => handleDeleteWorkOrder(wo.id)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
