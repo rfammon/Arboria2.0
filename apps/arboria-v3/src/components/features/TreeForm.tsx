@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { treeSchema, type TreeFormData } from '../../lib/validations/treeSchema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Save, X } from 'lucide-react';
+import { Save, X, TreeDeciduous } from 'lucide-react';
 import { useTRAQCriteria } from '../../hooks/useTRAQCriteria';
 import { toast } from 'sonner';
 import { useTreeMutations } from '../../hooks/useTreeMutations';
@@ -12,6 +12,12 @@ import { supabase } from '../../lib/supabase';
 import { DimensionSection } from './sections/DimensionSection';
 import { LocationSection } from './sections/LocationSection';
 import { RiskAssessmentSection } from './sections/RiskAssessmentSection';
+import { PhotoSection } from './sections/PhotoSection';
+import { compressPhoto, extractExifData } from '../../lib/photoCompression';
+import { uploadService } from '../../services/uploadService';
+import { offlineQueue } from '../../lib/offlineQueue';
+import { useAuth } from '../../context/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TreeFormProps {
     onClose: () => void;
@@ -23,6 +29,9 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingTree, setIsLoadingTree] = useState(false);
     const { criteria } = useTRAQCriteria();
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const { activeInstallation, user } = useAuth();
+    const queryClient = useQueryClient();
 
     const { register, handleSubmit, setValue, watch, formState: { errors }, reset } = useForm<TreeFormData>({
         resolver: zodResolver(treeSchema as any),
@@ -67,13 +76,91 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
         console.log('[TreeForm] onSubmit called with:', formData);
         setIsSubmitting(true);
         try {
+            let finalTreeId = treeId;
+            let isNewTree = false;
+
             if (treeId) {
                 await updateTree.mutateAsync({ id: treeId, data: formData });
                 toast.success('Árvore atualizada com sucesso!');
             } else {
-                await createTree.mutateAsync(formData);
+                const newTree = await createTree.mutateAsync(formData);
+                // Assumption: createTree returns the created object with an ID. 
+                // If it returns void/null, we have a problem. Checking useTreeMutations usage elsewhere might be needed, 
+                // but usually mutations return the data. 
+                // Based on standard implementation, it likely returns the row.
+                if (newTree && newTree.id) {
+                    finalTreeId = newTree.id;
+                    isNewTree = true;
+                }
                 toast.success('Árvore cadastrada com sucesso!');
             }
+
+            // Handle Photo Upload if a file exists and we have a valid tree ID
+            if (photoFile && finalTreeId && activeInstallation && user) {
+                toast.loading('Processando foto...');
+                try {
+                    // 1. Compress
+                    const compressionResult = await compressPhoto(photoFile);
+
+                    // 2. EXIF
+                    const exifData = await extractExifData(photoFile);
+
+                    // 3. Path
+                    const timestamp = new Date().getTime();
+                    const random = Math.random().toString(36).substring(7);
+                    const filename = `${timestamp}_${random}.jpg`;
+                    const storagePath = `${activeInstallation.id}/trees/${finalTreeId}/${filename}`;
+
+                    const metadata = {
+                        file_size: compressionResult.compressedSize,
+                        mime_type: 'image/jpeg',
+                        gps_latitude: exifData?.latitude || null,
+                        gps_longitude: exifData?.longitude || null,
+                        captured_at: exifData?.timestamp?.toISOString() || new Date().toISOString(),
+                        uploaded_by: user.id,
+                    };
+
+                    // 4. Upload or Queue
+                    if (!navigator.onLine) {
+                        await offlineQueue.add('SYNC_PHOTO', {
+                            file: compressionResult.compressedFile,
+                            treeId: finalTreeId,
+                            installationId: activeInstallation.id,
+                            storagePath,
+                            filename,
+                            metadata
+                        });
+                        toast.success('Foto salva offline! Será enviada quando houver conexão.');
+                    } else {
+                        toast.loading('Enviando foto...');
+                        const uploadResult = await uploadService.uploadTreePhoto(
+                            compressionResult.compressedFile,
+                            finalTreeId,
+                            activeInstallation.id,
+                            storagePath,
+                            filename,
+                            metadata
+                        );
+
+                        if (!uploadResult.success) {
+                            throw new Error(uploadResult.error?.message || 'Falha no upload');
+                        }
+
+                        toast.dismiss();
+                        toast.success('Foto enviada com sucesso!');
+
+                        // Invalidate queries to show new photo immediately if we were to stay on page
+                        queryClient.invalidateQueries({ queryKey: ['tree-photos', finalTreeId] });
+                    }
+
+                } catch (photoError) {
+                    console.error('Error uploading photo:', photoError);
+                    toast.dismiss();
+                    // Don't block the whole success if photo fails, just warn
+                    toast.error('Árvore salva, mas houve erro ao enviar a foto.');
+                }
+            }
+
             onClose();
         } catch (error) {
             console.error('Submit error:', error);
@@ -84,43 +171,72 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
     };
 
     return (
-        <div className="p-6 h-full flex flex-col overflow-hidden font-inter">
-            <div className="flex justify-between items-center mb-6 shrink-0">
-                <h2 className="text-2xl font-bold">{treeId ? 'Editar Árvore' : 'Cadastrar Nova Árvore'}</h2>
-                <Button variant="ghost" size="icon" onClick={onClose} type="button">
-                    <X className="w-5 h-5" />
-                </Button>
+        <div className="h-full flex flex-col overflow-hidden bg-background">
+            {/* Enhanced Header */}
+            <div className="shrink-0 px-6 py-5 border-b border-border/50 bg-muted/20">
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-primary/10">
+                            <TreeDeciduous className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-foreground">
+                                {treeId ? 'Editar Árvore' : 'Cadastrar Nova Árvore'}
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                {treeId ? 'Atualize as informações desta árvore' : 'Preencha os dados da nova árvore'}
+                            </p>
+                        </div>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={onClose} type="button" className="shrink-0">
+                        <X className="w-5 h-5" />
+                    </Button>
+                </div>
             </div>
 
+            {/* Form Content */}
             <form onSubmit={handleSubmit(onSubmit, (errors) => {
                 console.error('[TreeForm] Validation errors:', errors);
                 toast.error('Verifique os campos obrigatórios');
-            })} className="space-y-6 overflow-y-auto flex-1 pr-2">
-                <div className="space-y-4">
-                    {/* Espécie */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">Espécie *</label>
-                        <Input
-                            placeholder="Nome científico ou comum"
-                            {...register('especie')}
-                        />
-                        {errors.especie && (
-                            <p className="text-sm text-destructive">{errors.especie.message}</p>
-                        )}
+            })} className="flex-1 overflow-y-auto">
+                <div className="p-6 space-y-6">
+                    {/* Basic Information */}
+                    <div className="space-y-5">
+                        {/* Espécie */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">
+                                Espécie <span className="text-destructive">*</span>
+                            </label>
+                            <Input
+                                placeholder="Nome científico ou comum"
+                                {...register('especie')}
+                                className="h-12 text-base"
+                                autoFocus
+                            />
+                            {errors.especie && (
+                                <p className="text-sm text-destructive flex items-center gap-1">
+                                    {errors.especie.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Data */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">
+                                Data do Cadastro <span className="text-destructive">*</span>
+                            </label>
+                            <Input
+                                type="date"
+                                {...register('data')}
+                                className="h-12 text-base"
+                            />
+                            {errors.data && (
+                                <p className="text-sm text-destructive">{errors.data.message}</p>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Data */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">Data *</label>
-                        <Input
-                            type="date"
-                            {...register('data')}
-                        />
-                        {errors.data && (
-                            <p className="text-sm text-destructive">{errors.data.message}</p>
-                        )}
-                    </div>
-
+                    {/* Sections */}
                     <DimensionSection
                         register={register}
                         setValue={setValue}
@@ -137,24 +253,47 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                         setValue={setValue}
                         criteria={criteria}
                     />
+
+                    <PhotoSection
+                        onPhotoCaptured={setPhotoFile}
+                    />
+
+                    {/* Observações - Optional Field */}
+                    <div className="space-y-6 pt-6 border-t border-border/50">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">
+                                Observações
+                            </label>
+                            <textarea
+                                {...register('observacoes')}
+                                placeholder="Estado fitossanitário, interferências, características especiais..."
+                                className="flex w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[100px] resize-none"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Campo opcional para informações adicionais
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex justify-end pt-4 border-t gap-2 sticky bottom-0 bg-background pb-2 sm:pb-0">
+                {/* Footer Actions */}
+                <div className="shrink-0 px-6 py-4 border-t border-border/50 bg-muted/20 flex justify-end gap-3">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={onClose}
                         disabled={isLoadingTree || isSubmitting}
+                        className="min-w-[100px]"
                     >
                         Cancelar
                     </Button>
                     <Button
                         type="submit"
                         disabled={isSubmitting || isLoadingTree}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[140px]"
                     >
                         <Save className="w-4 h-4 mr-2" />
-                        {isLoadingTree ? 'Carregando...' : isSubmitting ? 'Salvando...' : treeId ? 'Atualizar Árvore' : 'Salvar Árvore'}
+                        {isLoadingTree ? 'Carregando...' : isSubmitting ? 'Salvando...' : treeId ? 'Atualizar' : 'Salvar Árvore'}
                     </Button>
                 </div>
             </form>

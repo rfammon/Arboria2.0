@@ -200,26 +200,30 @@ export function calculateResidualRisk(
 export const RISK_PROFILES = {
     Baixo: {
         class: 'risk-low',
-        color: '#4caf50',
-        bgColor: '#e8f5e9',
+        color: '#4caf50', // Legacy: keep for map markers if needed
+        bgColor: '#e8f5e9', // Legacy
+        className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800',
         icon: '✓'
     },
     Moderado: {
         class: 'risk-medium',
         color: '#ff9800',
         bgColor: '#fff3e0',
+        className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800',
         icon: '⚠'
     },
     Alto: {
         class: 'risk-high',
         color: '#f44336',
         bgColor: '#ffebee',
+        className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800',
         icon: '!'
     },
     Extremo: {
         class: 'risk-extreme',
         color: '#9c27b0',
         bgColor: '#f3e5f5',
+        className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800',
         icon: '‼'
     }
 } as const;

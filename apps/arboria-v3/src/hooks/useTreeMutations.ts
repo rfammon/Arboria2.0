@@ -25,10 +25,31 @@ export const useTreeMutations = () => {
                 return { id: tempId, status: 'queued' };
             }
 
+            // Get current user and installation from auth context
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                throw new Error('Usuário não autenticado');
+            }
+
+            // Get active installation from localStorage
+            const activeInstallationId = localStorage.getItem('arboria_active_installation');
+            if (!activeInstallationId) {
+                throw new Error('Nenhuma instalação ativa selecionada');
+            }
+
+            // Add required fields for RLS policy
+            const payload = {
+                ...treeData,
+                user_id: user.id,
+                instalacao_id: activeInstallationId
+            };
+
+            console.log('[useTreeMutations] Creating tree with payload:', payload);
+
             // Online execution
             const { data, error } = await supabase
                 .from('arvores')
-                .insert(treeData)
+                .insert(payload)
                 .select()
                 .single();
 

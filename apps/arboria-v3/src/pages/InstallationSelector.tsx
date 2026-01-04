@@ -63,6 +63,7 @@ export default function InstallationSelector() {
         <div className="flex items-center justify-center min-h-screen bg-background px-4 py-8">
             <div className="w-full max-w-4xl">
                 <div className="text-center mb-8">
+                    <img src="/logo.png" alt="Arboria Logo" className="h-20 w-auto mx-auto mb-4" />
                     <h1 className="text-3xl font-bold">
                         <span className="text-blue-600 dark:text-blue-500">Arbor</span>
                         <span className="text-green-600 dark:text-green-500">IA</span>

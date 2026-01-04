@@ -169,9 +169,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .join(', ') || 'Membro';
 
     const hasPermission = (permission: string) => {
-        // 'global_access' (Mestre) bypasses checks
-        if (permissions.includes('global_access')) return true;
-        return permissions.includes(permission);
+        if (!permissions) {
+            // console.debug('[AuthContext] Permissions not loaded yet');
+            return false;
+        }
+
+        const has = permissions.includes(permission) || permissions.includes('global_access');
+        return has;
     };
 
     const value = {

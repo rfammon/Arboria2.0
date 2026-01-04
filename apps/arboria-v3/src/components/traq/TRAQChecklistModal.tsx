@@ -59,9 +59,34 @@ export function TRAQChecklistModal({
         newFactors[index] = !newFactors[index];
         setRiskFactors(newFactors);
 
-        // Auto-advance se marcou SIM
+        // Auto-advance se marcou SIM (sem toast)
         if (newFactors[index] && index < criteria.length - 1) {
             setTimeout(() => setCurrentIndex(index + 1), 600);
+        }
+    };
+
+    const handleStepClick = (stepName: FlashcardStep) => {
+        // Permitir navegação apenas para etapas já visitadas ou próxima etapa
+        const stepOrder: FlashcardStep[] = ['checklist', 'target', 'risk', 'confirm'];
+        const currentStepIndex = stepOrder.indexOf(step);
+        const targetStepIndex = stepOrder.indexOf(stepName);
+
+        // Permitir voltar para qualquer etapa anterior ou avançar para a próxima
+        if (targetStepIndex <= currentStepIndex + 1) {
+            if (stepName === 'checklist') {
+                setStep('checklist');
+                setCurrentIndex(0);
+            } else if (stepName === 'target') {
+                setStep('target');
+            } else if (stepName === 'risk') {
+                if (!targetCategory) {
+                    alert('Por favor, selecione a taxa de ocupação do alvo primeiro');
+                    return;
+                }
+                setStep('risk');
+            } else if (stepName === 'confirm') {
+                setStep('confirm');
+            }
         }
     };
 
@@ -159,22 +184,31 @@ export function TRAQChecklistModal({
                     </div>
                 </CardHeader>
 
-                {/* Stepper Visual */}
-                <div className="flex items-center justify-between px-8 py-4 bg-gray-50 dark:bg-gray-900">
+                {/* Stepper Visual - Clickable */}
+                <div className="flex items-center justify-between px-8 py-4 bg-muted/30 border-b">
                     {['Checklist', 'Alvo', 'Risco', 'Confirmar'].map((label, idx) => {
-                        const stepIndex = ['checklist', 'target', 'risk', 'confirm'].indexOf(step);
+                        const stepNames: FlashcardStep[] = ['checklist', 'target', 'risk', 'confirm'];
+                        const stepIndex = stepNames.indexOf(step);
                         const isActive = idx === stepIndex;
                         const isCompleted = idx < stepIndex;
+                        const isClickable = idx <= stepIndex + 1; // Pode clicar em etapas anteriores ou próxima
 
                         return (
                             <div key={label} className="flex items-center">
-                                <div className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-colors ${isCompleted ? 'bg-green-500 text-white' :
-                                    isActive ? 'bg-blue-600 text-white' :
-                                        'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                                    }`}>
+                                <button
+                                    type="button"
+                                    onClick={() => isClickable && handleStepClick(stepNames[idx])}
+                                    disabled={!isClickable}
+                                    className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all ${isCompleted ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer' :
+                                        isActive ? 'bg-primary text-primary-foreground cursor-default' :
+                                            isClickable ? 'bg-muted-foreground/30 text-muted-foreground hover:bg-muted-foreground/50 cursor-pointer' :
+                                                'bg-muted text-muted-foreground/50 cursor-not-allowed'
+                                        } ${isClickable && !isActive ? 'hover:scale-110' : ''}`}
+                                    title={isClickable ? `Ir para ${label}` : 'Não disponível ainda'}
+                                >
                                     {isCompleted ? <Check className="h-5 w-5" /> : idx + 1}
-                                </div>
-                                {idx < 3 && <div className={`w-16 h-1 mx-2 ${idx < stepIndex ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-700'
+                                </button>
+                                {idx < 3 && <div className={`w-16 h-1 mx-2 ${idx < stepIndex ? 'bg-green-500' : 'bg-muted'
                                     }`} />}
                             </div>
                         );
@@ -199,18 +233,30 @@ export function TRAQChecklistModal({
                             </div>
 
                             <div className="flex flex-col items-center gap-4 my-8">
-                                <Checkbox
-                                    id={`criteria-${currentIndex}`}
-                                    checked={riskFactors[currentIndex]}
-                                    onCheckedChange={() => handleToggle(currentIndex)}
-                                    className="w-20 h-20 rounded-xl"
-                                />
-                                <Label
-                                    htmlFor={`criteria-${currentIndex}`}
-                                    className="text-3xl font-bold cursor-pointer"
+                                <Button
+                                    type="button"
+                                    variant={riskFactors[currentIndex] ? "destructive" : "outline"}
+                                    size="lg"
+                                    onClick={() => handleToggle(currentIndex)}
+                                    className={`h-20 w-48 text-xl font-bold rounded-xl transition-all ${riskFactors[currentIndex]
+                                        ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/20'
+                                        : 'hover:bg-accent text-muted-foreground border-2'
+                                        }`}
                                 >
-                                    {riskFactors[currentIndex] ? '✓ SIM' : '✗ NÃO'}
-                                </Label>
+                                    {riskFactors[currentIndex] ? (
+                                        <span className="flex items-center gap-2">
+                                            <X className="w-6 h-6" /> SIM
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center text-xs"></span>
+                                            NÃO
+                                        </span>
+                                    )}
+                                </Button>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    O fator de risco está presente?
+                                </p>
                             </div>
 
                             <div className="flex items-center justify-center gap-4 text-sm">
@@ -288,8 +334,9 @@ export function TRAQChecklistModal({
                 </CardContent>
 
                 {/* Footer */}
-                <div className="flex justify-between p-6 border-t bg-gray-50 dark:bg-gray-900">
+                <div className="flex justify-between p-6 border-t bg-muted/30">
                     <Button
+                        type="button"
                         variant="outline"
                         onClick={handlePrev}
                         disabled={step === 'checklist' && currentIndex === 0}
@@ -299,12 +346,12 @@ export function TRAQChecklistModal({
                     </Button>
 
                     {step !== 'confirm' ? (
-                        <Button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700">
+                        <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90">
                             {step === 'checklist' && currentIndex === criteria.length - 1 ? 'Avançar para Alvo' : 'Próximo'}
                             <ChevronRight className="h-4 w-4 ml-2" />
                         </Button>
                     ) : (
-                        <Button onClick={handleComplete} className="bg-green-600 hover:bg-green-700">
+                        <Button type="button" onClick={handleComplete} className="bg-green-600 hover:bg-green-700">
                             <Check className="h-4 w-4 mr-2" />
                             Confirmar e Salvar
                         </Button>
@@ -360,16 +407,15 @@ function RiskAnalysisStep({
                 </Card>
 
                 <Card
-                    className="p-2 text-center border-2 flex flex-col justify-center items-center"
-                    style={{ backgroundColor: RISK_PROFILES[initialRisk].bgColor }}
+                    className={`p-2 text-center border-2 flex flex-col justify-center items-center ${RISK_PROFILES[initialRisk].className}`}
                 >
-                    <div className="text-[10px] sm:text-sm mb-1 leading-tight" style={{ color: RISK_PROFILES[initialRisk].color }}>
+                    <div className="text-[10px] sm:text-sm mb-1 leading-tight font-medium opacity-80">
                         <strong>Risco<br className="sm:hidden" /> Inicial</strong>
                     </div>
-                    <div className="text-lg sm:text-2xl font-bold leading-none my-1" style={{ color: RISK_PROFILES[initialRisk].color }}>
+                    <div className="text-lg sm:text-2xl font-bold leading-none my-1">
                         {initialRisk}
                     </div>
-                    <div className="text-xs sm:text-sm" style={{ color: RISK_PROFILES[initialRisk].color }}>
+                    <div className="text-xs sm:text-sm">
                         {RISK_PROFILES[initialRisk].icon}
                     </div>
                 </Card>
@@ -408,15 +454,15 @@ function RiskAnalysisStep({
                 </Select>
 
                 {mitigationAction !== 'nenhuma' && (
-                    <Card className="p-4" style={{ backgroundColor: RISK_PROFILES[residualRisk].bgColor }}>
+                    <Card className={`p-4 border-2 ${RISK_PROFILES[residualRisk].className}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <div className="text-sm text-gray-600 dark:text-gray-400">Risco Residual (após mitigação)</div>
-                                <div className="text-xl font-bold mt-1" style={{ color: RISK_PROFILES[residualRisk].color }}>
+                                <div className="text-sm font-medium opacity-80">Risco Residual (após mitigação)</div>
+                                <div className="text-xl font-bold mt-1">
                                     {residualRisk}
                                 </div>
                             </div>
-                            <div className="text-3xl" style={{ color: RISK_PROFILES[residualRisk].color }}>
+                            <div className="text-3xl">
                                 {RISK_PROFILES[residualRisk].icon}
                             </div>
                         </div>
@@ -462,7 +508,7 @@ function ConfirmationStep({
                 </p>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg space-y-3 text-left max-w-md mx-auto">
+            <div className="bg-muted/40 p-6 rounded-lg space-y-3 text-left max-w-md mx-auto">
                 <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Fatores de Risco:</span>
                     <span className="font-semibold">{riskFactorsCount} marcados</span>
@@ -482,7 +528,7 @@ function ConfirmationStep({
                 <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" />
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400">Risco Inicial:</span>
-                    <span className="font-bold text-lg" style={{ color: RISK_PROFILES[initialRisk].color }}>
+                    <span className={`font-bold text-lg px-2 py-0.5 rounded ${RISK_PROFILES[initialRisk].className}`}>
                         {initialRisk}
                     </span>
                 </div>
@@ -493,7 +539,7 @@ function ConfirmationStep({
                 {mitigationAction !== 'nenhuma' && (
                     <div className="flex justify-between items-center">
                         <span className="text-gray-600 dark:text-gray-400">Risco Residual:</span>
-                        <span className="font-bold text-lg" style={{ color: RISK_PROFILES[residualRisk].color }}>
+                        <span className={`font-bold text-lg px-2 py-0.5 rounded ${RISK_PROFILES[residualRisk].className}`}>
                             {residualRisk}
                         </span>
                     </div>

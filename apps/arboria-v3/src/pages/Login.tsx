@@ -119,8 +119,8 @@ export default function Login() {
             <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 animate-in fade-in zoom-in-95 duration-500">
                 <div className="w-full max-w-[400px] space-y-8">
                     <div className="text-center space-y-3">
-                        <div className="h-20 w-20 bg-gradient-to-br from-primary to-emerald-800 rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-primary/20 mb-6 rotate-3 transform transition-transform hover:rotate-0 duration-300">
-                            <Trees className="h-10 w-10 text-primary-foreground drop-shadow-md" />
+                        <div className="h-28 w-28 flex items-center justify-center mx-auto mb-6 hover:scale-105 transition-transform duration-300">
+                            <img src="/logo.png" alt="Arboria Logo" className="w-full h-full object-contain drop-shadow-2xl" />
                         </div>
                         <h1 className="text-5xl font-black tracking-tighter text-foreground font-display">
                             Arbor<span className="text-primary italic">IA</span>

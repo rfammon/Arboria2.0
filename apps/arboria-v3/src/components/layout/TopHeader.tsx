@@ -43,7 +43,8 @@ export function TopHeader({ onMenuClick, onToggleSidebar, isSidebarCollapsed }: 
 
                 <GlobalSearch />
 
-                <span className="text-lg font-semibold lg:hidden">
+                <span className="text-lg font-semibold lg:hidden flex items-center gap-2">
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
                     <span className="text-blue-600 dark:text-blue-500">Arbor</span>
                     <span className="text-green-600 dark:text-green-500">IA</span>
                 </span>

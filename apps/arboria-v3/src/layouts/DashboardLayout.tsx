@@ -111,7 +111,7 @@ export default function DashboardLayout() {
                         "h-16 flex items-center border-b border-border transition-all duration-300",
                         isSidebarCollapsed ? "px-5 justify-center" : "px-6"
                     )}>
-                        <TreeDeciduous className="w-8 h-8 text-green-600 dark:text-green-500 shrink-0" />
+                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
                         {!isSidebarCollapsed && (
                             <div className="flex flex-col flex-1 min-w-0 ml-2 animate-in fade-in duration-300">
                                 <span className="text-xl font-bold leading-none">
