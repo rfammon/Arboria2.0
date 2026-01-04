@@ -134,7 +134,7 @@ export default function DashboardLayout() {
 
 
                     {/* Nav */}
-                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
                         {navigation.map((item) => {
                             const isActive = location.pathname === item.href;
                             return (
