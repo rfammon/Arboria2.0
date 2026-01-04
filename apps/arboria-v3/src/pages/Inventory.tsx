@@ -63,9 +63,9 @@ export default function Inventory() {
 
     return (
         <PageContainer>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold tracking-tight">Inventário</h1>
+                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Inventário</h1>
                     <SyncStatusIndicator />
                 </div>
                 <p className="text-muted-foreground">Gerencie e monitorize o arvoredo urbano.</p>
@@ -84,14 +84,14 @@ export default function Inventory() {
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-card text-card-foreground p-4 rounded-lg shadow-sm border border-border space-y-4">
+            <div className="bg-card/70 backdrop-blur-md p-4 rounded-2xl shadow-[var(--shadow-soft)] border border-white/10 space-y-4 mb-6">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                         <input
                             type="text"
                             placeholder="Buscar por nome, espécie ou ID..."
-                            className="pl-10 w-full h-[var(--input-height,40px)] rounded-md border border-input bg-background/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none p-2 text-foreground placeholder:text-muted-foreground"
+                            className="pl-10 w-full h-[var(--input-height,40px)] rounded-xl border border-input/50 bg-background/50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none p-2 text-foreground placeholder:text-muted-foreground transition-all"
                             value={filters.search}
                             onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                         />
@@ -102,13 +102,13 @@ export default function Inventory() {
                         Filtros
                     </FieldAction>
 
-                    <div className="flex bg-muted p-1 rounded-md">
+                    <div className="flex bg-muted/50 p-1.5 rounded-xl border border-white/5">
                         <button
                             onClick={() => setViewMode('list')}
                             className={cn(
-                                "px-4 py-1.5 rounded-sm text-sm font-medium transition-colors",
+                                "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all",
                                 viewMode === 'list'
-                                    ? "bg-background shadow text-foreground"
+                                    ? "bg-background shadow-md text-foreground scale-105"
                                     : "text-muted-foreground hover:text-foreground"
                             )}
                         >
@@ -117,9 +117,9 @@ export default function Inventory() {
                         <button
                             onClick={() => setViewMode('map')}
                             className={cn(
-                                "px-4 py-1.5 rounded-sm text-sm font-medium transition-colors",
+                                "px-4 py-1.5 rounded-lg text-sm font-semibold transition-all",
                                 viewMode === 'map'
-                                    ? "bg-background shadow text-foreground"
+                                    ? "bg-background shadow-md text-foreground scale-105"
                                     : "text-muted-foreground hover:text-foreground"
                             )}
                         >
@@ -130,7 +130,7 @@ export default function Inventory() {
             </div>
 
             {/* Content Area */}
-            <div className="bg-card rounded-lg border border-border min-h-[500px] flex flex-col overflow-hidden">
+            <div className="bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 min-h-[500px] flex flex-col overflow-hidden shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-deep)]">
                 {viewMode === 'list' ? (
                     <InventoryList onCreate={() => setIsFormOpen(true)} />
                 ) : (

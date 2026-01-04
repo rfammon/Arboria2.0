@@ -140,9 +140,9 @@ export default function Execution() {
         <TabsTrigger
             value={value}
             className={cn(
-                "flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-slate-600 shadow-sm transition-all",
-                "data-[state=active]:border-primary/20 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-md",
-                "hover:bg-slate-50 hover:text-slate-900"
+                "flex items-center gap-2 rounded-xl border border-white/10 bg-card/50 px-4 py-2.5 text-muted-foreground shadow-sm transition-all",
+                "data-[state=active]:border-primary/20 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:scale-105",
+                "hover:bg-muted/50 hover:text-foreground"
             )}
         >
             <Icon className="w-4 h-4" />
@@ -156,9 +156,9 @@ export default function Execution() {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50/50">
+        <div className="min-h-screen bg-transparent">
             {/* Header Section */}
-            <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm supports-[backdrop-filter]:bg-white/60">
+            <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-white/10 shadow-[var(--shadow-soft)]">
                 <div className="container max-w-7xl mx-auto px-4 py-2 space-y-2">
                     <div className="flex items-center justify-between">
                         <div>
@@ -184,14 +184,14 @@ export default function Execution() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <Input
                                 placeholder="Buscar ordem de serviço..."
-                                className="pl-10 bg-slate-100/50 border-slate-200 focus:bg-white transition-all h-10 rounded-xl"
+                                className="pl-10 bg-muted/40 border-border/50 focus:bg-background transition-all h-10 rounded-xl shadow-inner"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         {isManager && (
                             <Select value={selectedUser} onValueChange={setSelectedUser}>
-                                <SelectTrigger className="w-full sm:w-[200px] bg-slate-100/50 border-slate-200 h-10 rounded-xl">
+                                <SelectTrigger className="w-full sm:w-[200px] bg-muted/40 border-border/50 h-10 rounded-xl">
                                     <Users className="w-4 h-4 mr-2 text-slate-500" />
                                     <span className="truncate text-sm">
                                         {selectedUser === 'all'

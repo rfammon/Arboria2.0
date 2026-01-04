@@ -74,10 +74,10 @@ export function PlanDashboard({
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">📋 Gestão de Planos de Intervenção</h1>
-                    <p className="text-muted-foreground mt-2">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Gestão de Planos</h1>
+                    <p className="text-muted-foreground mt-1 font-medium">
                         Acompanhamento de intervenções programadas
                     </p>
                 </div>
@@ -101,19 +101,21 @@ export function PlanDashboard({
             </div>
 
             {/* Statistics KPIs */}
-            <StatisticsCards stats={stats} />
+            <div className="bg-card/30 backdrop-blur-sm rounded-2xl p-2 shadow-inner border border-white/5">
+                <StatisticsCards stats={stats} />
+            </div>
 
             {/* Distribution by Type */}
-            <div className="bg-card rounded-lg border p-6">
-                <h3 className="text-lg font-semibold mb-4">📊 Distribuição por Tipo de Intervenção</h3>
+            <div className="bg-card/70 backdrop-blur-md rounded-2xl border border-white/10 p-6 shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-deep)]">
+                <h3 className="text-lg font-bold mb-4 opacity-80">Distribuição por Tipo</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     {Object.entries(stats.byType).map(([type, count]) => (
                         <div
                             key={type}
-                            className="p-4 rounded-lg border-l-4 bg-secondary"
-                            style={{ borderLeftColor: INTERVENTION_COLORS[type as InterventionType] }}
+                            className="p-4 rounded-xl border border-white/10 bg-muted/40 transition-all hover:bg-muted/60"
+                            style={{ borderLeft: `4px solid ${INTERVENTION_COLORS[type as InterventionType]}` }}
                         >
-                            <div className="text-2xl font-bold">{count}</div>
+                            <div className="text-2xl font-black">{count}</div>
                             <div className="text-sm text-muted-foreground mt-1">
                                 {INTERVENTION_LABELS[type as InterventionType]}
                             </div>
@@ -128,13 +130,13 @@ export function PlanDashboard({
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar planos..."
-                        className="pl-9"
+                        className="pl-9 bg-card/50 border-white/10 rounded-xl shadow-inner h-11"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Select value={filterType} onValueChange={(value) => setFilterType(value as InterventionType | 'all')}>
-                    <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[200px] bg-card/50 border-white/10 rounded-xl shadow-inner h-11">
                         <Filter className="w-4 h-4 mr-2" />
                         <SelectValue placeholder="Filtrar por tipo" />
                     </SelectTrigger>
@@ -151,12 +153,18 @@ export function PlanDashboard({
 
             {/* Plans Grid with Tabs */}
             <div>
-                <Tabs defaultValue="active" className="space-y-4">
-                    <TabsList>
-                        <TabsTrigger value="active">
+                <Tabs defaultValue="active" className="space-y-6">
+                    <TabsList className="bg-muted/50 p-1 rounded-xl border border-white/5">
+                        <TabsTrigger
+                            value="active"
+                            className="rounded-lg font-bold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:scale-105"
+                        >
                             Em Aberto ({filteredPlans.filter(p => !['COMPLETED', 'CANCELLED'].includes(p.status || 'APPROVED')).length})
                         </TabsTrigger>
-                        <TabsTrigger value="history">
+                        <TabsTrigger
+                            value="history"
+                            className="rounded-lg font-bold transition-all data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:scale-105"
+                        >
                             Histórico ({filteredPlans.filter(p => ['COMPLETED', 'CANCELLED'].includes(p.status || 'APPROVED')).length})
                         </TabsTrigger>
                     </TabsList>

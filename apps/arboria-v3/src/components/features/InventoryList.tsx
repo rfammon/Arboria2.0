@@ -69,11 +69,11 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
 
     const getRiskStyles = (level: string) => {
         const l = (level || '').toLowerCase();
-        if (l === 'extremo') return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
-        if (l === 'alto') return 'bg-destructive/15 text-destructive dark:bg-destructive/30';
-        if (l === 'moderado') return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-        if (l === 'baixo') return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+        if (l === 'extremo') return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shadow-sm';
+        if (l === 'alto') return 'bg-destructive/10 text-destructive border border-destructive/20 shadow-sm';
+        if (l === 'moderado') return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 shadow-sm';
+        if (l === 'baixo') return 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 shadow-sm';
+        return 'bg-muted text-muted-foreground border border-border/50 shadow-sm';
     };
 
     const columns = [
@@ -109,7 +109,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
             cell: ({ row }: any) => {
                 const riskLevel = (row.original as Tree).risklevel || 'Não Avaliado';
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider
                         ${getRiskStyles(riskLevel)}
                     `}>
                         {riskLevel}
@@ -203,7 +203,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
                     <Card
                         key={tree.id}
                         onClick={() => handleSelectRow(tree.id)}
-                        className="active:scale-[0.98] transition-transform"
+                        className="active:scale-[0.98] transition-all duration-300 hover:shadow-[var(--shadow-deep)] border-none shadow-[var(--shadow-soft)] bg-card/60 backdrop-blur-sm"
                     >
                         <CardHeader className="p-3 pb-0 flex flex-row items-start justify-between space-y-0">
                             <div>
@@ -285,7 +285,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
         <div className="w-full">
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-muted/50 border-b border-border">
+                    <thead className="bg-muted/30 border-b border-white/5">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
