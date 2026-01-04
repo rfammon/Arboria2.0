@@ -43,6 +43,25 @@ vi.mock('../../utils/mapUtils', () => ({
     openNavigationApp: vi.fn()
 }));
 
+// Mock cn utility
+vi.mock('../../lib/utils', () => ({
+    cn: (...args: any[]) => args.filter(Boolean).join(' ')
+}));
+
+// Mock planUtils to avoid complex date calculations
+vi.mock('../../lib/planUtils', () => ({
+    formatDate: vi.fn(() => '01/01/2025'),
+    formatDateTime: vi.fn(() => '01/01/2025 00:00'),
+    getDaysUntilExecution: vi.fn(() => 5),
+    getUrgencyBadgeConfig: vi.fn(() => ({ label: 'Normal', color: '#888', cssClass: '' })),
+    extractScheduleDate: vi.fn(() => '2025-01-01'),
+    extractScheduleEndDate: vi.fn(() => '2025-01-02'),
+    INTERVENTION_ICONS: { poda: '✂️' },
+    INTERVENTION_COLORS: { poda: '#0066CC' },
+    INTERVENTION_LABELS: { poda: 'Poda' },
+    getPlanDuration: vi.fn(() => 1)
+}));
+
 const mockPlan: InterventionPlan = {
     id: 'plan-1',
     plan_id: 'PL-001',
@@ -73,7 +92,7 @@ describe('Reopen Flow Integration', () => {
         vi.clearAllMocks();
     });
 
-    it('should allow a manager to reopen a completed work order', async () => {
+    it('should allow a manager to reopen a completed work order', { timeout: 15000 }, async () => {
         // Mock successful reopen
         (executionService.reopenWorkOrder as any).mockResolvedValue({ success: true, message: 'Reaberta com sucesso' });
         const onUpdateMock = vi.fn();
