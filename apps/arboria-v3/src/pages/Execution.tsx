@@ -112,7 +112,7 @@ export default function Execution() {
         }
 
         return (
-            <div className="space-y-4 pb-20 mt-4 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 mt-6 animate-in fade-in duration-500">
                 {list.map((task, index) => (
                     <TaskExecutionCard
                         key={task.id || `task-${index}`}
@@ -159,7 +159,7 @@ export default function Execution() {
         <div className="min-h-screen bg-transparent">
             {/* Header Section */}
             <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-white/10 shadow-[var(--shadow-soft)]">
-                <div className="container max-w-7xl mx-auto px-4 py-2 space-y-2">
+                <div className="max-w-[100%] mx-auto px-6 py-3 space-y-3">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-xl font-extrabold tracking-tight font-display text-foreground">
@@ -216,7 +216,7 @@ export default function Execution() {
             </div>
 
             {/* Main Content */}
-            <div className="container max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-[100%] mx-auto px-6 py-8">
                 <Tabs defaultValue="pendentes" value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
                     <div className="w-full">
                         <TabsList className="flex flex-nowrap overflow-x-auto h-auto p-1 gap-2 bg-transparent no-scrollbar justify-start md:justify-between">
