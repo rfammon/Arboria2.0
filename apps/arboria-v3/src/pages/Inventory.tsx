@@ -68,7 +68,7 @@ export default function Inventory() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Inventário</h1>
                     <SyncStatusIndicator />
                 </div>
-                <p className="text-muted-foreground">Gerencie e monitorize o arvoredo urbano.</p>
+                <p className="text-muted-foreground">Gerencie o Componente arbóreo de sua instalação</p>
                 <div className="flex gap-2 w-full sm:w-auto">
                     {hasPermission('create_trees') && (
                         <FieldAction

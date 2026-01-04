@@ -17,6 +17,7 @@ export default function Education() {
             icon: Book,
             bgColor: 'bg-blue-100',
             color: 'text-blue-600',
+            accentColor: 'bg-blue-500'
         },
         {
             id: 'planning',
@@ -25,6 +26,7 @@ export default function Education() {
             icon: ClipboardList,
             bgColor: 'bg-green-100',
             color: 'text-green-600',
+            accentColor: 'bg-green-500'
         },
         {
             id: 'legal',
@@ -33,6 +35,7 @@ export default function Education() {
             icon: FileText,
             bgColor: 'bg-amber-100',
             color: 'text-amber-600',
+            accentColor: 'bg-amber-500'
         },
         {
             id: 'preparation',
@@ -41,6 +44,7 @@ export default function Education() {
             icon: AlertTriangle,
             bgColor: 'bg-red-100',
             color: 'text-red-600',
+            accentColor: 'bg-red-500'
         },
         {
             id: 'pruning',
@@ -49,14 +53,16 @@ export default function Education() {
             icon: Scissors,
             bgColor: 'bg-indigo-100',
             color: 'text-indigo-600',
+            accentColor: 'bg-indigo-500'
         },
         {
             id: 'safety',
             title: 'EPIs e Análise de Risco',
             description: 'Equipamentos de proteção e análise de risco',
             icon: HardHat,
-            bgColor: 'bg-yellow-100', // Legacy uses Yellow/Orange for safety
+            bgColor: 'bg-yellow-100',
             color: 'text-yellow-600',
+            accentColor: 'bg-yellow-500'
         },
         {
             id: 'waste',
@@ -65,6 +71,7 @@ export default function Education() {
             icon: Recycle,
             bgColor: 'bg-emerald-100',
             color: 'text-emerald-600',
+            accentColor: 'bg-emerald-500'
         },
         {
             id: 'glossary',
@@ -73,6 +80,7 @@ export default function Education() {
             icon: BookOpen,
             bgColor: 'bg-slate-100',
             color: 'text-slate-600',
+            accentColor: 'bg-slate-500'
         },
     ];
 
@@ -100,10 +108,10 @@ export default function Education() {
                     {topics.map((topic) => (
                         <Card
                             key={topic.id}
-                            className="bg-card/70 backdrop-blur-md border-white/10 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-deep)] hover:-translate-y-1.5 transition-all cursor-pointer group overflow-hidden"
+                            className="bg-card/70 backdrop-blur-md border-white/10 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-deep)] hover:-translate-y-1.5 transition-all cursor-pointer group overflow-hidden border-t-0"
                             onClick={() => navigate(`/education/${topic.id}`)}
                         >
-                            <div className={cn("absolute top-0 left-0 w-full h-1.5", topic.bgColor.replace('-100', '-500'))} />
+                            <div className={cn("absolute top-0 left-0 w-full h-1.5", topic.accentColor)} />
                             <CardHeader className="space-y-1 pb-2">
                                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-transform group-hover:scale-110", topic.bgColor)}>
                                     <topic.icon className={cn("w-6 h-6", topic.color)} />

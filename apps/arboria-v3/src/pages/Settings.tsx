@@ -55,11 +55,11 @@ function GeneralSettings() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const themes = [
-        { id: "light", name: "Light", icon: Sun, color: "bg-white" },
-        { id: "dark", name: "Dark", icon: Moon, color: "bg-slate-950" },
+        { id: "light", name: "Light", icon: Sun, color: "bg-white text-slate-950" },
+        { id: "dark", name: "Dark", icon: Moon, color: "bg-slate-950 text-white" },
         { id: "forest", name: "Forest", icon: CheckCircle2, color: "bg-emerald-50 text-emerald-900" },
         { id: "dark-forest", name: "Dark Forest", icon: CheckCircle2, color: "bg-emerald-950 text-emerald-50" },
-        { id: "system", name: "System", icon: Monitor, color: "bg-slate-200" },
+        { id: "system", name: "System", icon: Monitor, color: "bg-slate-200 text-slate-900" },
     ];
 
     const handleThemeSelect = (newTheme: string) => {
