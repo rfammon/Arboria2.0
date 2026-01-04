@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../ui/card';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../ui/select';
 import type { InterventionPlan } from '../../../types/plan';
 import { INTERVENTION_LABELS } from '../../../lib/planUtils';
 

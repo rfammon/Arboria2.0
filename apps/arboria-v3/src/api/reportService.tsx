@@ -278,7 +278,6 @@ export const ReportService = {
 
                     // For large inventories (e.g. > 50 trees), we MUST use small thumbnails
                     // to prevent Puppeteer timeouts and massive PDF sizes.
-                    const isLargeInventory = trees.length > 50;
 
                     await Promise.all(trees.map(async (tree: any) => {
                         const photo = photoMap.get(tree.id);

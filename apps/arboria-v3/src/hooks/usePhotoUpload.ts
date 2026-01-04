@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { compressPhoto, extractExifData } from '../lib/photoCompression';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';

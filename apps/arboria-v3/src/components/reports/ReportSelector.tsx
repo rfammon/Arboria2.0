@@ -185,8 +185,8 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                                                     <td className="px-4 py-3 align-top">
                                                         <div className="font-bold text-foreground">
                                                             {selectedOption.selectionType === 'plan'
-                                                                ? (item.plan_id || item.id.slice(0, 8))
-                                                                : (item.codigo || item.id.slice(0, 8))}
+                                                                ? ((item as any).plan_id || item.id.slice(0, 8))
+                                                                : ((item as any).codigo || item.id.slice(0, 8))}
                                                         </div>
                                                         <div className="text-[10px] text-muted-foreground font-mono mt-0.5 uppercase tracking-tighter">
                                                             {item.id}
@@ -195,13 +195,13 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                                                     <td className="px-4 py-3 align-top">
                                                         <div className="font-medium">
                                                             {selectedOption.selectionType === 'plan'
-                                                                ? item.intervention_type
-                                                                : item.especie}
+                                                                ? (item as any).intervention_type
+                                                                : (item as any).especie}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground mt-0.5 italic">
                                                             {selectedOption.selectionType === 'plan'
-                                                                ? (item.tree?.especie || 'N/A')
-                                                                : (item.local || 'Sem localização')}
+                                                                ? ((item as any).tree?.especie || 'N/A')
+                                                                : ((item as any).local || 'Sem localização')}
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-3 text-right align-middle">

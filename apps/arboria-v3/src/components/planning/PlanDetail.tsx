@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, Calendar, User, Wrench, ShieldCheck, Clock, FileText, TreeDeciduous, Play, RotateCcw, AlertCircle, Navigation } from 'lucide-react';
 import { openNavigationApp } from '../../utils/mapUtils';
 import { Button } from '../ui/button';
@@ -60,6 +61,7 @@ interface PlanDetailProps {
 }
 
 export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) {
+    const navigate = useNavigate();
     const { deletePlan } = usePlans();
     const { toast } = useToast();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -355,7 +357,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                                         .filter(wo => wo.status !== 'COMPLETED' && wo.status !== 'CANCELLED')
                                         .map((wo, idx) => (
                                             <div key={wo.id || idx} className="flex justify-between items-center p-3 bg-muted/30 rounded-md border hover:border-primary/50 transition-colors group">
-                                                <div className="flex flex-col cursor-pointer flex-1" onClick={() => navigate && (window.location.hash = `#/execution/${wo.id}`)}>
+                                                <div className="flex flex-col cursor-pointer flex-1" onClick={() => navigate(`/execution/${wo.id}`)}>
                                                     <span className="font-semibold text-sm group-hover:text-primary">O.S. #{wo.id ? wo.id.slice(0, 8) : 'N/A'}</span>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <Badge variant={wo.status === 'IN_PROGRESS' ? 'secondary' : 'outline'}>
@@ -391,7 +393,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                                         .filter(wo => wo.status === 'COMPLETED' || wo.status === 'CANCELLED')
                                         .map((wo, idx) => (
                                             <div key={wo.id || idx} className="flex justify-between items-center p-3 bg-green-50/10 rounded-md border opacity-80 group">
-                                                <div className="flex flex-col cursor-pointer flex-1" onClick={() => navigate && (window.location.hash = `#/execution/${wo.id}`)}>
+                                                <div className="flex flex-col cursor-pointer flex-1" onClick={() => navigate(`/execution/${wo.id}`)}>
                                                     <span className="font-semibold text-sm group-hover:text-primary">O.S. #{wo.id ? wo.id.slice(0, 8) : 'N/A'}</span>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <Badge variant={wo.status === 'COMPLETED' ? 'default' : 'destructive'}>
