@@ -92,21 +92,21 @@ export default function DashboardHome() {
                     // Alerts and Education are visible to all (or add specific checks if needed)
                     return true;
                 }).map((feature) => (
-                    <Card key={feature.id} className="hover:shadow-[var(--shadow-deep)] hover:-translate-y-1 transition-all duration-300 border-none group">
+                    <Card key={feature.id} className="hover:shadow-[var(--shadow-deep)] hover:-translate-y-1 transition-all duration-300 border-none group flex flex-col h-full bg-card/50 backdrop-blur-sm shadow-sm ring-1 ring-white/10">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-20" style={{ color: 'currentColor' }} />
                         <CardHeader className="space-y-1">
-                            <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4`}>
+                            <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 shadow-inner ring-1 ring-current/20`}>
                                 <feature.icon className={`w-6 h-6 ${feature.color}`} />
                             </div>
-                            <CardTitle className="text-xl">{feature.title}</CardTitle>
+                            <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <CardDescription className="text-base">
+                        <CardContent className="space-y-6 flex-1 flex flex-col justify-between">
+                            <CardDescription className="text-base leading-relaxed h-full">
                                 {feature.description}
                             </CardDescription>
                             <Button
                                 onClick={feature.action}
-                                className="w-full shadow-sm hover:shadow-md transition-all active:scale-[0.97]"
+                                className="w-full shadow-sm hover:shadow-md transition-all active:scale-[0.97] mt-4 font-semibold h-11"
                                 variant="default"
                             >
                                 {feature.btnText}
