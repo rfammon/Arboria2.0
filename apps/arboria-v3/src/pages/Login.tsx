@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { cn } from '../lib/utils';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, Trees } from 'lucide-react';
+import React from 'react';
+
+// Define SelectContext
+const SelectContext = React.createContext<{
+    value: string;
+    onValueChange?: (value: string) => void;
+}>({ value: '' });
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -116,9 +124,11 @@ export default function Login() {
     // Force light mode styles by avoiding bg-background and text-foreground variables
     // Using explicit colors (white, slate-*, emerald-*)
     return (
-        <div className="min-h-screen flex flex-col bg-[#f0fdf4]">
-            {/* Background Decorator */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from- emerald-100 via-transparent to-transparent opacity-60 pointer-events-none" />
+        <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+            {/* Soft Premium Background Decorators */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-500/10 rounded-full blur-[150px]" />
+            <div className="absolute top-[20%] right-[5%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[100px]" />
 
             {/* Header Section with Brand */}
             <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 animate-in fade-in zoom-in-95 duration-500">
@@ -127,136 +137,115 @@ export default function Login() {
                         <div className="h-20 w-20 bg-gradient-to-br from-green-600 to-emerald-800 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-green-900/20 mb-8 rotate-3 transform transition-transform hover:rotate-0 duration-300">
                             <Trees className="h-10 w-10 text-white drop-shadow-md" />
                         </div>
-                        <h1 className="text-4xl font-bold tracking-tight text-slate-900 font-display">
-                            Arbor<span className="text-green-600">IA</span>
+                        <h1 className="text-5xl font-black tracking-tighter text-foreground font-display">
+                            Arbor<span className="text-primary italic">IA</span>
                         </h1>
-                        <p className="text-slate-500 text-lg">
-                            Gestão inteligente para áreas verdes
+                        <p className="text-muted-foreground text-lg font-medium opacity-80 italic">
+                            Ecossistemas Urbanos Gestão Inteligente
                         </p>
                     </div>
 
-                    <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 p-6 space-y-6 border border-slate-100">
+                    <div className="bg-card/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[var(--shadow-deep)] p-8 space-y-8 border border-white/10 relative">
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[2.5rem] pointer-events-none" />
+
                         {/* Toggle Switch */}
-                        <div className="flex rounded-2xl bg-slate-100 p-1.5">
-                            <button
-                                onClick={() => setIsSignup(false)}
-                                className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-all duration-300 ${!isSignup
-                                    ? 'bg-white text-green-700 shadow-sm ring-1 ring-black/5'
-                                    : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                Entrar
-                            </button>
-                            <button
-                                onClick={() => setIsSignup(true)}
-                                className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-all duration-300 ${isSignup
-                                    ? 'bg-white text-green-700 shadow-sm ring-1 ring-black/5'
-                                    : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                Criar Conta
-                            </button>
-                        </div>
-
-                        <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-5">
-                            <div className="space-y-4">
-                                {isSignup && (
-                                    <>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="nome" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Nome</Label>
-                                                <Input
-                                                    id="nome"
-                                                    placeholder="Seu nome"
-                                                    required
-                                                    value={nome}
-                                                    onChange={(e) => setNome(e.target.value)}
-                                                    className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <Label htmlFor="matricula" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Matrícula</Label>
-                                                <Input
-                                                    id="matricula"
-                                                    placeholder="00000"
-                                                    required
-                                                    value={matricula}
-                                                    onChange={(e) => setMatricula(e.target.value)}
-                                                    className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
-                                                />
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Email Corporativo</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="seu@email.com"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
-                                    />
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="password" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Senha</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        required
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
-                                    />
-                                </div>
-
-                                {isSignup && (
-                                    <div className="space-y-1.5 animate-in slide-in-from-top-2">
-                                        <Label htmlFor="confirmPassword" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Confirmar Senha</Label>
+                        <div className="flex bg-muted/50 p-1.5 rounded-2xl border border-white/5 shadow-inner relative z-10">
+                            <>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="nome" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Nome</Label>
                                         <Input
-                                            id="confirmPassword"
-                                            type="password"
+                                            id="nome"
+                                            placeholder="Seu nome"
                                             required
-                                            placeholder="••••••••"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            value={nome}
+                                            onChange={(e) => setNome(e.target.value)}
                                             className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
                                         />
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="matricula" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Matrícula</Label>
+                                        <Input
+                                            id="matricula"
+                                            placeholder="00000"
+                                            required
+                                            value={matricula}
+                                            onChange={(e) => setMatricula(e.target.value)}
+                                            className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                            )}
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Email Corporativo</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="seu@email.com"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="password" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Senha</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    required
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
+                                />
+                            </div>
+
+                            {isSignup && (
+                                <div className="space-y-1.5 animate-in slide-in-from-top-2">
+                                    <Label htmlFor="confirmPassword" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Confirmar Senha</Label>
+                                    <Input
+                                        id="confirmPassword"
+                                        type="password"
+                                        required
+                                        placeholder="••••••••"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="bg-slate-50 border-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-400 h-12 rounded-xl border-2 focus:border-green-500/50 focus:ring-0 transition-all font-medium"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="pt-4 relative z-10">
+                            <Button
+                                type="submit"
+                                className="w-full h-14 text-lg font-black bg-primary hover:bg-primary/90 active:scale-[0.97] transition-all rounded-2xl shadow-xl shadow-primary/20 text-primary-foreground group"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                                ) : (
+                                    <>
+                                        {isSignup ? 'Começar Jornada' : 'Entrar no Sistema'}
+                                        {!loading && <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />}
+                                    </>
                                 )}
-                            </div>
+                            </Button>
+                        </div>
+                    </form>
+                </div>
 
-                            <div className="pt-2">
-                                <Button
-                                    type="submit"
-                                    className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all rounded-xl shadow-lg shadow-green-600/30 text-white"
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                                    ) : (
-                                        <>
-                                            {isSignup ? 'Começar' : 'Entrar'}
-                                            {!loading && <ArrowRight className="ml-2 h-5 w-5 opacity-90" />}
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-4 text-xs font-medium text-slate-400">
-                        <Link to="/terms" className="hover:text-slate-600 transition-colors">Termos de Uso</Link>
-                        <span>•</span>
-                        <Link to="/privacy" className="hover:text-slate-600 transition-colors">Política de Privacidade</Link>
-                    </div>
+                <div className="flex items-center justify-center gap-4 text-xs font-medium text-slate-400">
+                    <Link to="/terms" className="hover:text-slate-600 transition-colors">Termos de Uso</Link>
+                    <span>•</span>
+                    <Link to="/privacy" className="hover:text-slate-600 transition-colors">Política de Privacidade</Link>
                 </div>
             </div>
         </div>
+        </div >
     );
 }

@@ -11,6 +11,7 @@ import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '../lib/utils';
 
 interface TaskAlert {
     id: string;
@@ -183,7 +184,7 @@ export default function AlertsCenter() {
                             <SelectTrigger className="bg-muted/40 border-none shadow-inner h-11 rounded-xl">
                                 <SelectValue placeholder="Todos os tipos" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-white/10 shadow-2xl">
+                            <SelectContent className="rounded-2xl border border-white/10 shadow-2xl">
                                 <SelectItem value="all">Todos os tipos</SelectItem>
                                 {uniqueTypes.map(type => (
                                     <SelectItem key={type} value={type}>{getAlertLabel(type)}</SelectItem>
@@ -198,7 +199,7 @@ export default function AlertsCenter() {
                             <SelectTrigger className="bg-muted/40 border-none shadow-inner h-11 rounded-xl">
                                 <SelectValue placeholder="Todos os executantes" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-white/10 shadow-2xl">
+                            <SelectContent className="rounded-2xl border border-white/10 shadow-2xl">
                                 <SelectItem value="all">Todos os executantes</SelectItem>
                                 {uniqueReporters.map(r => (
                                     <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
