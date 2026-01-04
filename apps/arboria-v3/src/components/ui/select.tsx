@@ -5,6 +5,8 @@ interface SelectContextValue {
     value?: string;
     onValueChange?: (value: string) => void;
     displayValue?: string;
+    isOpen?: boolean;
+    setIsOpen?: (open: boolean) => void;
 }
 
 const SelectContext = React.createContext<SelectContextValue>({});
@@ -17,9 +19,22 @@ interface SelectProps {
 }
 
 export function Select({ value, onValueChange, displayValue, children }: SelectProps) {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
-        <SelectContext.Provider value={{ value, onValueChange, displayValue }}>
-            <div className="relative w-full sm:w-auto">
+        <SelectContext.Provider value={{ value, onValueChange, displayValue, isOpen, setIsOpen }}>
+            <div ref={containerRef} className="relative w-full sm:w-auto">
                 {children}
             </div>
         </SelectContext.Provider>
@@ -31,9 +46,11 @@ interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export function SelectTrigger({ children, ...props }: SelectTriggerProps) {
+    const { isOpen, setIsOpen } = React.useContext(SelectContext);
     return (
         <button
             type="button"
+            onClick={() => setIsOpen?.(!isOpen)}
             className={`flex h-[var(--touch-target,40px)] w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-[var(--font-size-md,14px)] ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${props.className || ''}`}
             {...props}
         >
@@ -57,6 +74,9 @@ interface SelectContentProps {
 }
 
 export function SelectContent({ children, className }: SelectContentProps) {
+    const { isOpen } = React.useContext(SelectContext);
+    if (!isOpen) return null;
+
     return (
         <div className={cn(
             "absolute top-full right-0 z-50 mt-1 min-w-[200px] overflow-hidden rounded-xl border bg-popover/90 p-1 text-popover-foreground shadow-2xl animate-in fade-in zoom-in-95 backdrop-blur-xl",
@@ -86,6 +106,7 @@ export function SelectItem({ value, children, disabled }: SelectItemProps) {
                     return;
                 }
                 context.onValueChange?.(value);
+                context.setIsOpen?.(false);
             }}
             className={`relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none 
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-accent hover:text-accent-foreground'}
