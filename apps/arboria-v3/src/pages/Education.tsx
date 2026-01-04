@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Book, ClipboardList, FileText, AlertTriangle, Scissors, HardHat, Recycle, BookOpen } from 'lucide-react';
 import { EducationSearch } from '../components/education/EducationSearch';
+import { cn } from '../lib/utils';
+
 
 export default function Education() {
     const navigate = useNavigate();
