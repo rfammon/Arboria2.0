@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import { compressPhoto, extractExifData } from '../lib/photoCompression';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { offlineQueue } from '../lib/offlineQueue';
+import { uploadService } from '../services/uploadService';
 
 interface UploadOptions {
     onSuccess?: () => void;
@@ -74,45 +74,29 @@ export const usePhotoUpload = (treeId: string, installationId: string) => {
                 return;
             }
 
-            // 4. Upload to Supabase Storage
+            // 4. Upload using Shared Service
             toast.loading('Enviando para a nuvem...');
 
-            try {
-                const { error: uploadError } = await supabase.storage
-                    .from('tree-photos')
-                    .upload(storagePath, compressionResult.compressedFile, {
-                        contentType: 'image/jpeg',
-                        upsert: false
-                    });
-
-                if (uploadError) throw uploadError;
-                setUploadProgress(70);
-
-                // 5. Create Database Record
-                toast.loading('Salvando metadados...');
-                const { error: dbError } = await supabase
-                    .from('tree_photos')
-                    .insert({
-                        tree_id: treeId,
-                        instalacao_id: installationId,
-                        storage_path: storagePath,
-                        filename: filename,
-                        file_size: compressionResult.compressedSize,
-                        mime_type: 'image/jpeg',
-                        gps_latitude: exifData?.latitude || null,
-                        gps_longitude: exifData?.longitude || null,
-                        captured_at: exifData?.timestamp?.toISOString() || new Date().toISOString(),
-                        uploaded_by: user.id,
-                        display_order: 0
-                    });
-
-                if (dbError) {
-                    await supabase.storage.from('tree-photos').remove([storagePath]);
-                    throw dbError;
+            const uploadResult = await uploadService.uploadTreePhoto(
+                compressionResult.compressedFile,
+                treeId,
+                installationId,
+                storagePath,
+                filename,
+                {
+                    file_size: compressionResult.compressedSize,
+                    mime_type: 'image/jpeg',
+                    gps_latitude: exifData?.latitude || null,
+                    gps_longitude: exifData?.longitude || null,
+                    captured_at: exifData?.timestamp?.toISOString() || new Date().toISOString(),
+                    uploaded_by: user.id,
                 }
-            } catch (error: any) {
+            );
+
+            if (!uploadResult.success) {
+                const error = uploadResult.error;
                 // If network error, queue it
-                if (error.message?.includes('network') || error.message?.includes('Valid failure') || !navigator.onLine) {
+                if (error?.message?.includes('network') || error?.message?.includes('Valid failure') || !navigator.onLine) {
                     toast.dismiss();
                     toast.info('Falha no envio. Salvando para tentar mais tarde...');
                     await offlineQueue.add('SYNC_PHOTO', {

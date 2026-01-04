@@ -6,6 +6,7 @@ import { offlineQueue } from '../lib/offlineQueue';
 import { supabase } from '../lib/supabase';
 import { ConflictResolutionModal } from '../components/features/ConflictResolutionModal';
 import { useQueryClient } from '@tanstack/react-query';
+import { uploadService } from '../services/uploadService';
 
 interface OfflineSyncContextType {
     processQueue: () => Promise<void>;
@@ -28,7 +29,7 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
     const queryClient = useQueryClient();
     const { queue, isProcessing: isActionProcessing, setProcessing: setActionProcessing, removeAction, updateAction } = useActionQueue();
     const [pendingPhotos, setPendingPhotos] = useState(0);
-    const [isPhotoSyncing, setIsPhotoSyncing] = useState(false);
+    const [isGenericSyncing, setIsGenericSyncing] = useState(false);
 
     // Conflict State
     const [conflict, setConflict] = useState<{ local: any; server: any; actionId: string } | null>(null);
@@ -45,7 +46,6 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
         const interval = setInterval(updatePhotoCount, 5000); // Check every 5s
 
         const handleOnline = () => {
-            console.log('[Sync] App is online. Processing queue...');
             processQueue();
         };
 
@@ -90,15 +90,13 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
         }
 
         // 1. Process Generic IDs Actions (Photos + Execution)
-        setIsPhotoSyncing(true); // Using this state for generic sync now
+        setIsGenericSyncing(true);
         try {
             const actions = await offlineQueue.getAll();
             if (actions.length > 0) {
                 toast.loading(`Sincronizando ${actions.length} ações pendentes...`);
 
-                // Import executionService here dynamically or ensure it is imported at top
-                // Since hooks use it, it should be fine. We need to import it at top of file.
-                // Assuming it's imported or available. If not, I'll add import in next step if checking file fails.
+                // Dynamic import once per sync cycle, not per action
                 const { executionService } = await import('../services/executionService');
 
                 for (const action of actions) {
@@ -107,38 +105,18 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
 
                         switch (action.type) {
                             case 'SYNC_PHOTO': {
-                                const photo = action.payload; // Payload has photo data
-                                // Upload to Storage
-                                const { error: uploadError } = await supabase.storage
-                                    .from('tree-photos')
-                                    .upload(photo.storagePath, photo.file, {
-                                        contentType: photo.metadata.mime_type || 'image/jpeg',
-                                        upsert: false
-                                    });
+                                const photo = action.payload;
+                                const uploadResult = await uploadService.uploadTreePhoto(
+                                    photo.file,
+                                    photo.treeId,
+                                    photo.installationId,
+                                    photo.storagePath,
+                                    photo.filename,
+                                    photo.metadata
+                                );
 
-                                if (uploadError && !uploadError.message.includes('Duplicate') && !uploadError.message.includes('already exists')) {
-                                    throw uploadError;
-                                }
-
-                                // Insert into DB
-                                const { error: dbError } = await supabase
-                                    .from('tree_photos')
-                                    .insert({
-                                        tree_id: photo.treeId,
-                                        instalacao_id: photo.installationId,
-                                        storage_path: photo.storagePath,
-                                        filename: photo.filename,
-                                        file_size: photo.metadata.file_size,
-                                        mime_type: photo.metadata.mime_type,
-                                        gps_latitude: photo.metadata.gps_latitude,
-                                        gps_longitude: photo.metadata.gps_longitude,
-                                        captured_at: photo.metadata.captured_at,
-                                        uploaded_by: photo.metadata.uploaded_by,
-                                        display_order: 0
-                                    });
-
-                                if (dbError && dbError.code !== '23505') {
-                                    throw dbError;
+                                if (!uploadResult.success) {
+                                    throw uploadResult.error;
                                 }
                                 break;
                             }
@@ -193,7 +171,7 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
         } catch (error) {
             console.error('[Sync] Generic sync error:', error);
         } finally {
-            setIsPhotoSyncing(false);
+            setIsGenericSyncing(false);
         }
 
         // 2. Process Tree Actions (Zustand Queue)
@@ -300,7 +278,7 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
         <OfflineSyncContext.Provider value={{
             processQueue,
             pendingPhotos,
-            isSyncing: isPhotoSyncing || isActionProcessing,
+            isSyncing: isGenericSyncing || isActionProcessing,
             pendingActions: queue.length
         }}>
             {children}

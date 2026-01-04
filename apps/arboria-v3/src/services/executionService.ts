@@ -299,5 +299,17 @@ export const executionService = {
             });
 
         if (error) throw error;
+    },
+
+    /**
+     * Delete a Work Order and its related tasks
+     */
+    async deleteWorkOrder(workOrderId: string): Promise<void> {
+        const { error } = await supabase
+            .rpc('delete_work_order', {
+                p_work_order_id: workOrderId
+            });
+
+        if (error) throw error;
     }
 };

@@ -257,13 +257,11 @@ export const ReportService = {
             const { installation, trees: payloadTrees, stats } = payload;
             const installationName = installation.nome || 'Instalação';
 
-            // 1. Enrich Trees with Photos
-            // We need to fetch photos because the basic tree list doesn't have them
+            // 1. Enrich Trees with Photos (Optimized)
             const trees = [...payloadTrees];
             const treeIds = trees.map((t: any) => t.id);
 
             if (treeIds.length > 0) {
-                // Fetch all photos for these trees
                 const { data: allPhotos } = await supabase
                     .from('tree_photos')
                     .select('*')
@@ -271,34 +269,40 @@ export const ReportService = {
                     .order('created_at', { ascending: false });
 
                 if (allPhotos && allPhotos.length > 0) {
-                    // Create map of tree_id -> photo
                     const photoMap = new Map();
-
-                    // Since it's ordered by created_at desc, the first one seen is the latest
                     for (const photo of allPhotos) {
                         if (!photoMap.has(photo.tree_id)) {
                             photoMap.set(photo.tree_id, photo);
                         }
                     }
 
-                    // Generate signed URLs in parallel
+                    // For large inventories (e.g. > 50 trees), we MUST use small thumbnails
+                    // to prevent Puppeteer timeouts and massive PDF sizes.
+
                     await Promise.all(trees.map(async (tree: any) => {
                         const photo = photoMap.get(tree.id);
                         if (photo) {
+                            // Use transform if possible for 100x100 thumbnails
                             const { data } = await supabase.storage
                                 .from('tree-photos')
-                                .createSignedUrl(photo.storage_path, 3600);
+                                .createSignedUrl(photo.storage_path, 3600, {
+                                    transform: {
+                                        width: 100,
+                                        height: 100,
+                                        resize: 'contain'
+                                    }
+                                });
 
                             if (data?.signedUrl) {
                                 tree.photoUrl = data.signedUrl;
-                                tree.foto_url = data.signedUrl; // Legacy support
+                                tree.foto_url = data.signedUrl;
                             }
                         }
                     }));
                 }
             }
 
-            // 1. Render HTML
+            // 2. Render HTML
             const html = renderToStaticMarkup(
                 <RiskInventoryReport
                     installationName={installationName}
@@ -307,7 +311,7 @@ export const ReportService = {
                 />
             );
 
-            // 2. Prepare Map Data
+            // 3. Prepare Map Data
             let mapData = null;
             const treesWithCoords = trees.filter((t: any) => t.latitude && t.longitude);
 
@@ -322,8 +326,8 @@ export const ReportService = {
                 };
             }
 
-            // 3. Generate PDF
-            console.log("Fetching PDF from: /api/reports/generate-pdf-from-html");
+            // 4. Generate PDF with extended timeout for large reports
+            console.log(`Generating Risk Inventory for ${trees.length} trees...`);
             const response = await fetch('/api/reports/generate-pdf-from-html', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

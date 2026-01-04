@@ -1,298 +1,416 @@
 import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../ui/card';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../ui/select';
 import type { InterventionPlan } from '../../../types/plan';
 import { INTERVENTION_LABELS } from '../../../lib/planUtils';
-import { FrappeGantt } from '../../ui/FrappeGantt';
-import type { FrappeTask } from '../../ui/FrappeGantt';
-import '../../ui/FrappeGantt.css'; // Import custom styles
 
 interface InterventionGanttProps {
     plans: InterventionPlan[];
 }
 
-export function InterventionGantt({ plans }: InterventionGanttProps) {
-    const [viewMode, setViewMode] = useState<'Day' | 'Week' | 'Month'>('Week');
+type ViewMode = 'Week' | 'Month' | 'Year';
 
-    // Transform plans to Frappe Tasks
-    const tasks: FrappeTask[] = useMemo(() => {
-        if (!plans || plans.length === 0) return [];
+// Internal Custom Gantt Component (Report style with Advanced Scaling)
+function CustomGantt({ plans, scale, viewMode }: { plans: InterventionPlan[], scale: number, viewMode: ViewMode }) {
+    const { startDate, endDate, totalDays } = useMemo(() => {
+        // Base buffer days adjusted by viewMode
+        let bufferPre = 2;
+        let bufferPost = 5;
 
-        return plans
-            .filter(plan => (plan.schedule.start || plan.schedule.startDate) && (plan.schedule.end || plan.schedule.endDate))
-            .map(plan => {
-                // 1. Get Base Start Date
-                const startStr = plan.schedule.start || plan.schedule.startDate;
-                if (!startStr) return null;
-
-                const startDate = new Date(startStr);
-                const endDate = new Date(startDate);
-
-                // 2. Duration Calculation
-                if (plan.durations) {
-                    const totalDays = (plan.durations.mobilization || 0) +
-                        (plan.durations.execution || 0) +
-                        (plan.durations.demobilization || 0);
-                    // Use calculated duration (min 1 day)
-                    const durationToAdd = Math.max(1, totalDays);
-                    endDate.setDate(startDate.getDate() + durationToAdd);
-                } else {
-                    const explicitEndStr = plan.schedule.end || plan.schedule.endDate;
-                    if (explicitEndStr) {
-                        const explicitEnd = new Date(explicitEndStr);
-                        if (explicitEnd > startDate) {
-                            endDate.setTime(explicitEnd.getTime());
-                        } else {
-                            endDate.setDate(startDate.getDate() + 1);
-                        }
-                    } else {
-                        endDate.setDate(startDate.getDate() + 1);
-                    }
-                }
-
-                // 3. Progress Logic
-                let progress = 0;
-
-                // Calculate from Execution Tasks
-                if (plan.work_orders && plan.work_orders.length > 0) {
-                    const allTasks = plan.work_orders.flatMap(wo => wo.tasks || []);
-                    if (allTasks.length > 0) {
-                        const totalProgress = allTasks.reduce((sum, t) => sum + (t.progress_percent || 0), 0);
-                        progress = Math.round(totalProgress / allTasks.length);
-                    }
-                }
-
-                // Status Overrides
-                if (plan.status === 'COMPLETED') {
-                    progress = 100;
-                } else if (plan.status === 'IN_PROGRESS' && progress === 0) {
-                    // Fallback for in-progress but no tasks started
-                    progress = 10;
-                }
-
-                // 4. Formatting
-                const formatDate = (date: Date) => date.toISOString().split('T')[0];
-                const label = INTERVENTION_LABELS[plan.intervention_type] || plan.intervention_type;
-                const treeInfo = plan.tree?.especie ? ` - ${plan.tree.especie}` : '';
-
-                // 5. Coloring
-                let customClass = 'gantt-default';
-                if (plan.intervention_type === 'poda') customClass = 'gantt-blue';
-                if (plan.intervention_type === ('remocao' as any) || plan.intervention_type === 'supressao') customClass = 'gantt-red';
-                if (plan.intervention_type === 'tratamento') customClass = 'gantt-green';
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                // Check if late (Start date passed and not completed) - Visual cue only
-                if (startDate < today && progress < 100) {
-                    customClass += '-late'; // Use suffix to avoid space in classList.add error
-                }
-
-                return {
-                    id: plan.plan_id || plan.id,
-                    name: `${label}${treeInfo}`,
-                    start: formatDate(startDate),
-                    end: formatDate(endDate),
-                    progress: progress,
-                    dependencies: plan.dependencies ? plan.dependencies.join(', ') : '',
-                    custom_class: customClass
-                } as FrappeTask;
-            })
-            .filter((t): t is FrappeTask => t !== null)
-            .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-    }, [plans]);
-
-    // State for Sorting and Filtering
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    const [filters, setFilters] = useState<{ [key: string]: string }>({});
-
-    const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
+        if (viewMode === 'Month') {
+            bufferPre = 7;
+            bufferPost = 15;
+        } else if (viewMode === 'Year') {
+            bufferPre = 30;
+            bufferPost = 60;
         }
-        setSortConfig({ key, direction });
+
+        // Adjust buffers by zoom scale (Zoom in = smaller relative buffer)
+        bufferPre = Math.max(1, Math.ceil(bufferPre * (6 - scale) / 3));
+        bufferPost = Math.max(2, Math.ceil(bufferPost * (6 - scale) / 3));
+
+        const getBaseDates = () => {
+            if (!plans || plans.length === 0) {
+                const now = new Date();
+                return [now.getTime(), now.getTime()];
+            }
+            const dates = plans.flatMap(p => [
+                p.schedule?.start || p.schedule?.startDate,
+                p.schedule?.end || p.schedule?.endDate
+            ]).filter(Boolean).map(d => new Date(d as string).getTime());
+
+            if (dates.length === 0) return [new Date().getTime(), new Date().getTime()];
+            return [Math.min(...dates), Math.max(...dates)];
+        };
+
+        const [minTime, maxTime] = getBaseDates();
+
+        const start = new Date(minTime);
+        start.setDate(start.getDate() - bufferPre);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(maxTime);
+        end.setDate(end.getDate() + bufferPost);
+        end.setHours(23, 59, 59, 999);
+
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        return { startDate: start, endDate: end, totalDays: days || 1 };
+    }, [plans, scale, viewMode]);
+
+    const getPosition = (dateStr?: string) => {
+        if (!dateStr) return 0;
+        const date = new Date(dateStr);
+        const diff = date.getTime() - startDate.getTime();
+        return (diff / (1000 * 60 * 60 * 24)) / totalDays * 100;
     };
+
+    const getDurationWidth = (startStr?: string, endStr?: string) => {
+        if (!startStr || !endStr) return 0;
+        const start = new Date(startStr).getTime();
+        const end = new Date(endStr).getTime();
+        const duration = (end - start) / (1000 * 60 * 60 * 24);
+        return (Math.max(duration, 0.5) / totalDays) * 100;
+    };
+
+    const getInterventionColor = (type: string) => {
+        const colors: Record<string, string> = {
+            'poda': 'bg-blue-500',
+            'supressao': 'bg-red-500',
+            'transplante': 'bg-orange-500',
+            'tratamento': 'bg-emerald-500',
+            'monitoramento': 'bg-purple-500'
+        };
+        return colors[type] || 'bg-slate-500';
+    };
+
+    // Calculate dynamic markers based on viewMode
+    const markers = useMemo(() => {
+        const results = [];
+        if (viewMode === 'Year') {
+            // Month markers
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(startDate.getFullYear(), i, 1);
+                if (d >= startDate && d <= endDate) {
+                    results.push({
+                        label: d.toLocaleDateString('pt-BR', { month: 'short' }),
+                        offset: getPosition(d.toISOString())
+                    });
+                }
+            }
+        } else if (viewMode === 'Month') {
+            // Weekly markers
+            let current = new Date(startDate);
+            while (current <= endDate) {
+                results.push({
+                    label: `D${current.getDate()}`,
+                    offset: getPosition(current.toISOString())
+                });
+                current.setDate(current.getDate() + 7);
+            }
+        } else {
+            // Daily markers (midpoint)
+            results.push({ label: 'Meio', offset: 50 });
+        }
+        return results;
+    }, [startDate, endDate, viewMode, totalDays]);
+
+    return (
+        <div className="w-full border rounded-lg overflow-x-auto bg-background shadow-sm scrollbar-thin scrollbar-thumb-muted-foreground/20">
+            <div style={{ width: `${Math.max(100, scale * (viewMode === 'Year' ? 100 : 50))}%`, minWidth: '100%' }}>
+                {/* Timeline Header */}
+                <div className="flex border-b bg-muted/30 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <div className="w-[180px] p-3 flex-shrink-0 border-r bg-muted/40">
+                        Intervenção / ID
+                    </div>
+                    <div className="flex-1 relative h-10 px-2 flex items-center justify-between">
+                        <span className="bg-background/80 px-1 rounded">{startDate.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric', year: viewMode === 'Year' ? 'numeric' : undefined })}</span>
+
+                        <div className="absolute inset-0 flex items-center justify-around pointer-events-none opacity-20">
+                            {markers.map((m, i) => (
+                                <div key={i} className="flex flex-col items-center">
+                                    <div className="h-4 border-l border-dashed border-muted-foreground" />
+                                    <span className="text-[8px] mt-0.5">{m.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <span className="bg-background/80 px-1 rounded">{endDate.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric', year: viewMode === 'Year' ? 'numeric' : undefined })}</span>
+                    </div>
+                </div>
+
+                {/* Gantt Body */}
+                <div className="relative min-h-[120px]">
+                    {/* Horizontal Grid Pattern */}
+                    <div className="absolute inset-0 pointer-events-none"
+                        style={{
+                            backgroundImage: 'linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px)',
+                            backgroundSize: `${100 / (totalDays || 1)}% 100%`,
+                            opacity: 0.05
+                        }}
+                    />
+
+                    {plans.length === 0 ? (
+                        <div className="flex items-center justify-center py-12 text-sm text-muted-foreground italic">
+                            Nenhum dado para exibir no cronograma.
+                        </div>
+                    ) : (
+                        plans.map((plan, index) => {
+                            const startStr = plan.schedule?.start || plan.schedule?.startDate;
+                            const endStr = plan.schedule?.end || plan.schedule?.endDate;
+                            const isLate = startStr && new Date(startStr) < new Date() && plan.status !== 'COMPLETED';
+                            const isCompleted = plan.status === 'COMPLETED';
+
+                            const startP = getPosition(startStr);
+                            const widthP = getDurationWidth(startStr, endStr);
+
+                            // Color logic: Completed > Late > Type
+                            let colorClass = getInterventionColor(plan.intervention_type);
+                            if (isCompleted) colorClass = 'bg-green-500';
+                            else if (isLate) colorClass = 'bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]';
+
+                            const label = INTERVENTION_LABELS[plan.intervention_type] || plan.intervention_type;
+
+                            return (
+                                <div key={plan.id} className="group flex h-10 border-b last:border-0 hover:bg-muted/10 transition-colors relative z-10 items-center">
+                                    <div className="w-[180px] px-3 flex-shrink-0 border-r text-xs whitespace-nowrap overflow-hidden text-overflow-ellipsis bg-background/50 z-20">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-green-500' : (isLate ? 'bg-red-500' : 'bg-slate-300')}`} />
+                                            <span className="font-bold text-primary truncate">#{index + 1} {label}</span>
+                                        </div>
+                                        <div className="text-[9px] opacity-50 ml-3">ID {plan.plan_id || plan.id.substring(0, 6)}</div>
+                                    </div>
+                                    <div className="flex-1 relative h-full">
+                                        <div
+                                            className={`absolute h-6 top-1/2 -translate-y-1/2 rounded shadow-sm flex items-center justify-center text-[9.5px] font-bold text-white px-2 cursor-default transition-all hover:scale-[1.02] hover:shadow-md ${colorClass}`}
+                                            style={{
+                                                left: `${startP}%`,
+                                                width: `${Math.max(widthP, 0.2)}%`,
+                                                minWidth: viewMode === 'Year' ? '10px' : '40px'
+                                            }}
+                                            title={`${label} - ${new Date(startStr || '').toLocaleDateString()}`}
+                                        >
+                                            {viewMode !== 'Year' && <span className="truncate">ID {plan.plan_id || plan.id.substring(0, 6)}</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function InterventionGantt({ plans }: InterventionGanttProps) {
+    const [scale, setScale] = useState(2); // Zoom scale 1-5
+    const [viewMode, setViewMode] = useState<ViewMode>('Week');
+
+    // Sorting and Filtering logic
+    const [filters, setFilters] = useState<{ [key: string]: string }>({});
 
     const handleFilterChange = (key: string, value: string) => {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
 
-    // Filter and Sort Data
-    const tableData = useMemo(() => {
-        let data = tasks.map(task => {
-            const plan = plans.find(p => (p.plan_id === task.id || p.id === task.id));
-            if (!plan) return null;
-
-            const isLate = task.custom_class?.includes('-late') && plan.status !== 'COMPLETED';
-            const statusLabel = plan.status === 'COMPLETED' ? 'Concluído' : (isLate ? 'Atrasado' : (task.progress >= 50 ? 'Em Andamento' : 'Pendente'));
-
-            return {
-                task,
-                plan,
-                id: task.id,
-                treeInfo: `Árvore #${plan.tree_id ? plan.tree_id.slice(0, 8) + '...' : 'N/A'} - ${plan.tree?.especie || 'Espécie não inf.'}`,
-                interventionType: task.name.split('-')[0],
-                dateScheduled: task.start,
-                dateEnd: task.end,
-                riskLevel: plan.tree?.risklevel || '-',
-                statusLabel
-            };
-        }).filter((item): item is NonNullable<typeof item> => item !== null);
+    const filteredPlans = useMemo(() => {
+        if (!plans) return [];
+        let data = [...plans];
 
         // Apply Filters
         Object.keys(filters).forEach(key => {
             const filterValue = filters[key].toLowerCase();
             if (filterValue) {
-                data = data.filter(item => {
-                    const value = String((item as any)[key] || '').toLowerCase();
-                    return value.includes(filterValue);
+                data = data.filter(plan => {
+                    if (key === 'id') return (plan.plan_id || plan.id).toLowerCase().includes(filterValue);
+                    if (key === 'interventionType') return plan.intervention_type.toLowerCase().includes(filterValue);
+                    if (key === 'treeInfo') return (plan.tree?.especie || '').toLowerCase().includes(filterValue) || (plan.tree_id || '').toLowerCase().includes(filterValue);
+                    if (key === 'statusLabel') {
+                        const isLate = new Date(plan.schedule?.start || '') < new Date() && plan.status !== 'COMPLETED';
+                        const status = plan.status === 'COMPLETED' ? 'concluido' : (isLate ? 'atrasado' : 'pendente');
+                        return status.includes(filterValue);
+                    }
+                    return false;
                 });
             }
         });
 
-        // Apply Sort
-        if (sortConfig) {
-            data.sort((a, b) => {
-                const aValue = (a as any)[sortConfig.key];
-                const bValue = (b as any)[sortConfig.key];
-
-                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-        }
-
         return data;
-    }, [tasks, plans, filters, sortConfig]);
-
-    const renderHeader = (label: string, sortKey: string, filterKey: string) => (
-        <th className="h-auto px-4 py-2 text-left align-top font-medium text-muted-foreground min-w-[150px]">
-            <div className="flex flex-col gap-2">
-                <button
-                    onClick={() => handleSort(sortKey)}
-                    className="flex items-center gap-1 hover:text-foreground transition-colors font-medium text-sm group w-full text-left"
-                >
-                    {label}
-                    <span className="text-xs opacity-50 group-hover:opacity-100">
-                        {sortConfig?.key === sortKey ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
-                    </span>
-                </button>
-                <input
-                    type="text"
-                    placeholder={`Filtrar ${label}...`}
-                    className="w-full px-2 py-1 text-xs border rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    value={filters[filterKey] || ''}
-                    onChange={(e) => handleFilterChange(filterKey, e.target.value)}
-                />
-            </div>
-        </th>
-    );
+    }, [plans, filters]);
 
     return (
-        <Card className="w-full overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-base font-semibold">
-                    Visão Geral do Cronograma
-                </CardTitle>
-                <div className="w-[120px]">
-                    <Select
-                        value={viewMode}
-                        onValueChange={(v) => setViewMode(v as any)}
-                    >
-                        <SelectTrigger className="h-8">
-                            <SelectValue placeholder="Visualização" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Day">Dia</SelectItem>
-                            <SelectItem value="Week">Semana</SelectItem>
-                            <SelectItem value="Month">Mês</SelectItem>
-                        </SelectContent>
-                    </Select>
+        <Card className="w-full border-none shadow-none bg-transparent overflow-visible">
+            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0 pb-6 px-0">
+                <div>
+                    <CardTitle className="text-xl font-bold font-display">
+                        Cronograma de <span className="text-primary italic">Intervenções</span>
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Visualize e acompanhe o planejamento das atividades</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* View Mode Selector */}
+                    <div className="flex items-center bg-muted/30 rounded-lg p-1 border">
+                        <button
+                            onClick={() => setViewMode('Week')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${viewMode === 'Week' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            Semana
+                        </button>
+                        <button
+                            onClick={() => setViewMode('Month')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${viewMode === 'Month' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            Mês
+                        </button>
+                        <button
+                            onClick={() => setViewMode('Year')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${viewMode === 'Year' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            Ano
+                        </button>
+                    </div>
+
+                    {/* Scale Selector */}
+                    <div className="flex items-center bg-muted/30 rounded-lg p-1 border">
+                        <button
+                            onClick={() => setScale(s => Math.max(1, s - 1))}
+                            className="p-1.5 hover:bg-background rounded-md transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30"
+                            disabled={scale <= 1}
+                            title="Zoom Out"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
+                        </button>
+                        <span className="px-2 text-[10px] font-bold text-muted-foreground min-w-[30px] text-center">{scale}x</span>
+                        <button
+                            onClick={() => setScale(s => Math.min(5, s + 1))}
+                            className="p-1.5 hover:bg-background rounded-md transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30"
+                            disabled={scale >= 5}
+                            title="Zoom In"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" /><line x1="11" y1="8" x2="11" y2="14" /></svg>
+                        </button>
+                    </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-0">
-                <div className="p-4 overflow-auto bg-card border-b">
-                    {tasks.length > 0 ? (
-                        <FrappeGantt
-                            tasks={tasks}
-                            viewMode={viewMode}
-                            onClick={(task) => console.log('Clicked task:', task)}
-                        />
-                    ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                            Nenhuma intervenção agendada com datas válidas.
-                        </div>
-                    )}
+            <CardContent className="p-0 space-y-8 h-auto overflow-visible">
+                {/* Custom Gantt View - Report Style */}
+                <div className="h-auto">
+                    <CustomGantt plans={plans} scale={scale} viewMode={viewMode} />
                 </div>
 
-                <div className="p-4 bg-muted/20">
-                    <h3 className="font-semibold mb-4 text-sm uppercase text-muted-foreground tracking-wider">Detalhamento do Cronograma</h3>
-                    <div className="rounded-md border bg-card overflow-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b bg-muted/50 transition-colors">
-                                    {renderHeader('ID', 'id', 'id')}
-                                    {renderHeader('Árvore / Espécie', 'treeInfo', 'treeInfo')}
-                                    {renderHeader('Intervenção', 'interventionType', 'interventionType')}
-                                    {renderHeader('Data', 'dateScheduled', 'dateScheduled')}
-                                    {renderHeader('Término', 'dateEnd', 'dateEnd')}
-                                    {renderHeader('Risco', 'riskLevel', 'riskLevel')}
-                                    {renderHeader('Status', 'statusLabel', 'statusLabel')}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tableData.map(({ task, plan, statusLabel }) => {
-                                    const isLate = task.custom_class?.includes('-late') && plan.status !== 'COMPLETED';
-                                    const statusColor = plan.status === 'COMPLETED' ? 'text-green-600 font-bold' : (isLate ? 'text-red-500 font-bold' : (task.progress >= 50 ? 'text-blue-500' : 'text-slate-500'));
+                {/* Detailed Table */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground/80">Listagem Detalhada</h3>
+                        <div className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">
+                            {filteredPlans.length} PROJETOS
+                        </div>
+                    </div>
 
-                                    return (
-                                        <tr key={task.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                            <td className="p-4 font-medium" title={task.id}>
-                                                {task.id.length > 12 ? `${task.id.slice(0, 8)}...` : task.id}
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium" title={plan.tree_id}>
-                                                        Árvore #{plan.tree_id ? plan.tree_id.slice(0, 8) + '...' : 'N/A'}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">{plan.tree?.especie || 'Espécie não inf.'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${task.custom_class?.includes('blue') ? 'bg-blue-50 text-blue-700 ring-blue-700/10' :
-                                                    task.custom_class?.includes('red') ? 'bg-red-50 text-red-700 ring-red-600/10' :
-                                                        task.custom_class?.includes('green') ? 'bg-green-50 text-green-700 ring-green-600/20' :
-                                                            'bg-gray-50 text-gray-600 ring-gray-500/10'
-                                                    }`}>
-                                                    {task.name.split('-')[0]}
-                                                </span>
-                                            </td>
-                                            <td className="p-4">{new Date(task.start + 'T00:00:00').toLocaleDateString()}</td>
-                                            <td className="p-4">{new Date(task.end + 'T00:00:00').toLocaleDateString()}</td>
-                                            <td className="p-4">
-                                                {plan.tree?.risklevel ? (
-                                                    <span className={`font-medium ${plan.tree.risklevel.includes('Alto') || plan.tree.risklevel.includes('Extremo') ? 'text-red-600' :
-                                                        plan.tree.risklevel.includes('Moderado') ? 'text-orange-600' : 'text-yellow-600'
-                                                        }`}>
-                                                        {plan.tree.risklevel}
-                                                    </span>
-                                                ) : <span className="text-muted-foreground">-</span>}
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={statusColor}>
-                                                    {statusLabel}
-                                                </span>
-                                            </td>
+                    <div className="rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b bg-muted/20">
+                                        <th className="px-4 py-3 text-left font-bold text-muted-foreground w-[120px]">ID</th>
+                                        <th className="px-4 py-3 text-left font-bold text-muted-foreground">Árvore / Espécie</th>
+                                        <th className="px-4 py-3 text-left font-bold text-muted-foreground">Intervenção</th>
+                                        <th className="px-4 py-3 text-left font-bold text-muted-foreground text-center">Data</th>
+                                        <th className="px-4 py-3 text-left font-bold text-muted-foreground">Status</th>
+                                    </tr>
+                                    <tr className="border-b bg-muted/10">
+                                        <td className="px-2 py-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Filtrar ID..."
+                                                className="w-full px-2 py-1 text-[10px] border-none bg-transparent focus:ring-0 placeholder:text-muted-foreground/50"
+                                                value={filters['id'] || ''}
+                                                onChange={(e) => handleFilterChange('id', e.target.value)}
+                                            />
+                                        </td>
+                                        <td className="px-2 py-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Filtrar Árvore..."
+                                                className="w-full px-2 py-1 text-[10px] border-none bg-transparent focus:ring-0 placeholder:text-muted-foreground/50"
+                                                value={filters['treeInfo'] || ''}
+                                                onChange={(e) => handleFilterChange('treeInfo', e.target.value)}
+                                            />
+                                        </td>
+                                        <td className="px-2 py-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Filtrar Tipo..."
+                                                className="w-full px-2 py-1 text-[10px] border-none bg-transparent focus:ring-0 placeholder:text-muted-foreground/50"
+                                                value={filters['interventionType'] || ''}
+                                                onChange={(e) => handleFilterChange('interventionType', e.target.value)}
+                                            />
+                                        </td>
+                                        <td />
+                                        <td className="px-2 py-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Filtrar Status..."
+                                                className="w-full px-2 py-1 text-[10px] border-none bg-transparent focus:ring-0 placeholder:text-muted-foreground/50"
+                                                value={filters['statusLabel'] || ''}
+                                                onChange={(e) => handleFilterChange('statusLabel', e.target.value)}
+                                            />
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredPlans.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="p-8 text-center text-muted-foreground italic">Nenhum plano encontrado com os filtros aplicados.</td>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        filteredPlans.map((plan) => {
+                                            const startStr = plan.schedule?.start || plan.schedule?.startDate;
+                                            const isLate = startStr && new Date(startStr) < new Date() && plan.status !== 'COMPLETED';
+                                            const label = INTERVENTION_LABELS[plan.intervention_type] || plan.intervention_type;
+
+                                            return (
+                                                <tr key={plan.id} className="border-b last:border-0 transition-colors hover:bg-muted/30">
+                                                    <td className="p-4 font-mono text-[10px] font-bold text-primary">
+                                                        {plan.plan_id || plan.id.slice(0, 8)}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-xs">Árvore #{plan.tree_id ? plan.tree_id.slice(0, 8) : 'N/A'}</span>
+                                                            <span className="text-[10px] text-muted-foreground leading-tight italic">{plan.tree?.especie || 'Espécie não identificada'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset ${plan.intervention_type === 'poda' ? 'bg-blue-50 text-blue-700 ring-blue-700/10' :
+                                                            plan.intervention_type === 'supressao' ? 'bg-red-50 text-red-700 ring-red-600/10' :
+                                                                plan.intervention_type === 'tratamento' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' :
+                                                                    'bg-gray-50 text-gray-600 ring-gray-500/10'
+                                                            }`}>
+                                                            {label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-center font-medium text-xs">
+                                                        {startStr ? new Date(startStr).toLocaleDateString() : '-'}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${plan.status === 'COMPLETED' ? 'bg-green-500' : (isLate ? 'bg-red-500 animate-pulse' : 'bg-slate-300')}`} />
+                                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${plan.status === 'COMPLETED' ? 'text-green-600' : (isLate ? 'text-red-500' : 'text-slate-500')}`}>
+                                                                {plan.status === 'COMPLETED' ? 'Concluído' : (isLate ? 'Atrasado' : 'Pendente')}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </CardContent>
         </Card>
     );
 }
-

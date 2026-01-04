@@ -11,8 +11,6 @@ export function useRealtime() {
     useEffect(() => {
         if (!activeInstallation) return;
 
-        console.log('Setting up realtime subscription for installation:', activeInstallation.id);
-
         const channel = supabase.channel(`installation_${activeInstallation.id}`)
             .on(
                 'postgres_changes',
@@ -23,10 +21,6 @@ export function useRealtime() {
                     filter: `installation_id=eq.${activeInstallation.id}`
                 },
                 (payload) => {
-                    // We also need to filter by user_id on client side if RLS doesn't prevent receiving others' rows
-                    // But RLS on SELECT/UPDATE works. Realtime respects RLS *if* Row Level Security is enabled and Realtime toggle is ON in Supabase Config.
-                    // Assuming basic filtering for now.
-                    console.log('Notification received:', payload);
                     if (payload.eventType === 'INSERT') {
                         const newNotif = payload.new as any;
                         // Check if it belongs to current user? Realtime usually broadcasts unless 'broadcast' is used or RLS works with subscription tokens.

@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
-import { supabase } from '@/lib/supabase';
-import { getAllPhotos, savePhotoLocally } from '@/lib/photoStorage';
+import { supabase } from '../lib/supabase';
+import { getAllPhotos, savePhotoLocally } from '../lib/photoStorage';
 import { toast } from 'sonner';
 
 export interface BackupManifest {
@@ -151,5 +151,64 @@ export const BackupService = {
             toast.error('Erro ao importar backup');
             throw error;
         }
+    },
+
+    /**
+     * Export trees to CSV
+     */
+    exportTreesCSV: async (installationId?: string): Promise<void> => {
+        try {
+            let query = supabase.from('arvores').select('*');
+            if (installationId) {
+                query = query.eq('instalacao_id', installationId);
+            }
+            const { data: trees, error } = await query;
+
+            if (error) throw error;
+            if (!trees || trees.length === 0) {
+                toast.error('Nenhum dado encontrado para exportar');
+                return;
+            }
+
+            const csv = BackupService.jsonToCSV(trees);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `arboria_arvores_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            toast.success('CSV exportado com sucesso!');
+        } catch (error: any) {
+            console.error('CSV export failed:', error);
+            toast.error('Erro ao exportar CSV');
+        }
+    },
+
+    /**
+     * Helper to convert JSON to CSV
+     */
+    jsonToCSV: (json: any[]): string => {
+        if (json.length === 0) return '';
+        const headers = Object.keys(json[0]);
+        const csvRows = [];
+
+        // Headers
+        csvRows.push(headers.join(','));
+
+        // Data rows
+        for (const row of json) {
+            const values = headers.map(header => {
+                const val = row[header];
+                const escaped = ('' + val).replace(/"/g, '""');
+                return `"${escaped}"`;
+            });
+            csvRows.push(values.join(','));
+        }
+
+        return csvRows.join('\n');
     }
 };
