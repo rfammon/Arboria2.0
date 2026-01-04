@@ -19,7 +19,9 @@ interface SelectProps {
 export function Select({ value, onValueChange, displayValue, children }: SelectProps) {
     return (
         <SelectContext.Provider value={{ value, onValueChange, displayValue }}>
-            {children}
+            <div className="relative w-full sm:w-auto">
+                {children}
+            </div>
         </SelectContext.Provider>
     );
 }
@@ -57,7 +59,7 @@ interface SelectContentProps {
 export function SelectContent({ children, className }: SelectContentProps) {
     return (
         <div className={cn(
-            "absolute top-full left-0 z-50 mt-1 min-w-[8rem] overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-xl animate-in fade-in zoom-in-95 backdrop-blur-md",
+            "absolute top-full right-0 z-50 mt-1 min-w-[200px] overflow-hidden rounded-xl border bg-popover/90 p-1 text-popover-foreground shadow-2xl animate-in fade-in zoom-in-95 backdrop-blur-xl",
             className
         )}>
             <div className="flex flex-col gap-0.5">

@@ -216,8 +216,8 @@ export default function Execution() {
             </div>
 
             {/* Main Content */}
-            <div className="container max-w-7xl mx-auto px-4 py-6">
-                <Tabs defaultValue="pendentes" value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+            <div className="container max-w-7xl mx-auto px-4 py-8">
+                <Tabs defaultValue="pendentes" value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
                     <div className="w-full">
                         <TabsList className="flex flex-nowrap overflow-x-auto h-auto p-1 gap-2 bg-transparent no-scrollbar justify-start md:justify-between">
                             <TabPill value="pendentes" label="Pendentes" icon={Layers} count={counts.NOT_STARTED} />
