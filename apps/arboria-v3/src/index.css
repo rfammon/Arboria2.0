@@ -85,36 +85,41 @@ body,
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222.2 47% 6%;
+    /* Deep dark blue-black */
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 47% 9%;
+    /* Slightly lighter for depth */
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47% 9%;
     --popover-foreground: 210 40% 98%;
 
-    /* Arboria Blue Dark */
-    --primary: 210 100% 50%;
+    /* Arboria Blue Dark - More vibrant for contrast */
+    --primary: 210 100% 60%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217.2 32.6% 14%;
+    /* Darker secondary */
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217.2 32.6% 14%;
+    --muted-foreground: 217.2 20% 70%;
+    /* Brighter muted text */
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 217.2 32.6% 20%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 17%;
+    --input: 217.2 32.6% 12%;
+    /* Recessed darken inputs */
     --ring: 210 100% 50%;
 
-    --glass-background: rgba(15, 23, 42, 0.7);
+    --glass-background: rgba(15, 23, 42, 0.8);
   }
 
   .forest {
@@ -156,38 +161,40 @@ body,
 
   .dark-forest {
     --background: 156 42% 4%;
-    /* Very dark green/black #060f0a */
-    --foreground: 146 30% 90%;
-    /* Light grey-green for text */
+    --foreground: 146 30% 94%;
+    /* Brighter text */
 
-    --card: 156 30% 6%;
-    /* Slightly lighter than bg */
-    --card-foreground: 146 30% 90%;
+    --card: 156 30% 8%;
+    /* Slightly lighter for depth */
+    --card-foreground: 146 30% 94%;
 
-    --popover: 156 30% 6%;
-    --popover-foreground: 146 30% 90%;
+    --popover: 156 30% 8%;
+    --popover-foreground: 146 30% 94%;
 
-    /* Forest Green Primary - Deep and Rich */
-    --primary: 142 60% 35%;
+    /* Forest Green Primary - Brighter to pop against dark bg */
+    --primary: 142 60% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 156 25% 12%;
-    --secondary-foreground: 146 30% 90%;
+    --secondary-foreground: 146 30% 94%;
 
     --muted: 156 25% 12%;
-    --muted-foreground: 146 15% 60%;
+    --muted-foreground: 156 15% 70%;
+    /* Brighter muted text */
 
-    --accent: 156 25% 15%;
-    --accent-foreground: 146 30% 90%;
+    --accent: 156 25% 18%;
+    --accent-foreground: 146 30% 94%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 156 25% 15%;
-    --input: 156 25% 15%;
-    --ring: 142 60% 35%;
+    --input: 156 25% 10%;
+    /* Recessed darken inputs */
+    --ring: 142 60% 45%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
+    /* Consistency with soft UI */
   }
 
   .neon-dark {
@@ -230,44 +237,42 @@ body,
   }
 
   .gruvbox-soft-dark {
-    --background: 23 12% 18%;
-    /* #32302f - Gruvbox soft dark background (darker) */
-    --foreground: 40 20% 90%;
-    /* Lighter, creamier text for better contrast */
+    --background: 23 12% 14%;
+    /* Slightly darker for deeper blacks */
+    --foreground: 40 20% 94%;
+    /* Brighter text */
 
-    --card: 23 12% 20%;
-    --card-foreground: 40 20% 90%;
+    --card: 23 12% 18%;
+    /* Distinct depth */
+    --card-foreground: 40 20% 94%;
 
-    --popover: 23 12% 20%;
-    --popover-foreground: 40 20% 90%;
+    --popover: 23 12% 18%;
+    --popover-foreground: 40 20% 94%;
 
-    /* Gruvbox Blue Primary */
-    --primary: 194 65% 45%;
-    /* Gruvbox blue with better saturation and darker for contrast */
+    /* Gruvbox Blue Primary - Vibrant pop */
+    --primary: 194 65% 55%;
     --primary-foreground: 0 0% 100%;
-    /* White text for better contrast on primary */
 
-    --secondary: 23 10% 25%;
-    --secondary-foreground: 40 20% 85%;
+    --secondary: 23 10% 20%;
+    --secondary-foreground: 40 20% 90%;
 
-    --muted: 23 10% 25%;
-    --muted-foreground: 37 14% 65%;
-    /* #928374 - Gruvbox gray, brighter for contrast */
+    --muted: 23 10% 20%;
+    --muted-foreground: 37 14% 75%;
+    /* Brighter text */
 
-    --accent: 23 10% 25%;
-    --accent-foreground: 40 20% 85%;
+    --accent: 23 10% 28%;
+    --accent-foreground: 40 20% 94%;
 
-    --destructive: 7 85% 45%;
-    /* Gruvbox red with better contrast */
+    --destructive: 7 85% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 23 10% 30%;
-    /* Better contrast with background */
-    --input: 23 10% 25%;
-    --ring: 194 55% 55%;
-    /* Matches primary */
+    --border: 23 10% 25%;
+    --input: 23 10% 16%;
+    /* Recessed darken inputs */
+    --ring: 194 65% 55%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
+    /* Consistency with soft UI */
   }
 }
 
