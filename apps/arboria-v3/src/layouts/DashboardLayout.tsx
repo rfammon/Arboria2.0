@@ -12,8 +12,20 @@ import { TopHeader } from '../components/layout/TopHeader';
 export default function DashboardLayout() {
     const { user, loading, signOut, activeInstallation, installations, setActiveInstallation, hasPermission } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        const saved = localStorage.getItem('sidebar-collapsed');
+        return saved === 'true';
+    });
     const [isSwitchDialogOpen, setIsSwitchDialogOpen] = useState(false);
     const location = useLocation();
+
+    const toggleSidebarCollapse = () => {
+        setIsSidebarCollapsed(prev => {
+            const next = !prev;
+            localStorage.setItem('sidebar-collapsed', String(next));
+            return next;
+        });
+    };
 
     if (loading) {
         return (
@@ -82,8 +94,10 @@ export default function DashboardLayout() {
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[60] w-64 bg-card/80 backdrop-blur-xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-transform duration-200 ease-in-out lg:static lg:transform-none",
-                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                "fixed inset-y-0 left-0 z-[60] bg-card/80 backdrop-blur-xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-all duration-300 ease-in-out lg:translate-x-0",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+                isSidebarCollapsed ? "lg:w-20" : "lg:w-64",
+                "w-64" // mobile width
             )}
                 style={{
                     paddingTop: 'var(--safe-area-top)',
@@ -93,24 +107,29 @@ export default function DashboardLayout() {
             >
                 <div className="flex flex-col h-full bg-transparent text-card-foreground">
                     {/* Logo */}
-                    <div className="h-16 flex items-center px-6 border-b border-border">
-                        <TreeDeciduous className="w-8 h-8 text-green-600 dark:text-green-500 mr-2" />
-                        <div className="flex flex-col flex-1 min-w-0">
-                            <span className="text-xl font-bold leading-none">
-                                <span className="text-blue-600 dark:text-blue-500">Arbor</span>
-                                <span className="text-green-600 dark:text-green-500">IA</span>
-                            </span>
-                            {activeInstallation && (
-                                <button
-                                    onClick={() => setIsSwitchDialogOpen(true)}
-                                    className="text-xs text-muted-foreground truncate text-left hover:text-primary transition-colors flex items-center gap-2 mt-1 px-2 py-1 -ml-2 rounded-md hover:bg-accent/50"
-                                    title="Trocar instalação"
-                                >
-                                    <span className="truncate max-w-[120px] font-medium">{activeInstallation.nome}</span>
-                                    <Settings className="w-3.5 h-3.5 text-muted-foreground/70" />
-                                </button>
-                            )}
-                        </div>
+                    <div className={cn(
+                        "h-16 flex items-center border-b border-border transition-all duration-300",
+                        isSidebarCollapsed ? "px-5 justify-center" : "px-6"
+                    )}>
+                        <TreeDeciduous className="w-8 h-8 text-green-600 dark:text-green-500 shrink-0" />
+                        {!isSidebarCollapsed && (
+                            <div className="flex flex-col flex-1 min-w-0 ml-2 animate-in fade-in duration-300">
+                                <span className="text-xl font-bold leading-none">
+                                    <span className="text-blue-600 dark:text-blue-500">Arbor</span>
+                                    <span className="text-green-600 dark:text-green-500">IA</span>
+                                </span>
+                                {activeInstallation && (
+                                    <button
+                                        onClick={() => setIsSwitchDialogOpen(true)}
+                                        className="text-xs text-muted-foreground truncate text-left hover:text-primary transition-colors flex items-center gap-2 mt-1 px-2 py-1 -ml-2 rounded-md hover:bg-accent/50"
+                                        title="Trocar instalação"
+                                    >
+                                        <span className="truncate max-w-[120px] font-medium">{activeInstallation.nome}</span>
+                                        <Settings className="w-3.5 h-3.5 text-muted-foreground/70" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
 
@@ -123,15 +142,17 @@ export default function DashboardLayout() {
                                     key={item.name}
                                     to={item.href}
                                     onClick={() => setIsSidebarOpen(false)}
+                                    title={isSidebarCollapsed ? item.name : undefined}
                                     className={cn(
-                                        "flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all active:scale-95",
+                                        "flex items-center text-sm font-medium rounded-xl transition-all active:scale-95",
+                                        isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3",
                                         isActive
                                             ? "bg-primary/10 text-primary shadow-inner"
                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:shadow-sm"
                                     )}
                                 >
-                                    <item.icon className="w-5 h-5 mr-3" />
-                                    {item.name}
+                                    <item.icon className={cn("w-5 h-5", isSidebarCollapsed ? "" : "mr-3")} />
+                                    {!isSidebarCollapsed && <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
                                 </Link>
                             );
                         })}
@@ -141,10 +162,14 @@ export default function DashboardLayout() {
                     <div className="p-4 border-t border-border">
                         <button
                             onClick={() => signOut()}
-                            className="flex items-center w-full px-4 py-3 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                            title={isSidebarCollapsed ? "Sair" : undefined}
+                            className={cn(
+                                "flex items-center w-full text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors",
+                                isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3"
+                            )}
                         >
-                            <LogOut className="w-5 h-5 mr-3" />
-                            Sair
+                            <LogOut className={cn("w-5 h-5", isSidebarCollapsed ? "" : "mr-3")} />
+                            {!isSidebarCollapsed && <span>Sair</span>}
                         </button>
                     </div>
                 </div>
@@ -152,14 +177,21 @@ export default function DashboardLayout() {
 
             {/* Main Content */}
             <div
-                className="flex-1 flex flex-col min-w-0 bg-background transition-colors duration-200"
+                className={cn(
+                    "flex-1 flex flex-col min-w-0 bg-background transition-all duration-300",
+                    isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+                )}
                 style={{
                     paddingTop: 'var(--safe-area-top)',
                     paddingRight: 'var(--safe-area-right)'
                 }}
             >
                 {/* Global Top Header */}
-                <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
+                <TopHeader
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                    onToggleSidebar={toggleSidebarCollapse}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                />
 
                 {/* Page Content */}
                 <main

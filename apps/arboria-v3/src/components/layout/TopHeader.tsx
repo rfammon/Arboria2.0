@@ -16,9 +16,11 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 
 interface TopHeaderProps {
     onMenuClick: () => void;
+    onToggleSidebar?: () => void;
+    isSidebarCollapsed?: boolean;
 }
 
-export function TopHeader({ onMenuClick }: TopHeaderProps) {
+export function TopHeader({ onMenuClick, onToggleSidebar, isSidebarCollapsed }: TopHeaderProps) {
     const { userDisplayName, activeProfileNames, signOut } = useAuth();
 
     return (
@@ -29,6 +31,14 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
                     className="p-2 text-muted-foreground hover:bg-muted rounded-md lg:hidden"
                 >
                     <Menu className="w-6 h-6" />
+                </button>
+
+                <button
+                    onClick={onToggleSidebar}
+                    className="hidden lg:flex p-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
+                    title={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+                >
+                    <Menu className="w-5 h-5" />
                 </button>
 
                 <GlobalSearch />
