@@ -158,7 +158,7 @@ export default function Execution() {
     return (
         <div className="min-h-screen bg-transparent">
             {/* Header Section */}
-            <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-white/10 shadow-[var(--shadow-soft)]">
+            <div className="relative z-20 bg-card/50 backdrop-blur-md border-b border-white/5">
                 <div className="max-w-[100%] mx-auto px-6 py-3 space-y-3">
                     <div className="flex items-center justify-between">
                         <div>

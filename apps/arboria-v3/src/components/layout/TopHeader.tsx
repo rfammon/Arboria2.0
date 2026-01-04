@@ -24,7 +24,7 @@ export function TopHeader({ onMenuClick, onToggleSidebar, isSidebarCollapsed }: 
     const { userDisplayName, activeProfileNames, signOut } = useAuth();
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-white/10 bg-card/70 backdrop-blur-lg px-4 md:px-6 transition-all duration-200 shadow-[var(--shadow-soft)]">
+        <header className="sticky top-0 z-[50] flex h-16 w-full items-center justify-between border-b border-white/10 bg-card/95 backdrop-blur-xl px-4 md:px-6 transition-all duration-200 shadow-[var(--shadow-soft)]">
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMenuClick}

@@ -94,7 +94,7 @@ export default function DashboardLayout() {
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[60] bg-card/80 backdrop-blur-xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-all duration-300 ease-in-out lg:translate-x-0",
+                "fixed inset-y-0 left-0 z-[60] bg-card/95 backdrop-blur-2xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-all duration-300 ease-in-out lg:translate-x-0",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full",
                 isSidebarCollapsed ? "lg:w-20" : "lg:w-64",
                 "w-64" // mobile width
