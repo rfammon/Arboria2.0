@@ -191,8 +191,8 @@ export default function Execution() {
                         </div>
                         {isManager && (
                             <Select value={selectedUser} onValueChange={setSelectedUser}>
-                                <SelectTrigger className="w-full sm:w-[200px] bg-muted/40 border-border/50 h-10 rounded-xl">
-                                    <Users className="w-4 h-4 mr-2 text-slate-500" />
+                                <SelectTrigger className="w-full sm:w-[200px] bg-muted/40 border-border/50 h-10 rounded-xl justify-start gap-2.5">
+                                    <Users className="w-4 h-4 text-slate-500 shrink-0" />
                                     <span className="truncate text-sm">
                                         {selectedUser === 'all'
                                             ? 'Todos'
