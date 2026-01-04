@@ -140,15 +140,15 @@ export default function Execution() {
         <TabsTrigger
             value={value}
             className={cn(
-                "flex items-center gap-2 rounded-xl border border-white/10 bg-card/50 px-4 py-2.5 text-muted-foreground shadow-sm transition-all",
+                "flex items-center gap-1.5 rounded-xl border border-white/10 bg-card/50 px-3 py-2 text-muted-foreground shadow-sm transition-all",
                 "data-[state=active]:border-primary/20 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:scale-105",
-                "hover:bg-muted/50 hover:text-foreground"
+                "hover:bg-muted/50 hover:text-foreground shrink-0"
             )}
         >
-            <Icon className="w-4 h-4" />
-            <span className="font-medium text-sm">{label}</span>
+            <Icon className="w-3.5 h-3.5" />
+            <span className="font-semibold text-[11px] uppercase tracking-wider">{label}</span>
             {count > 0 && (
-                <Badge variant="secondary" className="ml-1 px-1.5 h-5 min-w-[20px] justify-center text-[10px] bg-slate-100 text-slate-600 group-data-[state=active]:bg-white group-data-[state=active]:text-primary">
+                <Badge variant="secondary" className="ml-1 px-1 h-4 min-w-[16px] justify-center text-[9px] bg-slate-100 text-slate-600 group-data-[state=active]:bg-white group-data-[state=active]:text-primary">
                     {count}
                 </Badge>
             )}
@@ -162,10 +162,10 @@ export default function Execution() {
                 <div className="container max-w-7xl mx-auto px-4 py-2 space-y-2">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-xl font-bold text-slate-900">
+                            <h1 className="text-xl font-extrabold tracking-tight font-display text-foreground">
                                 {isManager ? 'Tarefas da Instalação' : 'Minhas Tarefas'}
                             </h1>
-                            <p className="text-xs text-slate-500 font-medium">
+                            <p className="text-xs text-muted-foreground font-medium">
                                 {activeInstallation?.nome || 'Instalação não selecionada'}
                             </p>
                         </div>
@@ -219,7 +219,7 @@ export default function Execution() {
             <div className="container max-w-7xl mx-auto px-4 py-6">
                 <Tabs defaultValue="pendentes" value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
                     <div className="w-full">
-                        <TabsList className="grid grid-cols-2 md:grid-cols-5 h-auto p-1 gap-2 bg-transparent">
+                        <TabsList className="flex flex-nowrap overflow-x-auto h-auto p-1 gap-2 bg-transparent no-scrollbar justify-start md:justify-between">
                             <TabPill value="pendentes" label="Pendentes" icon={Layers} count={counts.NOT_STARTED} />
                             <TabPill value="andamento" label="Executando" icon={Play} count={counts.IN_PROGRESS} />
                             <TabPill value="paralisadas" label="Paradas" icon={AlertCircle} count={counts.BLOCKED} />
