@@ -44,9 +44,8 @@ body,
 #root {
   height: 100%;
   width: 100%;
-  overflow-x: hidden;
-  overscroll-behavior-y: none;
-  /* Prevent pull-to-refresh on mobile if not desired */
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 @layer base {

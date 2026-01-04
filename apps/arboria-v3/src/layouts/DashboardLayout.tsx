@@ -83,7 +83,7 @@ export default function DashboardLayout() {
     ];
 
     return (
-        <div className="min-h-screen bg-background flex transition-colors duration-200">
+        <div className="h-screen bg-background flex overflow-hidden transition-colors duration-200">
             {/* Mobile Sidebar Backdrop */}
             {isSidebarOpen && (
                 <div
@@ -178,7 +178,7 @@ export default function DashboardLayout() {
             {/* Main Content */}
             <div
                 className={cn(
-                    "flex-1 flex flex-col min-w-0 bg-background transition-all duration-300",
+                    "flex-1 flex flex-col min-w-0 h-full bg-background transition-all duration-300 overflow-hidden",
                     isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
                 )}
                 style={{
@@ -205,6 +205,6 @@ export default function DashboardLayout() {
             </div>
             <OfflineSyncIndicator />
             <InstallationSwitchDialog open={isSwitchDialogOpen} onOpenChange={setIsSwitchDialogOpen} />
-        </div>
+        </div >
     );
 }
