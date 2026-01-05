@@ -123,11 +123,38 @@ export const ALLOWED_MITIGATIONS_BY_CATEGORY: Record<string, string[]> = {
  * Reduz a probabilidade de falha baseada na ação (v2.0)
  * Ações diferentes de 'monitoramento' ou 'nenhuma' neutralizam o risco do fator.
  */
+/**
+ * Reduz a probabilidade de falha baseada na ação (v2.0 - Graduado)
+ * Remoção: Improvável (risco eliminado)
+ * Poda Pesada/Cabos/Remoção Galhos: Reduz em 2 níveis (ex: Iminente -> Possível)
+ * Poda Leve: Reduz em 1 nível (ex: Iminente -> Provável)
+ * Monitoramento/Nenhuma: Sem redução
+ */
 function getReducedFailureProbV2(failureProb: FailureProbability, mitigationAction?: string): FailureProbability {
     if (!mitigationAction || mitigationAction === 'nenhuma' || mitigationAction === 'monitoramento') {
         return failureProb;
     }
-    return 'Improvável';
+
+    if (mitigationAction === 'remocao_arvore') {
+        return 'Improvável';
+    }
+
+    const order: FailureProbability[] = ['Improvável', 'Possível', 'Provável', 'Iminente'];
+    const currentIndex = order.indexOf(failureProb);
+
+    if (mitigationAction === 'poda_pesada' || mitigationAction === 'instalacao_cabos' || mitigationAction === 'remocao_galhos') {
+        // Redução de 2 níveis
+        const newIndex = Math.max(0, currentIndex - 2);
+        return order[newIndex];
+    }
+
+    if (mitigationAction === 'poda_leve') {
+        // Redução de 1 nível
+        const newIndex = Math.max(0, currentIndex - 1);
+        return order[newIndex];
+    }
+
+    return 'Improvável'; // Fallback para ações drásticas não listadas explicitamente
 }
 
 /**

@@ -204,8 +204,8 @@ export function TRAQChecklistModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-            <Card className="w-full max-w-3xl max-h-[95vh] overflow-y-auto">
-                <CardHeader className="border-b">
+            <Card className="w-full max-w-3xl max-h-[98vh] flex flex-col overflow-hidden">
+                <CardHeader className="py-3 px-6 border-b shrink-0">
                     <div className="flex items-center justify-between">
                         <div>
                             <CardTitle className="text-lg">
@@ -218,14 +218,14 @@ export function TRAQChecklistModal({
                                 Avaliação TRAQ - {step === 'checklist' ? 'Checklist de Fatores de Risco' : 'Metodologia ISA'}
                             </CardDescription>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={onClose}>
+                        <Button variant="ghost" size="icon" onClick={onClose} type="button">
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
                 </CardHeader>
 
-                <div className="flex items-center justify-between px-4 sm:px-8 py-4 bg-muted/30 border-b overflow-x-auto no-scrollbar">
-                    <div className="flex items-center justify-between min-w-[320px] w-full mx-auto">
+                <div className="flex items-center justify-between px-4 sm:px-8 py-2 bg-muted/30 border-b overflow-x-auto no-scrollbar shrink-0">
+                    <div className="flex items-center justify-center w-full mx-auto max-w-lg">
                         {['Checklist', 'Alvo', 'Mitigação', 'Confirmar'].map((label, idx) => {
                             const stepNamesInternal: FlashcardStep[] = ['checklist', 'target', 'matrix', 'confirm'];
                             const stepIndexInternal = stepNamesInternal.indexOf(step);
@@ -233,6 +233,7 @@ export function TRAQChecklistModal({
                             const isStepCompleted = idx < stepIndexInternal;
                             const isStepClickable = idx <= stepIndexInternal + 1;
 
+                            // turbo
                             return (
                                 <div key={label} className="flex items-center">
                                     <button
@@ -247,21 +248,21 @@ export function TRAQChecklistModal({
                                     >
                                         {isStepCompleted ? <Check className="h-4 w-4 sm:h-5 sm:w-5" /> : idx + 1}
                                     </button>
-                                    {idx < 3 && <div className={`w-8 sm:w-16 h-1 mx-1 sm:mx-2 ${idx < stepIndexInternal ? 'bg-green-500' : 'bg-muted'}`} />}
+                                    {idx < 3 && <div className={`w-4 sm:w-8 h-1 mx-0.5 sm:mx-1 ${idx < stepIndexInternal ? 'bg-green-500' : 'bg-muted'}`} />}
                                 </div>
                             );
                         })}
                     </div>
                 </div>
 
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar">
                     {step === 'checklist' && currentCriteriaToDisplay && (
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             <div className="text-center">
-                                <span className="inline-block px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300 rounded-full mb-3">
+                                <span className="inline-block px-3 py-1 text-[10px] font-medium text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300 rounded-full mb-1">
                                     {currentCriteriaToDisplay.categoria}
                                 </span>
-                                <h3 className="text-2xl font-semibold mb-2">{currentCriteriaToDisplay.criterio}</h3>
+                                <h3 className="text-xl font-semibold mb-1">{currentCriteriaToDisplay.criterio}</h3>
                                 {currentCriteriaToDisplay.tooltip && (
                                     <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                                         {currentCriteriaToDisplay.tooltip}
@@ -269,13 +270,13 @@ export function TRAQChecklistModal({
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-center gap-6 my-8">
+                            <div className="flex items-center justify-center gap-4 my-2">
                                 <Button
                                     type="button"
                                     variant={!riskFactors[currentIndex] ? "default" : "outline"}
                                     size="lg"
                                     onClick={() => handleSetRisk(currentIndex, false)}
-                                    className={`h-20 w-40 text-lg font-bold rounded-xl transition-all ${!riskFactors[currentIndex]
+                                    className={`h-16 w-36 text-base font-bold rounded-xl transition-all ${!riskFactors[currentIndex]
                                         ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/20'
                                         : 'hover:bg-accent text-muted-foreground border-2 opacity-60'
                                         }`}
@@ -288,7 +289,7 @@ export function TRAQChecklistModal({
                                     variant={riskFactors[currentIndex] ? "destructive" : "outline"}
                                     size="lg"
                                     onClick={() => handleSetRisk(currentIndex, true)}
-                                    className={`h-20 w-40 text-lg font-bold rounded-xl transition-all ${riskFactors[currentIndex]
+                                    className={`h-16 w-36 text-base font-bold rounded-xl transition-all ${riskFactors[currentIndex]
                                         ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/20'
                                         : 'hover:bg-accent text-muted-foreground border-2 opacity-60'
                                         }`}
@@ -298,7 +299,7 @@ export function TRAQChecklistModal({
                             </div>
 
                             {riskFactors[currentIndex] && (
-                                <div className="space-y-4 p-4 bg-muted/20 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in slide-in-from-top-2">
+                                <div className="space-y-3 p-3 bg-muted/20 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in slide-in-from-top-2">
                                     <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
                                         <AlertCircle className="h-4 w-4 text-red-500" />
                                         Qual a probabilidade de falha deste fator?
@@ -308,6 +309,7 @@ export function TRAQChecklistModal({
                                         {(['Possível', 'Provável', 'Iminente'] as FailureProbability[]).map((p) => (
                                             <Button
                                                 key={p}
+                                                type="button"
                                                 variant={factorProbs[currentIndex] === p ? 'default' : 'outline'}
                                                 className="text-xs h-10 px-1"
                                                 onClick={() => {
@@ -329,10 +331,10 @@ export function TRAQChecklistModal({
                     )}
 
                     {step === 'target' && (
-                        <div className="space-y-6">
-                            <div className="text-center mb-6">
-                                <h3 className="text-2xl font-semibold mb-2">Taxa de Ocupação do Alvo</h3>
-                                <p className="text-gray-600 dark:text-gray-400">Selecione a frequÃªncia de ocupaÃ§Ã£o da Ã¡rea</p>
+                        <div className="space-y-4">
+                            <div className="text-center mb-2">
+                                <h3 className="text-xl font-semibold mb-1">Taxa de Ocupação do Alvo</h3>
+                                <p className="text-xs text-muted-foreground">Selecione a frequência de ocupação da área</p>
                             </div>
 
                             <RadioGroup value={targetCategory?.toString()} onValueChange={(v: string) => setTargetCategory(parseInt(v))}>
@@ -380,7 +382,7 @@ export function TRAQChecklistModal({
                     )}
                 </CardContent>
 
-                <div className="flex justify-between p-6 border-t bg-muted/30">
+                <div className="flex justify-between p-4 border-t bg-muted/30 shrink-0">
                     <Button
                         type="button"
                         variant="outline"
@@ -393,7 +395,7 @@ export function TRAQChecklistModal({
 
                     {step !== 'confirm' ? (
                         <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90">
-                            {step === 'checklist' && currentIndex === criteria.length - 1 ? 'AvanÃ§ar' : 'PrÃ³ximo'}
+                            {step === 'checklist' && currentIndex === criteria.length - 1 ? 'Avançar' : 'Próximo'}
                             <ChevronRight className="h-4 w-4 ml-2" />
                         </Button>
                     ) : (
@@ -424,16 +426,16 @@ function RiskMatrixStep({
     const presentFactors = criteria.filter((_, idx) => riskFactors[idx]);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             <h3 className="text-lg font-bold text-center">Matriz de Mitigação</h3>
-            <div className="space-y-4 overflow-y-auto max-h-[400px]">
+            <div className="space-y-2 overflow-y-auto max-h-[400px]">
                 {presentFactors.map((c) => {
                     const originalIdx = criteria.findIndex(item => item.id === c.id);
                     const allowedMitigations = ALLOWED_MITIGATIONS_BY_CATEGORY[c.categoria] || ALLOWED_MITIGATIONS_BY_CATEGORY['Outros'];
 
                     return (
-                        <Card key={c.id} className="p-4 border-l-4 border-l-red-500">
-                            <div className="flex justify-between items-start mb-2">
+                        <Card key={c.id} className="p-2 px-3 border-l-4 border-l-red-500">
+                            <div className="flex justify-between items-start mb-1">
                                 <div>
                                     <span className="text-[10px] uppercase text-muted-foreground">{c.categoria}</span>
                                     <p className="text-sm font-semibold">{c.criterio}</p>
@@ -445,7 +447,7 @@ function RiskMatrixStep({
                                 value={mitigationsByFactor[c.id] || 'nenhum'}
                                 onValueChange={(v) => setMitigationsByFactor(prev => ({ ...prev, [c.id]: v as MitigationAction }))}
                             >
-                                <SelectTrigger className="h-8 text-xs">
+                                <SelectTrigger className="h-8 text-xs" type="button">
                                     <SelectValue placeholder="Mitigação..." />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -499,9 +501,9 @@ function ConfirmationStep({
     );
 
     return (
-        <div className="space-y-6 text-center">
-            <h3 className="text-2xl font-semibold">Resumo dos Riscos</h3>
-            <div className="bg-muted/40 p-6 rounded-lg space-y-4 text-left max-w-md mx-auto">
+        <div className="space-y-4 text-center">
+            <h3 className="text-xl font-semibold">Resumo dos Riscos</h3>
+            <div className="bg-muted/40 p-4 rounded-lg space-y-3 text-left max-w-md mx-auto">
                 <div className="flex justify-between items-center border-b pb-2">
                     <span className="text-sm">Risco Inicial:</span>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${RISK_PROFILES[stepInitialRisk].className}`}>
