@@ -20,14 +20,24 @@ export interface TRAQRiskCriteria {
 }
 
 /**
+ * Avaliação individual de um fator de risco
+ */
+export interface FactorAssessment {
+    criteriaId: number;
+    probability: FailureProbability | null;
+    mitigation: MitigationAction;
+}
+
+/**
  * Assessment completo de risco TRAQ
  * Resultado final da avaliação
  */
 export interface TRAQAssessment {
     targetCategory: number | null; // 1-4
-    mitigationAction: string;
+    factors: FactorAssessment[]; // Lista detalhada de avaliações por fator
+    mitigationAction: string; // JSON das mitigações ou ação principal (legado)
     riskFactors: (0 | 1)[]; // Array de checkboxes (0=não, 1=sim)
-    totalScore: number; // Soma dos pesos
+    totalScore: number; // Soma dos pesos (legado/auxiliar)
     failureProb: FailureProbability;
     impactProb: string;
     initialRisk: RiskLevel;

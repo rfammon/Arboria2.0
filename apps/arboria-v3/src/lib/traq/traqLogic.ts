@@ -1,7 +1,6 @@
 /**
  * TRAQ Risk Assessment Logic
  * Implementa a metodologia Tree Risk Assessment Qualification (ISA/TRAQ)
- * Baseado no código original do sistema deprecated
  */
 
 export type FailureProbability = 'Improvável' | 'Possível' | 'Provável' | 'Iminente';
@@ -12,10 +11,6 @@ export type RiskLevel = 'Baixo' | 'Moderado' | 'Alto' | 'Extremo';
 
 /**
  * Determina a Probabilidade de Falha baseada na metodologia científica (Maior Severidade)
- * Em vez de somar pesos, identifica o defeito mais grave presente.
- * 
- * @param selectedRiskFactors - Array de objetos contendo a failure_prob de cada fator marcado
- * @returns A maior probabilidade de falha encontrada e o fator determinante
  */
 export function getScientificFailureProb(
     selectedRiskFactors: { failure_prob?: FailureProbability; criterio: string }[]
@@ -24,13 +19,13 @@ export function getScientificFailureProb(
         return { probability: 'Improvável' };
     }
 
-    const severityOrder = ['Iminente', 'Provável', 'Possível', 'Improvável'];
+    const severityOrder: FailureProbability[] = ['Iminente', 'Provável', 'Possível', 'Improvável'];
 
     for (const severity of severityOrder) {
         const factor = selectedRiskFactors.find(f => f.failure_prob === severity);
         if (factor) {
             return {
-                probability: severity as FailureProbability,
+                probability: severity,
                 drivingFactor: factor.criterio
             };
         }
@@ -40,20 +35,7 @@ export function getScientificFailureProb(
 }
 
 /**
- * Converte pontuação do checklist em probabilidade de falha (LEGADO - Mantido para compatibilidade)
- * @deprecated Use getScientificFailureProb
- */
-export function getFailureProb(score: number): FailureProbability {
-    if (score >= 30) return 'Iminente';
-    if (score >= 20) return 'Provável';
-    if (score >= 10) return 'Possível';
-    return 'Improvável';
-}
-
-/**
  * Mapeia categoria do alvo para probabilidade de impacto (Tabela 4 TRAQ)
- * @param targetCategory - 1=Raro, 2=Ocasional, 3=Frequente, 4=Constante
- * @returns Probabilidade de impacto no alvo
  */
 export function getImpactProb(targetCategory: number): ImpactProbability {
     const map: Record<number, ImpactProbability> = {
@@ -67,8 +49,6 @@ export function getImpactProb(targetCategory: number): ImpactProbability {
 
 /**
  * Matriz de Probabilidade do Evento (Event Likelihood Matrix)
- * Combina Probabilidade de Falha x Probabilidade de Impacto
- * Conforme metodologia TRAQ oficial
  */
 function getEventLikelihood(
     failureProb: FailureProbability,
@@ -93,7 +73,6 @@ function getEventLikelihood(
 
 /**
  * Determina a consequência baseada na categoria do alvo
- * Categoria 4 (Constante) = Severa, outras = Significante
  */
 function getConsequence(targetCategory: number): Consequence {
     return targetCategory === 4 ? 'Severa' : 'Significante';
@@ -101,26 +80,15 @@ function getConsequence(targetCategory: number): Consequence {
 
 /**
  * Matriz de Classificação de Risco Final (Risk Rating Matrix)
- * Combina Event Likelihood x Consequence
- * Esta é a matriz principal que determina o nível de risco TRAQ
- * 
- * @param failureProb - Probabilidade de falha da árvore
- * @param impactProb - Probabilidade de impacto no alvo
- * @param targetCategory - Categoria de ocupação do alvo (1-4)
- * @returns Nível de risco final: Baixo, Moderado, Alto ou Extremo
  */
 export function runTraqMatrices(
     failureProb: FailureProbability,
     impactProb: ImpactProbability,
     targetCategory: number
 ): RiskLevel {
-    // Passo 1: Calcular Event Likelihood
     const eventLikelihood = getEventLikelihood(failureProb, impactProb);
-
-    // Passo 2: Determinar Consequence
     const consequence = getConsequence(targetCategory);
 
-    // Passo 3: Aplicar Risk Rating Matrix
     const consequenceIndex: Record<Consequence, number> = {
         'Mínima': 0,
         'Menor': 1,
@@ -139,37 +107,31 @@ export function runTraqMatrices(
 }
 
 /**
- * Reduz a probabilidade de falha em um nível
- * Usado para calcular risco residual após mitigação
+ * Mapeia quais mitigações são permitidas para cada categoria de defeito
  */
-function getReducedFailureProb(failureProb: FailureProbability, mitigationAction?: string): FailureProbability {
-    // Monitoramento e Nenhuma ação não reduzem a probabilidade de falha
+export const ALLOWED_MITIGATIONS_BY_CATEGORY: Record<string, string[]> = {
+    'Copa e Galhos': ['poda_leve', 'poda_pesada', 'remocao_galhos', 'monitoramento', 'nenhuma'],
+    'Tronco': ['remocao_arvore', 'instalacao_cabos', 'monitoramento', 'nenhuma'],
+    'Estrutura': ['remocao_arvore', 'instalacao_cabos', 'monitoramento', 'nenhuma'],
+    'Estabilidade': ['remocao_arvore', 'instalacao_cabos', 'monitoramento', 'nenhuma'],
+    'Raízes': ['remocao_arvore', 'monitoramento', 'nenhuma'],
+    'Conflitos': ['poda_leve', 'poda_pesada', 'monitoramento', 'nenhuma'],
+    'Outros': ['poda_leve', 'remocao_arvore', 'monitoramento', 'nenhuma']
+};
+
+/**
+ * Reduz a probabilidade de falha baseada na ação (v2.0)
+ * Ações diferentes de 'monitoramento' ou 'nenhuma' neutralizam o risco do fator.
+ */
+function getReducedFailureProbV2(failureProb: FailureProbability, mitigationAction?: string): FailureProbability {
     if (!mitigationAction || mitigationAction === 'nenhuma' || mitigationAction === 'monitoramento') {
         return failureProb;
     }
-
-    // Remoção da árvore ou instalação de suporte estrutural reduzem o risco drasticamente
-    if (mitigationAction === 'remocao_arvore' || mitigationAction === 'instalacao_cabos') {
-        return 'Improvável';
-    }
-
-    // Ações de poda reduzem a probabilidade em um nível
-    const reductionMap: Record<FailureProbability, FailureProbability> = {
-        'Iminente': 'Provável',
-        'Provável': 'Possível',
-        'Possível': 'Improvável',
-        'Improvável': 'Improvável'
-    };
-    return reductionMap[failureProb];
+    return 'Improvável';
 }
 
 /**
- * Calcula o risco residual baseado em múltiplos fatores, cada um com sua mitigação.
- * 
- * @param factorsWithMitigations - Lista de fatores presentes e suas respectivas ações mitigadoras
- * @param impactProb - Probabilidade de impacto
- * @param targetCategory - Categoria do alvo
- * @returns Objeto com risco residual e a maior probabilidade de falha resultante
+ * Calcula o risco residual baseado em múltiplos fatores (v2.0)
  */
 export function calculateCumulativeResidualRisk(
     factorsWithMitigations: { failureProb: FailureProbability; mitigationAction: string | null }[],
@@ -183,12 +145,10 @@ export function calculateCumulativeResidualRisk(
         };
     }
 
-    // Calcular a probabilidade de falha reduzida para cada fator
     const reducedProbs = factorsWithMitigations.map(f =>
-        getReducedFailureProb(f.failureProb, f.mitigationAction || undefined)
+        getReducedFailureProbV2(f.failureProb, f.mitigationAction || undefined)
     );
 
-    // Identificar a maior probabilidade de falha remanescente
     const severityOrder: FailureProbability[] = ['Iminente', 'Provável', 'Possível', 'Improvável'];
     let maxReducedFailureProb: FailureProbability = 'Improvável';
 
@@ -199,15 +159,12 @@ export function calculateCumulativeResidualRisk(
         }
     }
 
-    // O risco residual é o resultado da maior prob. remanescente combinada com o alvo
     const residualRisk = runTraqMatrices(maxReducedFailureProb, impactProb, targetCategory);
-
     return { residualRisk, maxReducedFailureProb };
 }
 
 /**
- * Calcula risco residual após uma mitigação global (LEGADO)
- * Mantido para compatibilidade simples ou mitigações aplicadas ao final.
+ * Calcula risco residual - compatibilidade retroativa usando lógica v2.0
  */
 export function calculateResidualRisk(
     failureProb: FailureProbability,
@@ -215,29 +172,19 @@ export function calculateResidualRisk(
     targetCategory: number,
     mitigationAction: string | null
 ): { residualRisk: RiskLevel; reducedFailureProb: FailureProbability } {
-    // Se a ação é remoção completa, o risco é eliminado (Baixo)
-    if (mitigationAction === 'remocao_arvore') {
-        return {
-            residualRisk: 'Baixo',
-            reducedFailureProb: 'Improvável'
-        };
-    }
-
-    const reducedFailureProb = getReducedFailureProb(failureProb, mitigationAction || undefined);
+    const reducedFailureProb = getReducedFailureProbV2(failureProb, mitigationAction || undefined);
     const residualRisk = runTraqMatrices(reducedFailureProb, impactProb, targetCategory);
-
     return { residualRisk, reducedFailureProb };
 }
 
 /**
  * Perfis de risco com cores e classes CSS
- * Usado para styling visual consistente
  */
 export const RISK_PROFILES = {
     Baixo: {
         class: 'risk-low',
-        color: '#4caf50', // Legacy: keep for map markers if needed
-        bgColor: '#e8f5e9', // Legacy
+        color: '#4caf50',
+        bgColor: '#e8f5e9',
         className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800',
         icon: '✓'
     },
@@ -268,30 +215,10 @@ export const RISK_PROFILES = {
  * Descrições das categorias de alvo
  */
 export const TARGET_CATEGORIES = [
-    {
-        value: 1,
-        label: '1 - Raro',
-        desc: 'Área raramente ocupada (< 1 hora/semana)',
-        examples: 'Áreas remotas, trilhas pouco usadas'
-    },
-    {
-        value: 2,
-        label: '2 - Ocasional',
-        desc: 'Ocupação ocasional (1-4 horas/semana)',
-        examples: 'Áreas de manutenção, estacionamentos'
-    },
-    {
-        value: 3,
-        label: '3 - Frequente',
-        desc: 'Ocupação frequente (5-20 horas/semana)',
-        examples: 'Calçadas, áreas de lazer'
-    },
-    {
-        value: 4,
-        label: '4 - Constante',
-        desc: 'Ocupação constante (> 20 horas/semana)',
-        examples: 'Playgrounds, áreas de grande circulação'
-    }
+    { value: 1, label: '1 - Raro', desc: 'Área raramente ocupada (< 1 hora/semana)', examples: 'Áreas remotas, trilhas pouco usadas' },
+    { value: 2, label: '2 - Ocasional', desc: 'Ocupação ocasional (1-4 horas/semana)', examples: 'Áreas de manutenção, estacionamentos' },
+    { value: 3, label: '3 - Frequente', desc: 'Ocupação frequente (5-20 horas/semana)', examples: 'Calçadas, áreas de lazer' },
+    { value: 4, label: '4 - Constante', desc: 'Ocupação constante (> 20 horas/semana)', examples: 'Playgrounds, áreas de grande circulação' }
 ] as const;
 
 /**
@@ -299,7 +226,7 @@ export const TARGET_CATEGORIES = [
  */
 export const MITIGATION_ACTIONS = [
     { value: 'nenhuma', label: 'Nenhuma', desc: 'Não requer ação imediata' },
-    { value: 'monitoramento', label: 'Monitoramento Periódico', desc: 'Acompanhar evolução do risco' },
+    { value: 'monitoramento', label: 'Monitoramento Periódico', desc: 'Acompanhar evolução do risco (Não reduz o nível de risco)' },
     { value: 'poda_leve', label: 'Poda Leve', desc: 'Remoção de galhos pequenos' },
     { value: 'poda_pesada', label: 'Poda Pesada', desc: 'Redução significativa da copa' },
     { value: 'remocao_galhos', label: 'Remoção de Galhos Críticos', desc: 'Eliminar partes específicas de risco' },
