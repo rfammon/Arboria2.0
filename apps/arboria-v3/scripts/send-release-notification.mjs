@@ -6,7 +6,7 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function broadcastReleaseNotification() {
-    console.log('🚀 Iniciando broadcast AMPLIFICADO de notificação para v1.1.15...');
+    console.log('🚀 Iniciando broadcast de notificação para v1.1.16...');
 
     const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
     if (usersError) {
@@ -14,8 +14,8 @@ async function broadcastReleaseNotification() {
         return;
     }
 
-    const releaseTitle = 'Nova Versão Disponível: v1.1.15';
-    const releaseMessage = 'ArborIA v1.1.15 disponível! Inclui correções no GPS (Hatch Filter) para evitar travamentos e melhorar a precisão em campo.';
+    const releaseTitle = 'Nova Atualização: v1.1.16';
+    const releaseMessage = 'ArborIA v1.1.16 disponível! Nova lógica de mitigação TRAQ, correções no cabeçalho mobile e checklist otimizado.';
     const actionLink = '/settings';
 
     for (const user of users) {
@@ -27,13 +27,13 @@ async function broadcastReleaseNotification() {
                 title: releaseTitle,
                 message: releaseMessage,
                 action_link: actionLink,
-                metadata: { version: '1.1.15', is_release: true }
+                metadata: { version: '1.1.16', is_release: true }
             });
 
         if (notifyError) console.error(`❌ Falha para ${user.email}:`, notifyError);
         else console.log(`✅ Notificado: ${user.email}`);
     }
-    console.log('✨ Broadcast v1.1.15 concluído!');
+    console.log('✨ Broadcast v1.1.16 concluído!');
 }
 
 broadcastReleaseNotification();

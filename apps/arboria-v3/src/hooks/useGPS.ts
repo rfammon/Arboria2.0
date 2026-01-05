@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { latLonToUTM, type UTMCoordinates } from '../lib/coordinateUtils';
-import Gnss, { type GnssMeasurementEvent } from '../lib/plugins/GnssPlugin';
+import Gnss from '../lib/plugins/GnssPlugin';
 import { Capacitor } from '@capacitor/core';
 
 export interface GPSCoordinates {
@@ -220,6 +220,17 @@ export function useGPS() {
         cleanup();
     }, [cleanup]);
 
+    const stopAdvancedGPS = useCallback(async () => {
+        if (Capacitor.getPlatform() === 'web') return;
+        try {
+            await Gnss.stop();
+            setState(prev => ({ ...prev, isSearching: false }));
+            console.log('Advanced GPS stopped');
+        } catch (e) {
+            console.error('Failed to stop Advanced GPS:', e);
+        }
+    }, []);
+
     const startAdvancedGPS = useCallback(async () => {
         if (Capacitor.getPlatform() === 'web') {
             console.warn('GPS Avançado (GnssPlugin) não suportado na Web');
@@ -294,16 +305,7 @@ export function useGPS() {
         };
     }, [cleanup]);
 
-    const stopAdvancedGPS = useCallback(async () => {
-        if (Capacitor.getPlatform() === 'web') return;
-        try {
-            await Gnss.stop();
-            setState(prev => ({ ...prev, isSearching: false }));
-            console.log('Advanced GPS stopped');
-        } catch (e) {
-            console.error('Failed to stop Advanced GPS:', e);
-        }
-    }, []);
+
 
     return {
         ...state,

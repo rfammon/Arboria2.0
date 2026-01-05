@@ -133,7 +133,7 @@ export function TRAQChecklistModal({
 
         // Scientific Logic: Get highest failure probability from selected factors
         const selectedFactors = criteria.filter((_, idx) => riskFactors[idx]);
-        const { probability: failureProb } = getScientificFailureProb(selectedFactors);
+        const { probability: failureProb, drivingFactor } = getScientificFailureProb(selectedFactors);
 
         const impactProb = getImpactProb(targetCategory);
         const initialRisk = runTraqMatrices(failureProb, impactProb, targetCategory);
