@@ -41,7 +41,7 @@ export function RiskAssessmentSection({
     };
 
     const getRiskProfile = (risk: string) => {
-        return RISK_PROFILES[risk as keyof typeof RISK_PROFILES] || RISK_PROFILES.BAIXO;
+        return RISK_PROFILES[risk as keyof typeof RISK_PROFILES] || RISK_PROFILES.Baixo;
     };
 
     return (

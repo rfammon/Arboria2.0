@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Checkbox } from '../ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -54,14 +53,14 @@ export function TRAQChecklistModal({
         sum + (checked ? criteria[idx]?.peso || 0 : 0), 0
     );
 
-    const handleToggle = (index: number) => {
+    const handleSetRisk = (index: number, isPresent: boolean) => {
         const newFactors = [...riskFactors];
-        newFactors[index] = !newFactors[index];
+        newFactors[index] = isPresent;
         setRiskFactors(newFactors);
 
-        // Auto-advance se marcou SIM (sem toast)
-        if (newFactors[index] && index < criteria.length - 1) {
-            setTimeout(() => setCurrentIndex(index + 1), 600);
+        // Auto-advance after selection
+        if (index < criteria.length - 1) {
+            setTimeout(() => setCurrentIndex(index + 1), 400);
         }
     };
 
@@ -232,32 +231,40 @@ export function TRAQChecklistModal({
                                 )}
                             </div>
 
-                            <div className="flex flex-col items-center gap-4 my-8">
+                            <div className="flex items-center justify-center gap-6 my-8">
+                                <Button
+                                    type="button"
+                                    variant={!riskFactors[currentIndex] ? "default" : "outline"}
+                                    size="lg"
+                                    onClick={() => handleSetRisk(currentIndex, false)}
+                                    className={`h-20 w-40 text-lg font-bold rounded-xl transition-all ${!riskFactors[currentIndex]
+                                        ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/20'
+                                        : 'hover:bg-accent text-muted-foreground border-2 opacity-60'
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        NÃO
+                                    </span>
+                                </Button>
+
                                 <Button
                                     type="button"
                                     variant={riskFactors[currentIndex] ? "destructive" : "outline"}
                                     size="lg"
-                                    onClick={() => handleToggle(currentIndex)}
-                                    className={`h-20 w-48 text-xl font-bold rounded-xl transition-all ${riskFactors[currentIndex]
+                                    onClick={() => handleSetRisk(currentIndex, true)}
+                                    className={`h-20 w-40 text-lg font-bold rounded-xl transition-all ${riskFactors[currentIndex]
                                         ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/20'
-                                        : 'hover:bg-accent text-muted-foreground border-2'
+                                        : 'hover:bg-accent text-muted-foreground border-2 opacity-60'
                                         }`}
                                 >
-                                    {riskFactors[currentIndex] ? (
-                                        <span className="flex items-center gap-2">
-                                            <X className="w-6 h-6" /> SIM
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-2">
-                                            <span className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center text-xs"></span>
-                                            NÃO
-                                        </span>
-                                    )}
+                                    <span className="flex items-center gap-2">
+                                        SIM
+                                    </span>
                                 </Button>
-                                <p className="text-sm text-muted-foreground mt-2">
-                                    O fator de risco está presente?
-                                </p>
                             </div>
+                            <p className="text-sm text-muted-foreground text-center mt-[-1rem] mb-4">
+                                O fator de risco está presente?
+                            </p>
 
                             <div className="flex items-center justify-center gap-4 text-sm">
                                 <div className={`px-4 py-2 rounded-lg ${riskFactors[currentIndex]

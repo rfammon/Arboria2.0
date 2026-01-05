@@ -39,6 +39,9 @@ export function ModeToggle() {
                 <DropdownMenuItem onClick={() => setTheme("gruvbox-soft-dark")}>
                     Gruvbox Dark
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("madeira")}>
+                    Madeira
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
                     System
                 </DropdownMenuItem>

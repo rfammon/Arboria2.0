@@ -352,3 +352,37 @@ body,
 .safe-area-pb {
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
+  .madeira {
+    /* Gruvbox Material Hard/Retro inspired for 'Madeira' */
+    --background: 28 16% 18%; /* #32302F */
+    --foreground: 41 22% 85%; /* #DDC7A1 */
+
+    --card: 28 14% 20%;
+    --card-foreground: 41 22% 85%;
+
+    --popover: 28 14% 20%;
+    --popover-foreground: 41 22% 85%;
+
+    /* Gruvbox Orange for Primary */
+    --primary: 26 85% 55%;   /* #E78A4E */
+    --primary-foreground: 28 16% 18%;
+
+    --secondary: 41 15% 26%; /* #504945 */
+    --secondary-foreground: 41 22% 85%;
+
+    --muted: 41 15% 26%;
+    --muted-foreground: 41 10% 65%;
+
+    --accent: 41 15% 30%;    /* #665C54 */
+    --accent-foreground: 41 22% 85%;
+
+    --destructive: 0 80% 55%; /* #EA6962 */
+    --destructive-foreground: 41 22% 85%;
+
+    --border: 41 15% 26%;
+    --input: 41 15% 18%;
+    --ring: 26 85% 55%;
+
+    --radius: 0.75rem;
+    --shadow-color: rgba(20, 15, 10, 0.4);
+  }

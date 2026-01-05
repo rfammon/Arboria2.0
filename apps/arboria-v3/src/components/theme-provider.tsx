@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { useAuth } from "../context/AuthContext"
 
-type Theme = "dark" | "light" | "system" | "forest" | "neon-dark" | "gruvbox-soft-dark" | "dark-forest"
+type Theme = "dark" | "light" | "system" | "forest" | "neon-dark" | "gruvbox-soft-dark" | "dark-forest" | "madeira"
 
 type ThemeProviderProps = {
     children: React.ReactNode
@@ -42,7 +42,7 @@ export function ThemeProvider({
     useEffect(() => {
         const root = window.document.documentElement
 
-        root.classList.remove("light", "dark", "forest", "neon-dark", "gruvbox-soft-dark", "dark-forest")
+        root.classList.remove("light", "dark", "forest", "neon-dark", "gruvbox-soft-dark", "dark-forest", "madeira")
 
         if (theme === "system") {
             const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")

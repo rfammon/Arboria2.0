@@ -1,179 +1,147 @@
-import { useState, useRef, useEffect } from 'react';
-import { Camera, X, RefreshCw, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Camera as CameraIcon, Plus, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { toast } from 'sonner';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 interface PhotoSectionProps {
-    onPhotoCaptured: (file: File | null) => void;
-    initialPhotoUrl?: string | null;
+    onPhotosUpdated: (files: File[]) => void;
+    existingPhotos?: string[]; // URLs of already uploaded photos (for edit mode)
 }
 
-export function PhotoSection({ onPhotoCaptured, initialPhotoUrl }: PhotoSectionProps) {
-    const [stream, setStream] = useState<MediaStream | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(initialPhotoUrl || null);
-    const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const videoRef = useRef<HTMLVideoElement>(null);
+interface PhotoItem {
+    id: string;
+    url: string;
+    file?: File; // Only for new photos
+    isExisting?: boolean;
+}
 
-    // Stops camera when component unmounts or camera closes
+export function PhotoSection({ onPhotosUpdated, existingPhotos = [] }: PhotoSectionProps) {
+    const [photos, setPhotos] = useState<PhotoItem[]>([]);
+
+    // Initialize with existing photos if provided
     useEffect(() => {
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, [stream]);
+        if (existingPhotos && existingPhotos.length > 0) {
+            setPhotos(existingPhotos.map(url => ({
+                id: url, // Use URL as ID for existing
+                url: url,
+                isExisting: true
+            })));
+        }
+    }, [existingPhotos]);
 
-    const startCamera = async () => {
+    const takePhoto = async () => {
         try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
+            const image = await Camera.getPhoto({
+                quality: 80,
+                allowEditing: false,
+                resultType: CameraResultType.Uri,
+                source: CameraSource.Camera,
+                saveToGallery: true
             });
-            setStream(mediaStream);
-            setIsCameraOpen(true);
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
+
+            if (image.webPath) {
+                const response = await fetch(image.webPath);
+                const blob = await response.blob();
+                const file = new File([blob], `tree_photo_${Date.now()}.${image.format}`, { type: blob.type });
+
+                const newPhoto: PhotoItem = {
+                    id: Date.now().toString(),
+                    url: image.webPath,
+                    file: file
+                };
+
+                const updatedPhotos = [...photos, newPhoto];
+                setPhotos(updatedPhotos);
+
+                // Notify parent only about NEW files to upload
+                const newFiles = updatedPhotos
+                    .filter(p => !p.isExisting && p.file)
+                    .map(p => p.file!);
+                onPhotosUpdated(newFiles);
             }
         } catch (error) {
-            console.error('Error accessing camera:', error);
-            toast.error('Não foi possível acessar a câmera. Verifique as permissões.');
+            console.error('Error taking photo:', error);
+            if (String(error).includes('User cancelled')) return;
+            toast.error('Não foi possível abrir a câmera.');
         }
     };
 
-    const stopCamera = () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
-        }
-        setIsCameraOpen(false);
-    };
+    const removePhoto = (id: string) => {
+        const updatedPhotos = photos.filter(p => p.id !== id);
+        setPhotos(updatedPhotos);
 
-    const capturePhoto = () => {
-        if (!videoRef.current) return;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const ctx = canvas.getContext('2d');
-
-        if (ctx) {
-            ctx.drawImage(videoRef.current, 0, 0);
-
-            // Convert to Blob/File
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    const file = new File([blob], `tree_photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                    const url = URL.createObjectURL(blob);
-
-                    setPreviewUrl(url);
-                    onPhotoCaptured(file);
-                    stopCamera();
-                }
-            }, 'image/jpeg', 0.8);
-        }
-    };
-
-    const clearPhoto = () => {
-        setPreviewUrl(null);
-        onPhotoCaptured(null);
+        // Notify parent
+        const newFiles = updatedPhotos
+            .filter(p => !p.isExisting && p.file)
+            .map(p => p.file!);
+        onPhotosUpdated(newFiles);
     };
 
     return (
         <div className="space-y-4 pt-6 border-t border-border/50">
-            {/* Header */}
-            <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                    <Camera className="w-5 h-5 text-primary" />
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                        <CameraIcon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                            Fotos
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                            Registro visual ({photos.length} fotos)
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
-                        Fotos
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                        Registro visual da árvore
-                    </p>
-                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={takePhoto}
+                    className="gap-2"
+                >
+                    <Plus className="w-4 h-4" />
+                    Adicionar
+                </Button>
             </div>
 
-            <div className="bg-muted/20 p-5 rounded-xl border border-border/50">
-                {isCameraOpen ? (
-                    <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            onLoadedMetadata={() => {
-                                if (videoRef.current) videoRef.current.play();
-                            }}
-                            className="w-full h-full object-cover"
-                        />
-
-                        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                onClick={stopCamera}
-                                className="rounded-full h-12 w-12"
-                            >
-                                <X className="h-6 w-6" />
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="default"
-                                size="icon"
-                                onClick={capturePhoto}
-                                className="rounded-full h-16 w-16 border-4 border-white/50"
-                            >
-                                <div className="h-12 w-12 bg-white rounded-full" />
-                            </Button>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+                {photos.map((photo) => (
+                    <div key={photo.id} className="relative group bg-muted/20 rounded-xl border border-border/50 overflow-hidden">
+                        <div className="aspect-square relative">
+                            <img
+                                src={photo.url}
+                                alt="Tree"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
-                    </div>
-                ) : previewUrl ? (
-                    <div className="relative rounded-xl overflow-hidden aspect-video group">
-                        <img
-                            src={previewUrl}
-                            alt="Tree Preview"
-                            className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={() => {
-                                    clearPhoto();
-                                    startCamera();
-                                }}
-                            >
-                                <RefreshCw className="w-4 h-4 mr-2" />
-                                Retirar
-                            </Button>
+                        <div className="p-2 bg-background/80 backdrop-blur-sm border-t border-border/50 flex justify-end">
                             <Button
                                 type="button"
                                 variant="destructive"
-                                onClick={clearPhoto}
+                                size="sm"
+                                onClick={() => removePhoto(photo.id)}
+                                className="h-8 px-3 text-xs"
                             >
-                                <X className="w-4 h-4 mr-2" />
+                                <Trash2 className="w-3 h-3 mr-2" />
                                 Remover
                             </Button>
                         </div>
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-border/50 rounded-xl hover:bg-muted/50 transition-colors">
-                        <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                ))}
+
+                {/* Empty State / Add Placeholders if list is empty */}
+                {photos.length === 0 && (
+                    <div
+                        onClick={takePhoto}
+                        className="col-span-2 flex flex-col items-center justify-center py-8 border-2 border-dashed border-border/50 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
+                    >
+                        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                            <ImageIcon className="h-6 w-6 text-muted-foreground" />
                         </div>
-                        <Button
-                            type="button"
-                            onClick={startCamera}
-                            className="mb-2"
-                        >
-                            <Camera className="w-4 h-4 mr-2" />
-                            Tirar Foto
-                        </Button>
-                        <p className="text-xs text-muted-foreground text-center px-4">
-                            Use a câmera para registrar a árvore
-                        </p>
+                        <p className="text-sm font-medium">Nenhuma foto adicionada</p>
+                        <p className="text-xs text-muted-foreground">Toque para adicionar</p>
                     </div>
                 )}
             </div>

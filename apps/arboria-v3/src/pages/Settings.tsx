@@ -6,7 +6,7 @@ import { useTheme } from '../components/theme-provider';
 import { useUpdate } from '../hooks/useUpdate';
 import { useAuth } from '../context/AuthContext';
 import InstallationSettings from './InstallationSettings';
-import { Monitor, Moon, Sun, Download, RefreshCw, Loader2, CheckCircle2, AlertCircle, Smartphone } from 'lucide-react';
+import { Monitor, Moon, Sun, Download, RefreshCw, Loader2, CheckCircle2, AlertCircle, Smartphone, TreeDeciduous } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
@@ -59,6 +59,7 @@ function GeneralSettings() {
         { id: "dark", name: "Dark", icon: Moon, color: "bg-slate-950 text-white" },
         { id: "forest", name: "Forest", icon: CheckCircle2, color: "bg-emerald-50 text-emerald-900" },
         { id: "dark-forest", name: "Dark Forest", icon: CheckCircle2, color: "bg-emerald-950 text-emerald-50" },
+        { id: "madeira", name: "Madeira", icon: TreeDeciduous, color: "bg-[#32302F] text-[#DDC7A1]" },
         { id: "system", name: "System", icon: Monitor, color: "bg-slate-200 text-slate-900" },
     ];
 

@@ -29,7 +29,7 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingTree, setIsLoadingTree] = useState(false);
     const { criteria } = useTRAQCriteria();
-    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoFiles, setPhotoFiles] = useState<File[]>([]);
     const { activeInstallation, user } = useAuth();
     const queryClient = useQueryClient();
 
@@ -77,7 +77,8 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
         setIsSubmitting(true);
         try {
             let finalTreeId = treeId;
-            let isNewTree = false;
+            // Logic determining new tree moved/removed
+
 
             if (treeId) {
                 await updateTree.mutateAsync({ id: treeId, data: formData });
@@ -90,74 +91,81 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                 // Based on standard implementation, it likely returns the row.
                 if (newTree && newTree.id) {
                     finalTreeId = newTree.id;
-                    isNewTree = true;
+                    // Logic for new tree
                 }
                 toast.success('Árvore cadastrada com sucesso!');
             }
 
-            // Handle Photo Upload if a file exists and we have a valid tree ID
-            if (photoFile && finalTreeId && activeInstallation && user) {
-                toast.loading('Processando foto...');
-                try {
-                    // 1. Compress
-                    const compressionResult = await compressPhoto(photoFile);
+            // Handle Photo Uploads (Multiple)
+            if (photoFiles.length > 0 && finalTreeId && activeInstallation && user) {
+                toast.loading(`Enviando ${photoFiles.length} foto(s)...`);
 
-                    // 2. EXIF
-                    const exifData = await extractExifData(photoFile);
+                let successCount = 0;
+                let failCount = 0;
 
-                    // 3. Path
-                    const timestamp = new Date().getTime();
-                    const random = Math.random().toString(36).substring(7);
-                    const filename = `${timestamp}_${random}.jpg`;
-                    const storagePath = `${activeInstallation.id}/trees/${finalTreeId}/${filename}`;
+                for (const file of photoFiles) {
+                    try {
+                        // 1. Compress
+                        const compressionResult = await compressPhoto(file);
 
-                    const metadata = {
-                        file_size: compressionResult.compressedSize,
-                        mime_type: 'image/jpeg',
-                        gps_latitude: exifData?.latitude || null,
-                        gps_longitude: exifData?.longitude || null,
-                        captured_at: exifData?.timestamp?.toISOString() || new Date().toISOString(),
-                        uploaded_by: user.id,
-                    };
+                        // 2. EXIF
+                        const exifData = await extractExifData(file);
 
-                    // 4. Upload or Queue
-                    if (!navigator.onLine) {
-                        await offlineQueue.add('SYNC_PHOTO', {
-                            file: compressionResult.compressedFile,
-                            treeId: finalTreeId,
-                            installationId: activeInstallation.id,
-                            storagePath,
-                            filename,
-                            metadata
-                        });
-                        toast.success('Foto salva offline! Será enviada quando houver conexão.');
-                    } else {
-                        toast.loading('Enviando foto...');
-                        const uploadResult = await uploadService.uploadTreePhoto(
-                            compressionResult.compressedFile,
-                            finalTreeId,
-                            activeInstallation.id,
-                            storagePath,
-                            filename,
-                            metadata
-                        );
+                        // 3. Path
+                        const timestamp = new Date().getTime();
+                        const random = Math.random().toString(36).substring(7);
+                        const filename = `${timestamp}_${random}_${successCount}.jpg`;
+                        const storagePath = `${activeInstallation.id}/trees/${finalTreeId}/${filename}`;
 
-                        if (!uploadResult.success) {
-                            throw new Error(uploadResult.error?.message || 'Falha no upload');
+                        const metadata = {
+                            file_size: compressionResult.compressedSize,
+                            mime_type: 'image/jpeg',
+                            gps_latitude: exifData?.latitude || null,
+                            gps_longitude: exifData?.longitude || null,
+                            captured_at: exifData?.timestamp?.toISOString() || new Date().toISOString(),
+                            uploaded_by: user.id,
+                        };
+
+                        // 4. Upload or Queue
+                        if (!navigator.onLine) {
+                            await offlineQueue.add('SYNC_PHOTO', {
+                                file: compressionResult.compressedFile,
+                                treeId: finalTreeId,
+                                installationId: activeInstallation.id,
+                                storagePath,
+                                filename,
+                                metadata
+                            });
+                        } else {
+                            const uploadResult = await uploadService.uploadTreePhoto(
+                                compressionResult.compressedFile,
+                                finalTreeId,
+                                activeInstallation.id,
+                                storagePath,
+                                filename,
+                                metadata
+                            );
+
+                            if (!uploadResult.success) {
+                                throw new Error(uploadResult.error?.message || 'Falha no upload');
+                            }
                         }
-
-                        toast.dismiss();
-                        toast.success('Foto enviada com sucesso!');
-
-                        // Invalidate queries to show new photo immediately if we were to stay on page
-                        queryClient.invalidateQueries({ queryKey: ['tree-photos', finalTreeId] });
+                        successCount++;
+                    } catch (photoError) {
+                        console.error('Error uploading specific photo:', photoError);
+                        failCount++;
                     }
+                }
 
-                } catch (photoError) {
-                    console.error('Error uploading photo:', photoError);
-                    toast.dismiss();
-                    // Don't block the whole success if photo fails, just warn
-                    toast.error('Árvore salva, mas houve erro ao enviar a foto.');
+                toast.dismiss();
+                if (failCount > 0) {
+                    toast.warning(`${successCount} fotos enviadas. ${failCount} falharam.`);
+                } else {
+                    toast.success(`${successCount} fotos enviadas com sucesso!`);
+                }
+
+                if (navigator.onLine) {
+                    queryClient.invalidateQueries({ queryKey: ['tree-photos', finalTreeId] });
                 }
             }
 
@@ -255,7 +263,7 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                     />
 
                     <PhotoSection
-                        onPhotoCaptured={setPhotoFile}
+                        onPhotosUpdated={setPhotoFiles}
                     />
 
                     {/* Observações - Optional Field */}
