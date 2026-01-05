@@ -164,14 +164,50 @@ function getReducedFailureProb(failureProb: FailureProbability, mitigationAction
 }
 
 /**
- * Calcula risco residual após mitigação
- * Considera o tipo específico de mitigação para determinar a redução
+ * Calcula o risco residual baseado em múltiplos fatores, cada um com sua mitigação.
  * 
- * @param failureProb - Probabilidade de falha inicial
+ * @param factorsWithMitigations - Lista de fatores presentes e suas respectivas ações mitigadoras
  * @param impactProb - Probabilidade de impacto
  * @param targetCategory - Categoria do alvo
- * @param mitigationAction - Ação de mitigação escolhida (string)
- * @returns Objeto com risco residual e probabilidade de falha reduzida
+ * @returns Objeto com risco residual e a maior probabilidade de falha resultante
+ */
+export function calculateCumulativeResidualRisk(
+    factorsWithMitigations: { failureProb: FailureProbability; mitigationAction: string | null }[],
+    impactProb: ImpactProbability,
+    targetCategory: number
+): { residualRisk: RiskLevel; maxReducedFailureProb: FailureProbability } {
+    if (factorsWithMitigations.length === 0) {
+        return {
+            residualRisk: runTraqMatrices('Improvável', impactProb, targetCategory),
+            maxReducedFailureProb: 'Improvável'
+        };
+    }
+
+    // Calcular a probabilidade de falha reduzida para cada fator
+    const reducedProbs = factorsWithMitigations.map(f =>
+        getReducedFailureProb(f.failureProb, f.mitigationAction || undefined)
+    );
+
+    // Identificar a maior probabilidade de falha remanescente
+    const severityOrder: FailureProbability[] = ['Iminente', 'Provável', 'Possível', 'Improvável'];
+    let maxReducedFailureProb: FailureProbability = 'Improvável';
+
+    for (const severity of severityOrder) {
+        if (reducedProbs.includes(severity)) {
+            maxReducedFailureProb = severity;
+            break;
+        }
+    }
+
+    // O risco residual é o resultado da maior prob. remanescente combinada com o alvo
+    const residualRisk = runTraqMatrices(maxReducedFailureProb, impactProb, targetCategory);
+
+    return { residualRisk, maxReducedFailureProb };
+}
+
+/**
+ * Calcula risco residual após uma mitigação global (LEGADO)
+ * Mantido para compatibilidade simples ou mitigações aplicadas ao final.
  */
 export function calculateResidualRisk(
     failureProb: FailureProbability,

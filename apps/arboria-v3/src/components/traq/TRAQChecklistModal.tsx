@@ -10,6 +10,7 @@ import {
     getImpactProb,
     runTraqMatrices,
     calculateResidualRisk,
+    calculateCumulativeResidualRisk,
     RISK_PROFILES,
     TARGET_CATEGORIES,
     MITIGATION_ACTIONS
@@ -35,8 +36,8 @@ export function TRAQChecklistModal({
     const [currentIndex, setCurrentIndex] = useState(0);
     const [step, setStep] = useState<FlashcardStep>('checklist');
     const [riskFactors, setRiskFactors] = useState<boolean[]>(new Array(criteria.length).fill(false));
+    const [mitigationsByFactor, setMitigationsByFactor] = useState<Record<number, MitigationAction>>({});
     const [targetCategory, setTargetCategory] = useState<number | null>(null);
-    const [mitigationAction, setMitigationAction] = useState<MitigationAction>('nenhuma');
 
     // Reset state when modal opens
     useEffect(() => {
@@ -44,8 +45,8 @@ export function TRAQChecklistModal({
             setCurrentIndex(0);
             setStep('checklist');
             setRiskFactors(new Array(criteria.length).fill(false));
+            setMitigationsByFactor({});
             setTargetCategory(null);
-            setMitigationAction('nenhuma');
         }
     }, [isOpen, criteria.length]);
 
@@ -58,8 +59,15 @@ export function TRAQChecklistModal({
         newFactors[index] = isPresent;
         setRiskFactors(newFactors);
 
-        // Auto-advance after selection
-        if (index < criteria.length - 1) {
+        // Se remover o risco, limpa a mitigação
+        if (!isPresent) {
+            const newMitigations = { ...mitigationsByFactor };
+            delete newMitigations[criteria[index].id];
+            setMitigationsByFactor(newMitigations);
+        }
+
+        // Auto-advance after selection ONLY IF not present (if present, user needs to pick mitigation)
+        if (!isPresent && index < criteria.length - 1) {
             setTimeout(() => setCurrentIndex(index + 1), 400);
         }
     };
@@ -129,16 +137,24 @@ export function TRAQChecklistModal({
 
         const impactProb = getImpactProb(targetCategory);
         const initialRisk = runTraqMatrices(failureProb, impactProb, targetCategory);
-        const { residualRisk } = calculateResidualRisk(
-            failureProb,
+
+        // Novos dados para o risco residual acumulado
+        const factorsWithMitigations = criteria
+            .filter((_, idx) => riskFactors[idx])
+            .map(c => ({
+                failureProb: c.failure_prob as FailureProbability,
+                mitigationAction: mitigationsByFactor[c.id] || 'nenhuma'
+            }));
+
+        const { residualRisk } = calculateCumulativeResidualRisk(
+            factorsWithMitigations,
             impactProb,
-            targetCategory,
-            mitigationAction
+            targetCategory
         );
 
         const assessment: TRAQAssessment = {
             targetCategory,
-            mitigationAction,
+            mitigationAction: JSON.stringify(mitigationsByFactor), // Salva como JSON para manter detalhamento
             riskFactors: riskFactors.map(v => v ? 1 : 0),
             totalScore,
             failureProb,
@@ -183,35 +199,37 @@ export function TRAQChecklistModal({
                     </div>
                 </CardHeader>
 
-                {/* Stepper Visual - Clickable */}
-                <div className="flex items-center justify-between px-8 py-4 bg-muted/30 border-b">
-                    {['Checklist', 'Alvo', 'Risco', 'Confirmar'].map((label, idx) => {
-                        const stepNames: FlashcardStep[] = ['checklist', 'target', 'risk', 'confirm'];
-                        const stepIndex = stepNames.indexOf(step);
-                        const isActive = idx === stepIndex;
-                        const isCompleted = idx < stepIndex;
-                        const isClickable = idx <= stepIndex + 1; // Pode clicar em etapas anteriores ou próxima
+                {/* Stepper Visual - Clickable - FIXED OVERFLOW */}
+                <div className="flex items-center justify-between px-4 sm:px-8 py-4 bg-muted/30 border-b overflow-x-auto no-scrollbar">
+                    <div className="flex items-center justify-between min-w-[320px] w-full mx-auto">
+                        {['Checklist', 'Alvo', 'Risco', 'Confirmar'].map((label, idx) => {
+                            const stepNames: FlashcardStep[] = ['checklist', 'target', 'risk', 'confirm'];
+                            const stepIndex = stepNames.indexOf(step);
+                            const isActive = idx === stepIndex;
+                            const isCompleted = idx < stepIndex;
+                            const isClickable = idx <= stepIndex + 1;
 
-                        return (
-                            <div key={label} className="flex items-center">
-                                <button
-                                    type="button"
-                                    onClick={() => isClickable && handleStepClick(stepNames[idx])}
-                                    disabled={!isClickable}
-                                    className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all ${isCompleted ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer' :
-                                        isActive ? 'bg-primary text-primary-foreground cursor-default' :
-                                            isClickable ? 'bg-muted-foreground/30 text-muted-foreground hover:bg-muted-foreground/50 cursor-pointer' :
-                                                'bg-muted text-muted-foreground/50 cursor-not-allowed'
-                                        } ${isClickable && !isActive ? 'hover:scale-110' : ''}`}
-                                    title={isClickable ? `Ir para ${label}` : 'Não disponível ainda'}
-                                >
-                                    {isCompleted ? <Check className="h-5 w-5" /> : idx + 1}
-                                </button>
-                                {idx < 3 && <div className={`w-16 h-1 mx-2 ${idx < stepIndex ? 'bg-green-500' : 'bg-muted'
-                                    }`} />}
-                            </div>
-                        );
-                    })}
+                            return (
+                                <div key={label} className="flex items-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => isClickable && handleStepClick(stepNames[idx])}
+                                        disabled={!isClickable}
+                                        className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-sm font-semibold transition-all ${isCompleted ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer' :
+                                            isActive ? 'bg-primary text-primary-foreground cursor-default' :
+                                                isClickable ? 'bg-muted-foreground/30 text-muted-foreground hover:bg-muted-foreground/50 cursor-pointer' :
+                                                    'bg-muted text-muted-foreground/50 cursor-not-allowed'
+                                            } ${isClickable && !isActive ? 'hover:scale-110' : ''}`}
+                                        title={isClickable ? `Ir para ${label}` : 'Não disponível ainda'}
+                                    >
+                                        {isCompleted ? <Check className="h-4 w-4 sm:h-5 sm:w-5" /> : idx + 1}
+                                    </button>
+                                    {idx < 3 && <div className={`w-8 sm:w-16 h-1 mx-1 sm:mx-2 ${idx < stepIndex ? 'bg-green-500' : 'bg-muted'
+                                        }`} />}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -266,7 +284,7 @@ export function TRAQChecklistModal({
                                 O fator de risco está presente?
                             </p>
 
-                            <div className="flex items-center justify-center gap-4 text-sm">
+                            <div className="flex items-center justify-center gap-4 text-sm mb-6">
                                 <div className={`px-4 py-2 rounded-lg ${riskFactors[currentIndex]
                                     ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                                     : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
@@ -276,9 +294,46 @@ export function TRAQChecklistModal({
                                     </span>
                                 </div>
                                 <div className="text-gray-500">
-                                    Pontuação total: <span className="font-bold text-gray-900 dark:text-white">{totalScore}</span>
+                                    Pontuação: <span className="font-bold text-gray-900 dark:text-white">{totalScore}</span>
                                 </div>
                             </div>
+
+                            {/* Mitigation Selection per Factor */}
+                            {riskFactors[currentIndex] && (
+                                <div className="space-y-3 p-4 bg-muted/20 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in slide-in-from-top-2">
+                                    <Label className="text-sm font-semibold flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                        Mitigação para este risco:
+                                    </Label>
+                                    <Select
+                                        value={mitigationsByFactor[currentCriteria.id] || 'nenhuma'}
+                                        onValueChange={(v) => {
+                                            setMitigationsByFactor(prev => ({
+                                                ...prev,
+                                                [currentCriteria.id]: v as MitigationAction
+                                            }));
+                                            // Se for a última pergunta, já deixa o usuário pronto para seguir
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full bg-white dark:bg-zinc-900">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {MITIGATION_ACTIONS.map(action => (
+                                                <SelectItem key={action.value} value={action.value}>
+                                                    <div>
+                                                        <div className="font-medium">{action.label}</div>
+                                                        <div className="text-[10px] opacity-70">{action.desc}</div>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[10px] text-muted-foreground italic">
+                                        A ação mitigadora escolhida ajudará a reduzir o risco residual final.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -323,8 +378,9 @@ export function TRAQChecklistModal({
                             calculatedFailureProb={scientificFailureProb}
                             drivingFactor={drivingFactor}
                             targetCategory={targetCategory}
-                            mitigationAction={mitigationAction}
-                            setMitigationAction={setMitigationAction}
+                            mitigationsByFactor={mitigationsByFactor}
+                            criteria={criteria}
+                            riskFactors={riskFactors}
                         />
                     )}
 
@@ -334,8 +390,9 @@ export function TRAQChecklistModal({
                             totalScore={totalScore}
                             calculatedFailureProb={scientificFailureProb}
                             targetCategory={targetCategory}
-                            mitigationAction={mitigationAction}
-                            riskFactorsCount={riskFactors.filter(Boolean).length}
+                            mitigationsByFactor={mitigationsByFactor}
+                            criteria={criteria}
+                            riskFactors={riskFactors}
                         />
                     )}
                 </CardContent>
@@ -374,20 +431,38 @@ function RiskAnalysisStep({
     calculatedFailureProb,
     drivingFactor,
     targetCategory,
-    mitigationAction,
-    setMitigationAction
+    mitigationsByFactor,
+    criteria,
+    riskFactors
 }: {
-    totalScore?: number; // Kept in type to avoid breaking caller, but optional/ignored
+    totalScore?: number;
     calculatedFailureProb: FailureProbability;
     drivingFactor?: string;
     targetCategory: number;
-    mitigationAction: string;
-    setMitigationAction: (action: MitigationAction) => void;
+    mitigationsByFactor: Record<number, MitigationAction>;
+    criteria: TRAQRiskCriteria[];
+    riskFactors: boolean[];
 }) {
     const failureProb = calculatedFailureProb;
     const impactProb = getImpactProb(targetCategory);
     const initialRisk = runTraqMatrices(failureProb, impactProb, targetCategory);
-    const { residualRisk } = calculateResidualRisk(failureProb, impactProb, targetCategory, mitigationAction);
+
+    // Preparar dados para o risco residual acumulado
+    const factorsWithMitigations = criteria
+        .filter((_, idx) => riskFactors[idx])
+        .map(c => ({
+            failureProb: c.failure_prob as FailureProbability,
+            mitigationAction: mitigationsByFactor[c.id] || 'nenhuma'
+        }));
+
+    const { residualRisk, maxReducedFailureProb } = calculateCumulativeResidualRisk(
+        factorsWithMitigations,
+        impactProb,
+        targetCategory
+    );
+
+    const hasMitigations = factorsWithMitigations.some(f => f.mitigationAction && f.mitigationAction !== 'nenhuma');
+
 
     return (
         <div className="space-y-6">
@@ -428,14 +503,14 @@ function RiskAnalysisStep({
                 </Card>
             </div>
 
-            {initialRisk !== 'Baixo' && (
+            {initialRisk !== 'Baixo' && !hasMitigations && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded">
                     <div className="flex gap-2">
                         <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p className="font-semibold text-yellow-800 dark:text-yellow-300">Atenção Requerida</p>
+                            <p className="font-semibold text-yellow-800 dark:text-yellow-300">Mitigação Requerida</p>
                             <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                                Risco {initialRisk} detectado. Recomenda-se definir uma ação de mitigação.
+                                Risco {initialRisk} detectado. Você marcou fatores de risco, mas não definiu ações mitigadoras para eles no passo 1.
                             </p>
                         </div>
                     </div>
@@ -443,31 +518,30 @@ function RiskAnalysisStep({
             )}
 
             <div className="space-y-3">
-                <Label className="text-base font-semibold">Ação de Mitigação Recomendada</Label>
-                <Select value={mitigationAction} onValueChange={(v) => setMitigationAction(v as MitigationAction)}>
-                    <SelectTrigger className="w-full">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {MITIGATION_ACTIONS.map(action => (
-                            <SelectItem key={action.value} value={action.value}>
-                                <div>
-                                    <div className="font-medium">{action.label}</div>
-                                    <div className="text-xs text-gray-500">{action.desc}</div>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Label className="text-base font-semibold">Resumo da Mitigação</Label>
 
-                {mitigationAction !== 'nenhuma' && (
-                    <Card className={`p-4 border-2 ${RISK_PROFILES[residualRisk].className}`}>
+                {hasMitigations ? (
+                    <div className="space-y-2">
+                        {criteria.filter((_, idx) => riskFactors[idx] && mitigationsByFactor[_.id] && mitigationsByFactor[_.id] !== 'nenhuma').map(c => (
+                            <div key={c.id} className="text-xs flex justify-between p-2 bg-muted rounded border">
+                                <span className="font-medium truncate max-w-[150px]">{c.criterio}</span>
+                                <span className="text-green-600 font-bold">{MITIGATION_ACTIONS.find(a => a.value === mitigationsByFactor[c.id])?.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted-foreground italic">Nenhuma mitigação específica aplicada aos fatores de risco.</p>
+                )}
+
+                {hasMitigations && (
+                    <Card className={`p-4 border-2 mt-4 ${RISK_PROFILES[residualRisk].className}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <div className="text-sm font-medium opacity-80">Risco Residual (após mitigação)</div>
+                                <div className="text-sm font-medium opacity-80">Risco Residual (após mitigações)</div>
                                 <div className="text-xl font-bold mt-1">
                                     {residualRisk}
                                 </div>
+                                <div className="text-[10px] opacity-70">Maior prob. resultante: {maxReducedFailureProb}</div>
                             </div>
                             <div className="text-3xl">
                                 {RISK_PROFILES[residualRisk].icon}
@@ -485,20 +559,36 @@ function ConfirmationStep({
     totalScore,
     calculatedFailureProb,
     targetCategory,
-    mitigationAction,
-    riskFactorsCount
+    mitigationsByFactor,
+    criteria,
+    riskFactors
 }: {
     totalScore: number;
     calculatedFailureProb: FailureProbability;
     targetCategory: number;
-    mitigationAction: string;
-    riskFactorsCount: number;
+    mitigationsByFactor: Record<number, MitigationAction>;
+    criteria: TRAQRiskCriteria[];
+    riskFactors: boolean[];
 }) {
     const failureProb = calculatedFailureProb;
     const impactProb = getImpactProb(targetCategory);
     const initialRisk = runTraqMatrices(failureProb, impactProb, targetCategory);
-    const { residualRisk } = calculateResidualRisk(failureProb, impactProb, targetCategory, mitigationAction);
-    const mitigationLabel = MITIGATION_ACTIONS.find(a => a.value === mitigationAction)?.label || mitigationAction;
+
+    const factorsWithMitigations = criteria
+        .filter((_, idx) => riskFactors[idx])
+        .map(c => ({
+            failureProb: c.failure_prob as FailureProbability,
+            mitigationAction: mitigationsByFactor[c.id] || 'nenhuma'
+        }));
+
+    const { residualRisk } = calculateCumulativeResidualRisk(
+        factorsWithMitigations,
+        impactProb,
+        targetCategory
+    );
+
+    const mitigationsCount = factorsWithMitigations.filter(f => f.mitigationAction && f.mitigationAction !== 'nenhuma').length;
+
 
     return (
         <div className="space-y-6 text-center">
@@ -518,7 +608,7 @@ function ConfirmationStep({
             <div className="bg-muted/40 p-6 rounded-lg space-y-3 text-left max-w-md mx-auto">
                 <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Fatores de Risco:</span>
-                    <span className="font-semibold">{riskFactorsCount} marcados</span>
+                    <span className="font-semibold">{factorsWithMitigations.length} marcados</span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Pontuação Total:</span>
@@ -540,10 +630,10 @@ function ConfirmationStep({
                     </span>
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Mitigação:</span>
-                    <span className="font-semibold">{mitigationLabel}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Ações Mitigadoras:</span>
+                    <span className="font-semibold">{mitigationsCount} aplicadas</span>
                 </div>
-                {mitigationAction !== 'nenhuma' && (
+                {mitigationsCount > 0 && (
                     <div className="flex justify-between items-center">
                         <span className="text-gray-600 dark:text-gray-400">Risco Residual:</span>
                         <span className={`font-bold text-lg px-2 py-0.5 rounded ${RISK_PROFILES[residualRisk].className}`}>

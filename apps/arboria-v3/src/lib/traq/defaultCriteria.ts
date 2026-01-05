@@ -9,8 +9,6 @@ export const DEFAULT_TRAQ_CRITERIA: TRAQRiskCriteria[] = [
     { id: 5, categoria: 'Copa e Galhos', criterio: 'Há galhos cruzados ou friccionando entre si?', peso: 2, failure_prob: 'Possível', ordem: 6, ativo: true },
     { id: 6, categoria: 'Copa e Galhos', criterio: 'A árvore apresenta copa assimétrica (>30% de desequilíbrio)?', peso: 2, failure_prob: 'Possível', ordem: 7, ativo: true },
     { id: 7, categoria: 'Estabilidade', criterio: 'Há sinais de inclinação anormal ou recente?', peso: 5, failure_prob: 'Iminente', ordem: 8, ativo: true },
-    { id: 8, categoria: 'Alvo', criterio: 'A árvore está próxima a vias públicas ou áreas de circulação?', peso: 5, failure_prob: 'Possível', ordem: 9, ativo: true },
-    { id: 9, categoria: 'Alvo', criterio: 'Há risco de queda sobre edificações, veículos ou pessoas?', peso: 5, failure_prob: 'Provável', ordem: 10, ativo: true },
     { id: 10, categoria: 'Conflitos', criterio: 'A árvore interfere em redes elétricas ou estruturas urbanas?', peso: 4, failure_prob: 'Possível', ordem: 11, ativo: true },
     { id: 11, categoria: 'Espécie', criterio: 'A espécie é conhecida por apresentar alta taxa de falhas?', peso: 3, failure_prob: 'Possível', ordem: 12, ativo: true },
     { id: 12, categoria: 'Histórico', criterio: 'A árvore já sofreu podas drásticas ou brotação epicórmica intensa?', peso: 3, failure_prob: 'Possível', ordem: 13, ativo: true },
