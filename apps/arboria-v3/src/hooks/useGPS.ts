@@ -225,6 +225,17 @@ export function useGPS() {
             console.warn('GPS Avançado (GnssPlugin) não suportado na Web');
             return;
         }
+
+        // Reset state for new capture
+        setState({
+            coordinates: null,
+            utmCoords: null,
+            isSearching: true,
+            bestAccuracy: Infinity,
+            samples: 0,
+            error: null
+        });
+
         try {
             // Listen for smoothed location events from Hatch Filter
             await Gnss.addListener('smoothed_location', (event: any) => {
@@ -254,9 +265,9 @@ export function useGPS() {
             console.log('Advanced GPS (Hatch Filter) started');
         } catch (e) {
             console.error('Failed to start Advanced GPS:', e);
-            setState(prev => ({ ...prev, error: 'Falha ao iniciar GPS Avançado' }));
+            setState(prev => ({ ...prev, error: 'Falha ao iniciar GPS Avançado', isSearching: false }));
         }
-    }, []);
+    }, [cleanup]);
 
     // Ensure cleanup on unmount
     useEffect(() => {

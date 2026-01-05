@@ -233,15 +233,17 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                             )}
                         </Button>
                     ) : (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full">
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                                className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border-green-200 justify-start h-auto py-2 px-3"
                                 disabled
                             >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                {useAdvancedMode ? 'GPS Alta Precisão' : 'GPS Capturado'} (±{coordinates?.accuracy.toFixed(1)}m)
+                                <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                                <span className="text-left">
+                                    {useAdvancedMode ? 'GPS Alta Precisão' : 'GPS Capturado'} (±{coordinates?.accuracy.toFixed(1)}m)
+                                </span>
                             </Button>
 
                             <Button
@@ -251,13 +253,19 @@ export function GPSCapture({ onCoordinatesCaptured }: GPSCaptureProps) {
                                     else getPreciseLocation();
                                 }}
                                 variant="outline"
-                                className="w-[120px]"
+                                className="sm:w-auto flex-1 h-auto py-2"
                                 disabled={isSearching}
                             >
                                 {isSearching ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Buscando...
+                                    </>
                                 ) : (
-                                    "Recapturar"
+                                    <>
+                                        <MapPin className="h-4 w-4 mr-2" />
+                                        Recapturar
+                                    </>
                                 )}
                             </Button>
                         </div>
