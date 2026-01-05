@@ -226,7 +226,7 @@ export function useGPS() {
             return;
         }
 
-        // Reset state for new capture
+        // Reset state
         setState({
             coordinates: null,
             utmCoords: null,
@@ -236,29 +236,43 @@ export function useGPS() {
             error: null
         });
 
-        try {
-            // Listen for smoothed location events from Hatch Filter
-            await Gnss.addListener('smoothed_location', (event: any) => {
-                // 'event' is SmoothedLocation
-                const utm = latLonToUTM(event.latitude, event.longitude);
-                setState(prev => ({
-                    ...prev,
-                    coordinates: {
-                        latitude: event.latitude,
-                        longitude: event.longitude,
-                        accuracy: event.accuracy,
-                        timestamp: Date.now()
-                    },
-                    utmCoords: utm,
-                    bestAccuracy: event.accuracy,
-                    samples: prev.samples + 1, // Increment simply to show activity
-                    isSearching: true // Keep it "searching" (refining)
-                }));
-            });
+        const finishAdvanced = async () => {
+            await stopAdvancedGPS();
+            cleanup();
+        };
 
-            // Keep raw logging for debug if needed
-            await Gnss.addListener('gnss_measurement', (_: GnssMeasurementEvent) => {
-                // Optional: console.log('Raw GNSS:', _);
+        // Timeout for Advanced GPS
+        timeoutIdRef.current = window.setTimeout(() => {
+            console.log('[useGPS] Advanced GPS timeout reached');
+            finishAdvanced();
+        }, TIMEOUT_MS);
+
+        try {
+            await Gnss.addListener('smoothed_location', (event: any) => {
+                const utm = latLonToUTM(event.latitude, event.longitude);
+
+                setState(prev => {
+                    const newState = {
+                        ...prev,
+                        coordinates: {
+                            latitude: event.latitude,
+                            longitude: event.longitude,
+                            accuracy: event.accuracy,
+                            timestamp: Date.now()
+                        },
+                        utmCoords: utm,
+                        bestAccuracy: Math.min(prev.bestAccuracy, event.accuracy),
+                        samples: prev.samples + 1,
+                        isSearching: true
+                    };
+
+                    // Auto-finish if target accuracy reached (Carrier phase can be very precise)
+                    if (newState.samples >= MIN_SAMPLES && event.accuracy < TARGET_ACCURACY) {
+                        finishAdvanced();
+                    }
+
+                    return newState;
+                });
             });
 
             await Gnss.start();
@@ -266,8 +280,9 @@ export function useGPS() {
         } catch (e) {
             console.error('Failed to start Advanced GPS:', e);
             setState(prev => ({ ...prev, error: 'Falha ao iniciar GPS Avançado', isSearching: false }));
+            cleanup();
         }
-    }, [cleanup]);
+    }, [cleanup, stopAdvancedGPS]);
 
     // Ensure cleanup on unmount
     useEffect(() => {

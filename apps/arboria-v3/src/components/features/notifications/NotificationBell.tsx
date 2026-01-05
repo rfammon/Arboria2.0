@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -10,6 +11,7 @@ import { cn } from '../../../lib/utils';
 // import { Badge } from '../../ui/badge';
 
 export function NotificationBell() {
+    const navigate = useNavigate();
     const {
         notifications,
         unreadCount,
@@ -30,7 +32,11 @@ export function NotificationBell() {
     const handleMarkRead = async (id: string, link?: string) => {
         await markAsRead(id);
         if (link) {
-            window.location.href = link;
+            if (link.startsWith('http')) {
+                window.location.href = link;
+            } else {
+                navigate(link);
+            }
         }
     };
 

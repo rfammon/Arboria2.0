@@ -72,16 +72,39 @@ export function PushNotificationSettings() {
         if (!user) return;
 
         try {
+            // Check if we have a token stored for this platform
             const { data, error } = await supabase
-                .from('device_tokens')
-                .select('notification_preferences, enabled')
+                .from('user_device_tokens')
+                .select('*')
                 .eq('user_id', user.id)
                 .eq('platform', Capacitor.getPlatform())
+                .limit(1)
+                .maybeSingle();
+
+            if (!error) {
+                setEnabled(!!data);
+            }
+
+            // Load preferences from user_notification_preferences instead
+            const { data: prefData, error: prefError } = await supabase
+                .from('user_notification_preferences')
+                .select('*')
+                .eq('user_id', user.id)
                 .single();
 
-            if (data && !error) {
-                setPreferences(data.notification_preferences || DEFAULT_PREFERENCES);
-                setEnabled(data.enabled ?? false);
+            if (prefData && !prefError) {
+                setPreferences({
+                    push_task_completion: prefData.push_task_completion,
+                    push_plan_completion: prefData.push_plan_completion,
+                    push_invite_accepted: prefData.push_invite_accepted,
+                    push_app_update: prefData.push_app_update,
+                    push_alerts: prefData.push_alerts,
+                    // Legacy/UI only fields
+                    task_assigned: true,
+                    plan_updated: true,
+                    comment_added: true,
+                    system_update: true,
+                });
             }
         } catch (error) {
             console.error('Error loading preferences:', error);
@@ -125,8 +148,8 @@ export function PushNotificationSettings() {
                 // Disable push notifications in DB
                 if (user) {
                     await supabase
-                        .from('device_tokens')
-                        .update({ enabled: false })
+                        .from('user_device_tokens')
+                        .delete()
                         .eq('user_id', user.id)
                         .eq('platform', Capacitor.getPlatform());
                 }
@@ -158,10 +181,11 @@ export function PushNotificationSettings() {
 
         try {
             await supabase
-                .from('device_tokens')
-                .update({ notification_preferences: newPreferences })
-                .eq('user_id', user.id)
-                .eq('platform', Capacitor.getPlatform());
+                .from('user_notification_preferences')
+                .update({
+                    [key]: value
+                })
+                .eq('user_id', user.id);
 
             toast({
                 title: 'Preferências Atualizadas',

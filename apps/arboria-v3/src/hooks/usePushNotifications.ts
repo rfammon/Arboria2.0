@@ -31,13 +31,12 @@ export function usePushNotifications() {
         const setupListeners = async () => {
             await PushNotifications.addListener('registration', async (token: Token) => {
                 try {
-                    await supabase.from('device_tokens').upsert({
+                    await supabase.from('user_device_tokens').upsert({
                         user_id: user.id,
                         token: token.value,
                         platform: Capacitor.getPlatform(),
-                        enabled: true,
-                        last_used_at: new Date().toISOString()
-                    }, { onConflict: 'user_id,platform,token' });
+                        last_seen_at: new Date().toISOString()
+                    }, { onConflict: 'user_id,token' });
                 } catch (e) {
                     console.error('Error saving device token:', e);
                 }

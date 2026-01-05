@@ -6,37 +6,34 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function broadcastReleaseNotification() {
-    console.log('🚀 Invocando broadcast de notificação para v1.1.14...');
+    console.log('🚀 Iniciando broadcast AMPLIFICADO de notificação para v1.1.14...');
 
-    // 1. Buscar todos os usuários que possuem preferências de push habilitadas
-    // ou simplesmente buscar todos da auth.users se a tabela de preferências for opcional
-    const { data: prefs, error: prefsError } = await supabase
-        .from('user_notification_preferences')
-        .select('user_id')
-        .eq('push_enabled', true)
-        .eq('push_app_update', true);
+    // 1. Buscar TODOS os usuários do sistema via Auth API (Admin)
+    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
 
-    if (prefsError) {
-        console.error('❌ Erro ao buscar preferências:', prefsError);
+    if (usersError) {
+        console.error('❌ Erro ao buscar usuários:', usersError);
         return;
     }
 
-    console.log(`📢 Encontrados ${prefs.length} usuários para notificar.`);
+    console.log(`📢 Encontrados ${users.length} usuários totais.`);
 
     const releaseTitle = 'Nova Versão Disponível: v1.1.14';
     const releaseMessage = 'ArborIA v1.1.14 disponível! Inclui correções críticas na recaptura de GPS para melhor precisão em campo.';
+    const actionLink = '/settings';
 
-    for (const pref of prefs) {
-        console.log(`🔔 Notificando usuário: ${pref.user_id}`);
+    for (const user of users) {
+        console.log(`🔔 Notificando usuário: ${user.email} (${user.id})`);
 
+        // 2. Criar a notificação na tabela (isso aparece na Central de Notificações In-App)
         const { error: notifyError } = await supabase
             .from('notifications')
             .insert({
-                user_id: pref.user_id,
+                user_id: user.id,
                 type: 'SUCCESS',
                 title: releaseTitle,
                 message: releaseMessage,
-                action_link: 'https://github.com/rfammon/Arboria2.0/releases/tag/v1.1.13',
+                action_link: actionLink,
                 metadata: {
                     version: '1.1.14',
                     is_release: true
@@ -44,13 +41,13 @@ async function broadcastReleaseNotification() {
             });
 
         if (notifyError) {
-            console.error(`❌ Falha ao notificar ${pref.user_id}:`, notifyError);
+            console.error(`❌ Falha ao inserir notificação para ${user.email}:`, notifyError);
         } else {
-            console.log(`✅ Notificação enviada para ${pref.user_id}`);
+            console.log(`✅ Registro de notificação criado para ${user.email}`);
         }
     }
 
-    console.log('✨ Broadcast concluído!');
+    console.log('✨ Broadcast amplificado concluído!');
 }
 
 broadcastReleaseNotification();
