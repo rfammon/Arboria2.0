@@ -2,6 +2,7 @@
 import { Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { NotificationBell } from '../features/notifications/NotificationBell';
+import { UpdateIndicator } from '../ui/UpdateIndicator';
 import { GlobalSearch } from '../features/search/GlobalSearch';
 import { Button } from '../ui/button';
 import {
@@ -51,6 +52,7 @@ export function TopHeader({ onMenuClick, onToggleSidebar, isSidebarCollapsed }: 
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">
+                <UpdateIndicator />
                 <NotificationBell />
 
                 <DropdownMenu>
