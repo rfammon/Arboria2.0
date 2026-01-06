@@ -17,6 +17,7 @@ export interface TRAQRiskCriteria {
     ordem: number;
     tooltip?: string;
     ativo: boolean;
+    requires_probability?: boolean;
 }
 
 /**
@@ -38,6 +39,7 @@ export interface TRAQAssessment {
     mitigationAction: string; // JSON das mitigações ou ação principal (legado)
     riskFactors: (0 | 1)[]; // Array de checkboxes (0=não, 1=sim)
     totalScore: number; // Soma dos pesos (legado/auxiliar)
+    potentiationScore?: number;
     failureProb: FailureProbability;
     impactProb: string;
     initialRisk: RiskLevel;

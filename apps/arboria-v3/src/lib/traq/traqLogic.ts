@@ -3,7 +3,7 @@
  * Implementa a metodologia Tree Risk Assessment Qualification (ISA/TRAQ)
  */
 
-export type FailureProbability = 'Improvável' | 'Possível' | 'Provável' | 'Iminente';
+
 export type ImpactProbability = 'Muito Baixo' | 'Baixo' | 'Médio' | 'Alto';
 export type EventLikelihood = 'Muito Improvável' | 'Improvável' | 'Provável' | 'Muito Provável';
 export type Consequence = 'Mínima' | 'Menor' | 'Significante' | 'Severa';
@@ -12,17 +12,20 @@ export type RiskLevel = 'Baixo' | 'Moderado' | 'Alto' | 'Extremo';
 /**
  * Determina a Probabilidade de Falha baseada na metodologia científica (Maior Severidade)
  */
+
 export function getScientificFailureProb(
-    selectedRiskFactors: { failure_prob?: FailureProbability; criterio: string }[]
+    selectedRiskFactors: { failure_prob?: FailureProbability; criterio: string; requires_probability?: boolean }[]
 ): { probability: FailureProbability; drivingFactor?: string } {
-    if (!selectedRiskFactors || selectedRiskFactors.length === 0) {
+    const activeFactors = selectedRiskFactors.filter(f => f.requires_probability !== false);
+
+    if (!activeFactors || activeFactors.length === 0) {
         return { probability: 'Improvável' };
     }
 
     const severityOrder: FailureProbability[] = ['Iminente', 'Provável', 'Possível', 'Improvável'];
 
     for (const severity of severityOrder) {
-        const factor = selectedRiskFactors.find(f => f.failure_prob === severity);
+        const factor = activeFactors.find(f => f.failure_prob === severity);
         if (factor) {
             return {
                 probability: severity,
@@ -260,3 +263,16 @@ export const MITIGATION_ACTIONS = [
     { value: 'instalacao_cabos', label: 'Instalação de Cabos de Suporte', desc: 'Reforço estrutural' },
     { value: 'remocao_arvore', label: 'Remoção da Árvore', desc: 'Eliminação completa do risco' }
 ] as const;
+
+/**
+ * Calcula a pontuação de potencialização de risco
+ * Soma os pesos dos fatores que não requerem probabilidade (agravantes) e também os comuns
+ */
+export function calculatePotentiationScore(
+    selectedCriteria: { id: number; peso: number; requires_probability?: boolean }[]
+): number {
+    if (!selectedCriteria || selectedCriteria.length === 0) return 0;
+
+    // Sum weights of all selected criteria to give a holistic "severity score"
+    return selectedCriteria.reduce((sum, item) => sum + (item.peso || 0), 0);
+}
