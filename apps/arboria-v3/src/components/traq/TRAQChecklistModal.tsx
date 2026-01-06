@@ -151,10 +151,11 @@ export function TRAQChecklistModal({
             .map(c => ({ id: c.id, peso: c.peso, requires_probability: c.requires_probability }));
 
         const potentiationScore = calculatePotentiationScore(selectedCriteriaForScore);
+        const hasAnyFactors = selectedCriteriaForScore.length > 0;
 
         const { probability: finalFailureProb, drivingFactor: finalDrivingFactor } = getScientificFailureProb(selectedFactorsForCalc);
         const currentImpactProb = getImpactProb(targetCategory);
-        const computedInitialRisk = runTraqMatrices(finalFailureProb, currentImpactProb, targetCategory);
+        const computedInitialRisk = runTraqMatrices(finalFailureProb, currentImpactProb, targetCategory, hasAnyFactors);
 
         const factorsWithMitigationsForResidualList = criteria
             .filter((_, idx) => riskFactors[idx])
@@ -192,7 +193,6 @@ export function TRAQChecklistModal({
             failureProb: finalFailureProb,
             impactProb: currentImpactProb,
             initialRisk: computedInitialRisk,
-            residualRisk: computedResidualRisk,
             residualRisk: computedResidualRisk,
             drivingFactor: finalDrivingFactor,
             potentiationScore
@@ -597,7 +597,8 @@ function ConfirmationStep({
     passedFactorProbs: (FailureProbability | null)[];
 }) {
     const currentImpactProb = getImpactProb(passedTargetCategory);
-    const stepInitialRisk = runTraqMatrices(passedFailureProb, currentImpactProb, passedTargetCategory);
+    const hasAnyFactors = passedRiskFactors.some(v => v === true);
+    const stepInitialRisk = runTraqMatrices(passedFailureProb, currentImpactProb, passedTargetCategory, hasAnyFactors);
 
     const factorsWithMitigationsForSummary = passedCriteria
         .filter((_, idx) => passedRiskFactors[idx])

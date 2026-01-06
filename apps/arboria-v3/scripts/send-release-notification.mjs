@@ -6,7 +6,7 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function broadcastReleaseNotification() {
-    console.log('🚀 Iniciando broadcast de notificação para v1.1.17...');
+    console.log('🚀 Iniciando broadcast de notificação para v1.1.21...');
 
     const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
     if (usersError) {
@@ -14,8 +14,8 @@ async function broadcastReleaseNotification() {
         return;
     }
 
-    const releaseTitle = 'Corregido: Atualização v1.1.17';
-    const releaseMessage = 'Build v1.1.17 disponível! Resolvemos problemas na versão anterior. Agora com mitigação individual e 15 critérios otimizados.';
+    const releaseTitle = 'Atualização v1.1.21 - Correção TRAQ';
+    const releaseMessage = 'Agora os fatores agravantes (Q6, Q9, Q10, Q11, Q12, Q14, Q15) não exigem probabilidade de falha e aparecem corretamente no resumo.';
     const actionLink = '/settings';
 
     for (const user of users) {
@@ -27,13 +27,13 @@ async function broadcastReleaseNotification() {
                 title: releaseTitle,
                 message: releaseMessage,
                 action_link: actionLink,
-                metadata: { version: '1.1.17', is_release: true }
+                metadata: { version: '1.1.21', is_release: true }
             });
 
         if (notifyError) console.error(`❌ Falha para ${user.email}:`, notifyError);
         else console.log(`✅ Notificado: ${user.email}`);
     }
-    console.log('✨ Broadcast v1.1.17 concluído!');
+    console.log('✨ Broadcast v1.1.21 concluído!');
 }
 
 broadcastReleaseNotification();

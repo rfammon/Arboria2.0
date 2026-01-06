@@ -4,6 +4,7 @@
  */
 
 
+export type FailureProbability = 'Improvável' | 'Possível' | 'Provável' | 'Iminente';
 export type ImpactProbability = 'Muito Baixo' | 'Baixo' | 'Médio' | 'Alto';
 export type EventLikelihood = 'Muito Improvável' | 'Improvável' | 'Provável' | 'Muito Provável';
 export type Consequence = 'Mínima' | 'Menor' | 'Significante' | 'Severa';
@@ -87,8 +88,14 @@ function getConsequence(targetCategory: number): Consequence {
 export function runTraqMatrices(
     failureProb: FailureProbability,
     impactProb: ImpactProbability,
-    targetCategory: number
+    targetCategory: number,
+    hasFactors?: boolean
 ): RiskLevel {
+    // Override: Se não houver fatores selecionados, o risco deve ser sempre BAIXO
+    if (hasFactors === false) {
+        return 'Baixo';
+    }
+
     const eventLikelihood = getEventLikelihood(failureProb, impactProb);
     const consequence = getConsequence(targetCategory);
 
@@ -170,7 +177,7 @@ export function calculateCumulativeResidualRisk(
 ): { residualRisk: RiskLevel; maxReducedFailureProb: FailureProbability } {
     if (factorsWithMitigations.length === 0) {
         return {
-            residualRisk: runTraqMatrices('Improvável', impactProb, targetCategory),
+            residualRisk: runTraqMatrices('Improvável', impactProb, targetCategory, false),
             maxReducedFailureProb: 'Improvável'
         };
     }
@@ -189,7 +196,7 @@ export function calculateCumulativeResidualRisk(
         }
     }
 
-    const residualRisk = runTraqMatrices(maxReducedFailureProb, impactProb, targetCategory);
+    const residualRisk = runTraqMatrices(maxReducedFailureProb, impactProb, targetCategory, true);
     return { residualRisk, maxReducedFailureProb };
 }
 
@@ -200,10 +207,11 @@ export function calculateResidualRisk(
     failureProb: FailureProbability,
     impactProb: ImpactProbability,
     targetCategory: number,
-    mitigationAction: string | null
+    mitigationAction: string | null,
+    hasFactors?: boolean
 ): { residualRisk: RiskLevel; reducedFailureProb: FailureProbability } {
     const reducedFailureProb = getReducedFailureProbV2(failureProb, mitigationAction || undefined);
-    const residualRisk = runTraqMatrices(reducedFailureProb, impactProb, targetCategory);
+    const residualRisk = runTraqMatrices(reducedFailureProb, impactProb, targetCategory, hasFactors);
     return { residualRisk, reducedFailureProb };
 }
 
