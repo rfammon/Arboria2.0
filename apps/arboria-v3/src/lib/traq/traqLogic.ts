@@ -196,6 +196,12 @@ export function calculateCumulativeResidualRisk(
         }
     }
 
+    const isTreeRemoval = reducedProbs.every(p => p === 'Improvável') && factorsWithMitigations.some(f => f.mitigationAction === 'remocao_arvore');
+
+    if (isTreeRemoval) {
+        return { residualRisk: 'Baixo', maxReducedFailureProb: 'Improvável' };
+    }
+
     const residualRisk = runTraqMatrices(maxReducedFailureProb, impactProb, targetCategory, true);
     return { residualRisk, maxReducedFailureProb };
 }
@@ -211,6 +217,12 @@ export function calculateResidualRisk(
     hasFactors?: boolean
 ): { residualRisk: RiskLevel; reducedFailureProb: FailureProbability } {
     const reducedFailureProb = getReducedFailureProbV2(failureProb, mitigationAction || undefined);
+
+    // Override: Remoção de árvore sempre resulta em risco BAIXO
+    if (mitigationAction === 'remocao_arvore') {
+        return { residualRisk: 'Baixo', reducedFailureProb: 'Improvável' };
+    }
+
     const residualRisk = runTraqMatrices(reducedFailureProb, impactProb, targetCategory, hasFactors);
     return { residualRisk, reducedFailureProb };
 }

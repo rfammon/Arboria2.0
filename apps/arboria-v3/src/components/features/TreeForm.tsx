@@ -206,7 +206,7 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
             <form onSubmit={handleSubmit(onSubmit, (errors) => {
                 console.error('[TreeForm] Validation errors:', errors);
                 toast.error('Verifique os campos obrigatórios');
-            })} className="flex-1 overflow-y-auto">
+            })} className="flex-1 overflow-y-auto overscroll-contain touch-pan-y isolate">
                 <div className="p-6 space-y-6">
                     {/* Basic Information */}
                     <div className="space-y-5">
