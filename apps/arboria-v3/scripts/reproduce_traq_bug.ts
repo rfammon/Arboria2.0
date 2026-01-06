@@ -23,6 +23,11 @@ function testScenario() {
     const { residualRisk: residRiskRemoval } = calculateResidualRisk('Provável', impactProb, targetCategory, 'remocao_arvore', true);
     console.log(`Risco Residual com Remoção: ${residRiskRemoval}`);
 
+    // Teste 4: Instalação de Cabos (Deve ser MODERADO mesmo com Alvo 4)
+    console.log("\nTeste 4: Risco Residual com Cabos");
+    const { residualRisk: residRiskCables } = calculateResidualRisk('Provável', impactProb, targetCategory, 'instalacao_cabos', true);
+    console.log(`Risco Residual com Cabos: ${residRiskCables}`);
+
     let success = true;
     if (riskWithoutFactors !== 'Baixo') {
         console.log("❌ FALHA: O risco sem fatores deveria ser 'Baixo'.");
@@ -34,6 +39,10 @@ function testScenario() {
     }
     if (residRiskRemoval !== 'Baixo') {
         console.log("❌ FALHA: O risco com remoção deveria ser 'Baixo'.");
+        success = false;
+    }
+    if (residRiskCables !== 'Moderado') {
+        console.log("❌ FALHA: O risco com cabos deveria ser 'Moderado'.");
         success = false;
     }
 

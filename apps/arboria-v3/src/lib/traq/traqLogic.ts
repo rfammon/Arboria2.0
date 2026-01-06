@@ -223,6 +223,11 @@ export function calculateResidualRisk(
         return { residualRisk: 'Baixo', reducedFailureProb: 'Improvável' };
     }
 
+    // New Override: Escorar com cabos resulta em risco MODERADO
+    if (mitigationAction === 'instalacao_cabos') {
+        return { residualRisk: 'Moderado', reducedFailureProb };
+    }
+
     const residualRisk = runTraqMatrices(reducedFailureProb, impactProb, targetCategory, hasFactors);
     return { residualRisk, reducedFailureProb };
 }
