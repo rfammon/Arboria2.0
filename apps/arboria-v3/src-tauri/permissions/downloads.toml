@@ -1,0 +1,36 @@
+# Tauri custom command permissions for download functionality
+
+[[permission]]
+identifier = "allow-save-download-file"
+description = "Enables the save_download_file command to save downloaded files to disk."
+commands.allow = ["save_download_file"]
+
+[[permission]]
+identifier = "deny-save-download-file"
+description = "Denies the save_download_file command."
+commands.deny = ["save_download_file"]
+
+[[permission]]
+identifier = "allow-show-in-folder"
+description = "Enables the show_in_folder command to reveal files in file explorer."
+commands.allow = ["show_in_folder"]
+
+[[permission]]
+identifier = "deny-show-in-folder"
+description = "Denies the show_in_folder command."
+commands.deny = ["show_in_folder"]
+
+[[permission]]
+identifier = "allow-open-file-natively"
+description = "Enables the open_file_natively command to open files with system default application."
+commands.allow = ["open_file_natively"]
+
+[[permission]]
+identifier = "deny-open-file-natively"
+description = "Denies the open_file_natively command."
+commands.deny = ["open_file_natively"]
+
+[[permission]]
+identifier = "default"
+description = "Default permissions for custom download commands."
+commands.allow = ["save_download_file", "show_in_folder", "open_file_natively"]

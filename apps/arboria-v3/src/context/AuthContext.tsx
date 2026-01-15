@@ -147,10 +147,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         // Load profiles ref table
         InstallationService.getProfiles().then(profiles => {
+            console.log('[AuthContext] Loaded Profiles:', profiles);
             const map: Record<string, { nome: string, permissoes: string[] }> = {};
             profiles.forEach(p => map[p.id] = { nome: p.nome, permissoes: p.permissoes });
+            console.log('[AuthContext] Profile Map:', map);
             setProfileMap(map);
-        }).catch(console.error);
+        }).catch(err => console.error('[AuthContext] Failed to load profiles:', err));
     }, []);
 
     const userDisplayName = session?.user?.email || 'Usuário';
@@ -160,13 +162,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Calculate effective permissions
     const permissions = activeMember?.perfis?.reduce((acc: string[], pid: string) => {
         const profile = profileMap[pid];
+        if (!profile) {
+            console.warn(`[AuthContext] Profile ID ${pid} not found in profileMap`);
+        }
         return profile ? [...acc, ...profile.permissoes] : acc;
     }, []) || [];
 
+    console.log('[AuthContext] Active Member Profiles:', activeMember?.perfis);
+    console.log('[AuthContext] Derived Permissions:', permissions);
+
     const activeProfileNames = activeMember?.perfis
-        ?.map((pid: string) => profileMap[pid]?.nome)
+        ?.map((pid: string) => {
+            const name = profileMap[pid]?.nome;
+            if (!name) console.warn(`[AuthContext] No name found for Profile ID: ${pid}`);
+            return name;
+        })
         .filter(Boolean)
         .join(', ') || 'Membro';
+
+    console.log('[AuthContext] Final Active Profile Names:', activeProfileNames);
 
     const hasPermission = (permission: string) => {
         if (!permissions) {

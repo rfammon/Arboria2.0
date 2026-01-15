@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { DownloadHub } from './DownloadHub';
 
 interface TopHeaderProps {
     onMenuClick: () => void;
@@ -52,6 +53,7 @@ export function TopHeader({ onMenuClick, onToggleSidebar, isSidebarCollapsed }: 
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">
+                <DownloadHub />
                 <UpdateIndicator />
                 <NotificationBell />
 

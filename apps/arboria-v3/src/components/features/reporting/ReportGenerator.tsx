@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../ui/button';
@@ -8,6 +9,8 @@ import { ReportStats } from './ReportStats';
 import { ReportMap } from './ReportMap';
 import { toast } from 'sonner';
 import { ReportService } from '../../../api/reportService';
+import { downloadFile } from '../../../utils/downloadUtils';
+import { useDownloads } from '../../../context/DownloadContext';
 
 // Type definitions
 interface TreeData {
@@ -36,6 +39,7 @@ interface ChartsData {
 }
 
 export function ReportGenerator() {
+    const navigate = useNavigate();
     const { activeInstallation } = useAuth();
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
@@ -201,8 +205,11 @@ export function ReportGenerator() {
         });
     };
 
+    const { addDownload, updateDownload } = useDownloads();
+
     const handleGenerateReport = async () => {
         setGenerating(true);
+        let downloadId = '';
         try {
             // 1. Prepare Payload (No map image needed, server handles it)
             const payload = {
@@ -211,25 +218,69 @@ export function ReportGenerator() {
                 trees: trees
             };
 
+            const filename = `Relatorio_${activeInstallation?.nome?.replace(/\s+/g, '_') || 'Inventario'}.pdf`;
+            downloadId = addDownload({
+                filename,
+                type: 'pdf'
+            });
+
+            // Redirect to downloads immediately
+            navigate('/downloads');
+
             // 2. Call Backend
             toast.info("Gerando PDF no servidor (renderizando mapa)...");
+            updateDownload(downloadId, { progress: 30 });
+            updateDownload(downloadId, { progress: 30 });
             const pdfBlob = await ReportService.generateReport(payload);
 
+            // Validation: Check if blob is valid PDF
+            if (pdfBlob.size < 100) {
+                // Determine if it's a JSON error
+                const text = await pdfBlob.text();
+                console.error("Invalid PDF Blob (Too Small):", text);
+                try {
+                    const errorJson = JSON.parse(text);
+                    throw new Error(errorJson.details || errorJson.error || "Erro desconhecido ao gerar PDF");
+                } catch (e: any) {
+                    if (e.message && e.message.includes("Erro desconhecido")) throw e;
+                    throw new Error("O arquivo gerado está corrompido ou vazio.");
+                }
+            }
+
+            // Robust check: Verify PDF magic bytes
+            const headerBuffer = await pdfBlob.slice(0, 5).arrayBuffer();
+            const header = new TextDecoder().decode(headerBuffer);
+            if (header !== '%PDF-') {
+                console.error("Invalid PDF Header:", header);
+                const text = await pdfBlob.text();
+                console.error("Full Blob Content:", text);
+                try {
+                    const errorJson = JSON.parse(text);
+                    throw new Error(errorJson.details || errorJson.error || "Erro ao gerar PDF: Resposta inválida do servidor.");
+                } catch {
+                    throw new Error("O arquivo recebido não é um PDF válido.");
+                }
+            }
+
             // 3. Trigger Download
-            const url = window.URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Relatorio_${activeInstallation?.nome?.replace(/\s+/g, '_') || 'Inventario'}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            updateDownload(downloadId, { progress: 70 });
+            // downloadDirectory is already available from hook above
+            const result = await downloadFile(pdfBlob, filename);
+
+            updateDownload(downloadId, {
+                status: 'success',
+                progress: 100,
+                path: result.path
+            });
 
             toast.success("Relatório gerado com sucesso!");
 
         } catch (e: any) {
             console.error(e);
             toast.error(`Erro ao gerar PDF: ${e.message} `);
+            if (downloadId) {
+                updateDownload(downloadId, { status: 'error', error: e.message });
+            }
             toast.warning("Certifique-se que o servidor está rodando (npm run server em /server)");
         } finally {
             setGenerating(false);

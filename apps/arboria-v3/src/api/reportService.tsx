@@ -6,11 +6,28 @@ import { TreeReport } from '../components/reports/templates/TreeReport';
 import { ScheduleReport } from '../components/reports/templates/ScheduleReport';
 import { RiskInventoryReport } from '../components/reports/templates/RiskInventoryReport';
 
+const getBaseUrl = () => {
+    // In Tauri v2 production, protocol is often 'http:' with hostname 'tauri.localhost'
+    const isTauri = window.location.origin.includes('tauri.localhost') ||
+        window.location.protocol === 'tauri:' ||
+        (!!window.__TAURI__);
+
+    // In production, there is usually no port or it's not a standard dev port
+    const isProd = !window.location.port || window.location.port === '';
+
+    if (isTauri && isProd) {
+        return 'http://127.0.0.1:3001';
+    }
+    return '';
+};
+
 export const ReportService = {
     async generateReport(data: any) {
         try {
-            console.log("Fetching PDF from: /api/reports/generate-report");
-            const response = await fetch('/api/reports/generate-report', {
+            const baseUrl = getBaseUrl();
+            const endpoint = `${baseUrl}/api/reports/generate-report`;
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -19,14 +36,22 @@ export const ReportService = {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.details || 'Failed to generate PDF');
+                const text = await response.text();
+                try {
+                    const error = JSON.parse(text);
+                    throw new Error(error.details || error.error || 'Failed to generate PDF');
+                } catch (e) {
+                    throw new Error(`Erro do Servidor (${response.status}): ${text.slice(0, 100)}...`);
+                }
             }
 
             // Return Blob for download
             return await response.blob();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Report Service Error:", error);
+            if (error.message === 'Failed to fetch') {
+                throw new Error("Erro de conexão com o servidor de relatórios. Verifique se o app foi instalado corretamente.");
+            }
             throw error;
         }
     },
@@ -109,8 +134,10 @@ export const ReportService = {
             }
 
             // 5. Send to Server for PDF Generation
-            console.log("Fetching PDF from: /api/reports/generate-pdf-from-html");
-            const response = await fetch('/api/reports/generate-pdf-from-html', {
+            const baseUrl = getBaseUrl();
+            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
+            console.log("Fetching PDF from:", endpoint);
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -187,8 +214,10 @@ export const ReportService = {
             }
 
             // 5. Generate PDF
-            console.log("Fetching PDF from: /api/reports/generate-pdf-from-html");
-            const response = await fetch('/api/reports/generate-pdf-from-html', {
+            const baseUrl = getBaseUrl();
+            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
+            console.log("Fetching PDF from:", endpoint);
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ html, mapData }),
@@ -233,8 +262,10 @@ export const ReportService = {
             );
 
             // 4. Generate PDF (No map for schedule usually)
-            console.log("Fetching PDF from: /api/reports/generate-pdf-from-html");
-            const response = await fetch('/api/reports/generate-pdf-from-html', {
+            const baseUrl = getBaseUrl();
+            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
+            console.log("Fetching PDF from:", endpoint);
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ html, mapData: null }),
@@ -327,8 +358,10 @@ export const ReportService = {
             }
 
             // 4. Generate PDF with extended timeout for large reports
+            const baseUrl = getBaseUrl();
+            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
             console.log(`Generating Risk Inventory for ${trees.length} trees...`);
-            const response = await fetch('/api/reports/generate-pdf-from-html', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ html, mapData }),

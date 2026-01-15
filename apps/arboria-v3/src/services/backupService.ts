@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { supabase } from '../lib/supabase';
 import { getAllPhotos, savePhotoLocally } from '../lib/photoStorage';
 import { toast } from 'sonner';
+import { downloadFile } from '../utils/downloadUtils';
 
 export interface BackupManifest {
     version: string;
@@ -16,7 +17,7 @@ export const BackupService = {
     /**
      * Export all data to a ZIP file
      */
-    exportData: async (installationId?: string): Promise<void> => {
+    exportData: async (installationId?: string): Promise<{ path: string, platform: string } | void | undefined> => {
         try {
             const zip = new JSZip();
 
@@ -67,16 +68,11 @@ export const BackupService = {
             const content = await zip.generateAsync({ type: 'blob' });
 
             // Trigger download
-            const url = window.URL.createObjectURL(content);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `arboria_backup_${new Date().toISOString().split('T')[0]}.zip`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            const filename = `arboria_backup_${new Date().toISOString().split('T')[0]}.zip`;
+            const result = await downloadFile(content, filename);
 
             toast.success('Backup exportado com sucesso!');
+            return result;
 
         } catch (error: any) {
             console.error('Export failed:', error);
@@ -156,7 +152,7 @@ export const BackupService = {
     /**
      * Export trees to CSV
      */
-    exportTreesCSV: async (installationId?: string): Promise<void> => {
+    exportTreesCSV: async (installationId?: string): Promise<{ path: string, platform: string } | void | undefined> => {
         try {
             let query = supabase.from('arvores').select('*');
             if (installationId) {
@@ -172,16 +168,11 @@ export const BackupService = {
 
             const csv = BackupService.jsonToCSV(trees);
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `arboria_arvores_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const filename = `arboria_arvores_${new Date().toISOString().split('T')[0]}.csv`;
+            const result = await downloadFile(blob, filename);
 
             toast.success('CSV exportado com sucesso!');
+            return result;
         } catch (error: any) {
             console.error('CSV export failed:', error);
             toast.error('Erro ao exportar CSV');

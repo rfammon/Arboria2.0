@@ -11,11 +11,14 @@ import { useTrees } from '../hooks/useTrees';
 import { supabase } from '../lib/supabase';
 import { BackupService } from '../services/backupService';
 import { useRef } from 'react';
+import { downloadFile } from '../utils/downloadUtils';
+import { useDownloads } from '../context/DownloadContext';
 
 export default function Reports() {
     const { activeInstallation } = useAuth();
     const { plans } = usePlans();
     const { data: trees = [] } = useTrees();
+    const { addDownload, updateDownload } = useDownloads();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleGenerateReport = async (type: ReportType, selectedId?: string) => {
@@ -24,9 +27,29 @@ export default function Reports() {
             return;
         }
 
+        let downloadId = '';
         try {
             let pdfBlob: Blob;
             let filename: string;
+
+            // Pre-calculate filename for early registration
+            let initialFilename = 'Relatorio.pdf';
+            if (type === 'intervention-plan') {
+                const plan = (plans || []).find(p => p.id === selectedId);
+                initialFilename = `Plano_${plan?.plan_id || 'Intervencao'}.pdf`;
+            } else if (type === 'tree-individual') {
+                const tree = (trees || []).find(t => t.id === selectedId);
+                initialFilename = `Ficha_${tree?.codigo || 'Arvore'}.pdf`;
+            } else if (type === 'schedule') {
+                initialFilename = `Cronograma.pdf`;
+            } else {
+                initialFilename = `Inventario_Risco.pdf`;
+            }
+
+            downloadId = addDownload({
+                filename: initialFilename,
+                type: 'pdf'
+            });
 
             switch (type) {
                 case 'intervention-plan':
@@ -100,36 +123,62 @@ export default function Reports() {
             }
 
             // Download PDF
-            console.log('Downloading PDF:', filename, 'Size:', pdfBlob.size);
-            const url = window.URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            link.setAttribute('download', filename); // Double insurance
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            updateDownload(downloadId, { progress: 50 });
+            const result = await downloadFile(pdfBlob, filename);
+            updateDownload(downloadId, {
+                status: 'success',
+                progress: 100,
+                path: result.path,
+                filename: filename // Update in case it changed
+            });
 
             toast.success('Relatório gerado com sucesso!');
 
         } catch (error: any) {
             console.error('Error generating report:', error);
             toast.error(`Erro ao gerar relatório: ${error.message}`);
+            if (downloadId) {
+                updateDownload(downloadId, { status: 'error', error: error.message });
+            }
         }
     };
 
     const handleAction = async (action: string) => {
+        let downloadId = '';
         try {
             switch (action) {
-                case 'Exportar CSV':
+                case 'Exportar CSV': {
                     toast.info('Iniciando exportação CSV...');
-                    await BackupService.exportTreesCSV(activeInstallation?.id);
+                    const filename = `arboria_arvores_${new Date().toISOString().split('T')[0]}.csv`;
+                    downloadId = addDownload({ filename, type: 'csv' });
+
+                    const result = await BackupService.exportTreesCSV(activeInstallation?.id);
+
+                    if (result) {
+                        updateDownload(downloadId, {
+                            status: 'success',
+                            progress: 100,
+                            path: result.path
+                        });
+                    }
                     break;
-                case 'Baixar Backup':
+                }
+                case 'Baixar Backup': {
                     toast.info('Gerando backup ZIP...');
-                    await BackupService.exportData(activeInstallation?.id);
+                    const filename = `arboria_backup_${new Date().toISOString().split('T')[0]}.zip`;
+                    downloadId = addDownload({ filename, type: 'zip' });
+
+                    const result = await BackupService.exportData(activeInstallation?.id);
+
+                    if (result) {
+                        updateDownload(downloadId, {
+                            status: 'success',
+                            progress: 100,
+                            path: result.path
+                        });
+                    }
                     break;
+                }
                 case 'Importar Dados':
                     fileInputRef.current?.click();
                     break;
@@ -137,6 +186,9 @@ export default function Reports() {
         } catch (error: any) {
             console.error(`Action ${action} failed:`, error);
             toast.error(`Falha na ação: ${error.message}`);
+            if (downloadId) {
+                updateDownload(downloadId, { status: 'error', error: error.message });
+            }
         }
     };
 

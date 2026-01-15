@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen } from 'lucide-react';
+import { TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen, Download } from 'lucide-react';
 import { cn } from '../lib/utils';
 // import { ModeToggle } from '../components/mode-toggle';
 import { useAuth } from '../context/AuthContext';
@@ -75,7 +75,10 @@ export default function DashboardLayout() {
 
         // Reports: Managers only
         ...(hasPermission('manage_installation')
-            ? [{ name: 'Relatórios', href: '/reports', icon: FileText }] : []),
+            ? [
+                { name: 'Relatórios', href: '/reports', icon: FileText },
+                { name: 'Downloads', href: '/downloads', icon: Download }
+            ] : []),
 
         // Settings: Managers only
         ...(activeInstallation && hasPermission('manage_installation')

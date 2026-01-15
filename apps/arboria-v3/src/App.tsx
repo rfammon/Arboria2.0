@@ -23,6 +23,7 @@ import { ExecutionPageGuard } from './components/execution/ExecutionPageGuard';
 import { Toaster } from './components/ui/sonner';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import TermsOfUse from './pages/legal/TermsOfUse';
+import DownloadsPage from './pages/Downloads';
 
 import { FilterProvider } from './context/FilterContext';
 import { usePushNotifications } from './hooks/usePushNotifications';
@@ -62,6 +63,7 @@ function AppContent() {
               <ExecutionDashboard />
             </ExecutionPageGuard>
           } />
+          <Route path="downloads" element={<DownloadsPage />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/installation-settings" element={<InstallationSettings />} />
@@ -77,21 +79,24 @@ function AppContent() {
 
 import { DefinitionProvider } from './context/DefinitionContext';
 import { DefinitionModal } from './components/education/DefinitionModal';
+import { DownloadProvider } from './context/DownloadContext';
 
 function App() {
   return (
     <HashRouter>
       <UpdateProvider>
-        <OfflineSyncProvider>
-          <TooltipProvider>
-            <DefinitionProvider>
-              <FilterProvider>
-                <AppContent />
-                <DefinitionModal />
-              </FilterProvider>
-            </DefinitionProvider>
-          </TooltipProvider>
-        </OfflineSyncProvider>
+        <DownloadProvider>
+          <OfflineSyncProvider>
+            <TooltipProvider>
+              <DefinitionProvider>
+                <FilterProvider>
+                  <AppContent />
+                  <DefinitionModal />
+                </FilterProvider>
+              </DefinitionProvider>
+            </TooltipProvider>
+          </OfflineSyncProvider>
+        </DownloadProvider>
       </UpdateProvider>
     </HashRouter>
   );

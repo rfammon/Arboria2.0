@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { useTheme } from '../components/theme-provider';
 import { useUpdate } from '../hooks/useUpdate';
 import { useAuth } from '../context/AuthContext';
+import { useDownloads } from '../context/DownloadContext';
 import InstallationSettings from './InstallationSettings';
 import { Monitor, Moon, Sun, Download, RefreshCw, Loader2, CheckCircle2, AlertCircle, Smartphone, TreeDeciduous } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -28,6 +29,7 @@ export default function Settings() {
                     {activeInstallation && hasPermission('manage_installation') && (
                         <TabsTrigger value="installation" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Instalação</TabsTrigger>
                     )}
+                    <TabsTrigger value="downloads" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Downloads</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general" className="space-y-4">
@@ -43,6 +45,10 @@ export default function Settings() {
                         <InstallationSettings embedded={true} />
                     </TabsContent>
                 )}
+
+                <TabsContent value="downloads" className="space-y-4">
+                    <DownloadSettings />
+                </TabsContent>
             </Tabs>
         </div>
     );
@@ -269,6 +275,39 @@ function UpdateSettings() {
                     </Button>
                 )}
             </CardFooter>
+        </Card>
+    );
+}
+
+function DownloadSettings() {
+    const { downloadDirectory, selectDownloadDirectory } = useDownloads();
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Downloads</CardTitle>
+                <CardDescription>Configure onde os arquivos baixados serão salvos.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Pasta de Destino
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1 px-3 py-2 text-sm border rounded-md bg-muted/50 text-muted-foreground truncate font-mono">
+                                {downloadDirectory || 'Padrão (Downloads)'}
+                            </div>
+                            <Button onClick={selectDownloadDirectory} variant="outline" size="sm">
+                                Alterar
+                            </Button>
+                        </div>
+                        <p className="text-[0.8rem] text-muted-foreground">
+                            Todos os relatórios e backups serão salvos nesta pasta.
+                        </p>
+                    </div>
+                </div>
+            </CardContent>
         </Card>
     );
 }
