@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y \
     libpangocairo-1.0-0 \
     libxshmfence1 \
     fonts-liberation \
+    fonts-noto-color-emoji \
+    fontconfig \
     xdg-utils \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*

@@ -86,7 +86,9 @@ reportRouter.post('/generate-report', async (req, res) => {
         // Debugging logs
         page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
         page.on('pageerror', err => console.log('BROWSER ERROR:', err));
-        page.on('requestfailed', req => console.log('Request failed:', req.url(), req.failure().errorText));
+        page.on('requestfailed', request => {
+            console.log(`Request failed: ${request.url()} - ${request.failure().errorText}`);
+        });
 
         const treesJson = JSON.stringify(trees);
 
@@ -336,7 +338,11 @@ reportRouter.post('/generate-report', async (req, res) => {
             console.log('DEBUG: Saved debug_report.html');
         }
 
-        await page.setContent(htmlContent, { waitUntil: 'networkidle0', timeout: 90000 }); // Increased timeout
+        await page.setContent(htmlContent, { waitUntil: 'load', timeout: 90000 });
+        // Extra delay for dynamic content (Tailwind, etc)
+        await delay(3000);
+        // Then wait for network idle (more robust than networkidle0)
+        await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 }).catch(() => console.log('Network idle timeout - proceeding anyway'));
 
         try {
             console.log('Waiting for map to render...');
@@ -487,7 +493,10 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 </html>
         `;
 
-        await page.setContent(fullHtml, { waitUntil: 'networkidle0', timeout: 60000 });
+        await page.setContent(fullHtml, { waitUntil: 'load', timeout: 60000 });
+        // Critical for cloud: wait for tailwind/maps
+        await delay(2000);
+        await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 }).catch(() => console.log('Network idle timeout - proceeding anyway'));
 
         try {
             if (mapData && mapData.containerId) {
