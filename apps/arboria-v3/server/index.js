@@ -610,6 +610,12 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 </html>
         `;
 
+        // DEBUG: Capture HTML length and content
+        console.log(`[DEBUG] HTML payload length: ${html.length} characters`);
+        if (html.length < 500) {
+            console.warn('[DEBUG] WARNING: HTML payload seems too small. Potential rendering issue on client.');
+        }
+
         await page.setContent(fullHtml, { waitUntil: 'load', timeout: 60000 });
         // Critical for cloud: wait for tailwind/maps
         await delay(2000);
