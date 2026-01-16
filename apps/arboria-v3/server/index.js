@@ -83,11 +83,15 @@ reportRouter.post('/generate-report', async (req, res) => {
         browser = await retryOperation(() => getBrowser(), 3, 2000);
         page = await browser.newPage();
 
+        // Hardening Viewport
+        await page.setViewport({ width: 1200, height: 800 });
+        await page.emulateMediaType('print');
+
         // Debugging logs
         page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
         page.on('pageerror', err => console.log('BROWSER ERROR:', err));
         page.on('requestfailed', request => {
-            console.log(`Request failed: ${request.url()} - ${request.failure().errorText}`);
+            console.log(`[!] Request failed: ${request.url()} - ${request.failure().errorText}`);
         });
 
         const treesJson = JSON.stringify(trees);
@@ -356,7 +360,8 @@ reportRouter.post('/generate-report', async (req, res) => {
         const pdf = await page.pdf({
             format: 'A4',
             printBackground: true,
-            margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }
+            preferCSSPageSize: true, // Use CSS @page size/margins
+            margin: { top: '0', bottom: '0', left: '0', right: '0' }
         });
 
         if (page) await page.close();
@@ -392,12 +397,19 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         browser = await retryOperation(() => getBrowser());
         page = await browser.newPage();
 
+        // Hardening Viewport
+        await page.setViewport({ width: 1200, height: 800 });
+        await page.emulateMediaType('print');
+
         if (process.env.DEBUG_HTML === 'true') {
             fs.writeFileSync(`debug_html_${Date.now()}.html`, html);
         }
 
         page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
         page.on('pageerror', err => console.log('BROWSER ERROR:', err));
+        page.on('requestfailed', request => {
+            console.log(`[!] Request failed: ${request.url()} - ${request.failure().errorText}`);
+        });
 
         // Define map style (ArcGIS Satellite)
         const mapStyle = JSON.stringify({
@@ -511,6 +523,7 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         const pdf = await page.pdf({
             format: 'A4',
             printBackground: true,
+            preferCSSPageSize: true, // Use CSS @page size/margins
             margin: { top: '0', bottom: '0', left: '0', right: '0' }
         });
 
