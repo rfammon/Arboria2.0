@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { PlatformAdapter } from './types';
+import type { PlatformAdapter } from './types';
 import { TauriAdapter } from './tauri/adapter';
 import { AndroidAdapter } from './android/adapter';
 import { WebAdapter } from './web/adapter';

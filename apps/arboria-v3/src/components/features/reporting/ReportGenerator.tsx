@@ -10,6 +10,7 @@ import { ReportMap } from './ReportMap';
 import { toast } from 'sonner';
 import { ReportService } from '../../../api/reportService';
 import { downloadFile } from '../../../utils/downloadUtils';
+import { sanitizeFilename } from '../../../utils/fileUtils';
 import { useDownloads } from '../../../context/DownloadContext';
 
 // Type definitions
@@ -218,7 +219,9 @@ export function ReportGenerator() {
                 trees: trees
             };
 
-            const filename = `Relatorio_${activeInstallation?.nome?.replace(/\s+/g, '_') || 'Inventario'}.pdf`;
+            const baseFilename = `Relatorio_${activeInstallation?.nome || 'Inventario'}.pdf`;
+            const filename = sanitizeFilename(baseFilename);
+
             downloadId = addDownload({
                 filename,
                 type: 'pdf'
@@ -230,37 +233,7 @@ export function ReportGenerator() {
             // 2. Call Backend
             toast.info("Gerando PDF no servidor (renderizando mapa)...");
             updateDownload(downloadId, { progress: 30 });
-            updateDownload(downloadId, { progress: 30 });
             const pdfBlob = await ReportService.generateReport(payload);
-
-            // Validation: Check if blob is valid PDF
-            if (pdfBlob.size < 100) {
-                // Determine if it's a JSON error
-                const text = await pdfBlob.text();
-                console.error("Invalid PDF Blob (Too Small):", text);
-                try {
-                    const errorJson = JSON.parse(text);
-                    throw new Error(errorJson.details || errorJson.error || "Erro desconhecido ao gerar PDF");
-                } catch (e: any) {
-                    if (e.message && e.message.includes("Erro desconhecido")) throw e;
-                    throw new Error("O arquivo gerado está corrompido ou vazio.");
-                }
-            }
-
-            // Robust check: Verify PDF magic bytes
-            const headerBuffer = await pdfBlob.slice(0, 5).arrayBuffer();
-            const header = new TextDecoder().decode(headerBuffer);
-            if (header !== '%PDF-') {
-                console.error("Invalid PDF Header:", header);
-                const text = await pdfBlob.text();
-                console.error("Full Blob Content:", text);
-                try {
-                    const errorJson = JSON.parse(text);
-                    throw new Error(errorJson.details || errorJson.error || "Erro ao gerar PDF: Resposta inválida do servidor.");
-                } catch {
-                    throw new Error("O arquivo recebido não é um PDF válido.");
-                }
-            }
 
             // 3. Trigger Download
             updateDownload(downloadId, { progress: 70 });

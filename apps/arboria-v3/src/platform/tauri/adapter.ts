@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { PlatformAdapter, DownloadResult } from '../types';
+import type { PlatformAdapter, DownloadResult } from '../types';
 
 export const TauriAdapter: PlatformAdapter = {
     platformName: 'tauri',
@@ -39,5 +39,14 @@ export const TauriAdapter: PlatformAdapter = {
 
     async showInFolder(path: string): Promise<void> {
         await invoke('show_in_folder', { path });
+    },
+
+    async getAppVersion(): Promise<string> {
+        const { getVersion } = await import('@tauri-apps/api/app');
+        return await getVersion();
+    },
+
+    async installUpdate(localPath: string): Promise<void> {
+        await this.openFile(localPath);
     }
 };

@@ -10,8 +10,8 @@ export function UpdateIndicator() {
         status,
         progress,
         checkForUpdates,
-        downloadApk,
-        installApk,
+        downloadUpdate,
+        installUpdate,
         currentVersion,
         latestVersion,
         hasUpdate,
@@ -38,13 +38,16 @@ export function UpdateIndicator() {
     const handleClose = () => setIsOpen(false);
 
     const handleDownload = () => {
-        downloadApk();
+        downloadUpdate();
     };
 
     const handleInstall = () => {
-        installApk();
+        installUpdate();
         handleClose();
     };
+
+    const isWindows = !!(window as any).__TAURI__;
+    const updateFileType = isWindows ? 'Instalador' : 'APK';
 
     return (
         <>
@@ -78,9 +81,9 @@ export function UpdateIndicator() {
                         <DialogTitle>Atualização do Sistema</DialogTitle>
                         <DialogDescription>
                             {readyToInstall
-                                ? "APK baixado. Abra o arquivo para instalar."
+                                ? `${updateFileType} baixado. Abra para instalar.`
                                 : downloading
-                                    ? "Baixando APK..."
+                                    ? `Baixando ${updateFileType}...`
                                     : available
                                         ? `Nova versão ${latestVersion} disponível!`
                                         : "Verificando atualizações..."}
@@ -101,7 +104,7 @@ export function UpdateIndicator() {
 
                         {readyToInstall && (
                             <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800 text-sm text-green-800 dark:text-green-300">
-                                APK baixado! Clique em "Instalar" para continuar.
+                                {updateFileType} baixado! Clique em "Instalar" para continuar.
                             </div>
                         )}
                     </div>
@@ -113,7 +116,7 @@ export function UpdateIndicator() {
                         {available && (
                             <Button onClick={handleDownload}>
                                 <Download className="mr-2 h-4 w-4" />
-                                Baixar APK
+                                Baixar Atualização
                             </Button>
                         )}
                         {readyToInstall && (

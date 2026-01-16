@@ -7,6 +7,11 @@ import { ScheduleReport } from '../components/reports/templates/ScheduleReport';
 import { RiskInventoryReport } from '../components/reports/templates/RiskInventoryReport';
 
 const getBaseUrl = () => {
+    // Priority 1: Environment variable
+    if (import.meta.env.VITE_REPORT_SERVER_URL) {
+        return import.meta.env.VITE_REPORT_SERVER_URL;
+    }
+
     // In Tauri v2 production, protocol is often 'http:' with hostname 'tauri.localhost'
     const isTauri = window.location.origin.includes('tauri.localhost') ||
         window.location.protocol === 'tauri:' ||
@@ -18,10 +23,41 @@ const getBaseUrl = () => {
     if (isTauri && isProd) {
         return 'http://127.0.0.1:3001';
     }
+
+    // Check if we are on Capacitor (Android/iOS)
+    const isCapacitor = window.location.protocol === 'capacitor:';
+    if (isCapacitor && !import.meta.env.VITE_REPORT_SERVER_URL) {
+        console.warn('[ReportService] VITE_REPORT_SERVER_URL is missing on mobile. Relative fetches will likely fail or return index.html.');
+    }
+
+    // Fallback for Android/Capacitor: it usually needs a full IP if not local
     return '';
 };
 
 export const ReportService = {
+    async validatePdf(blob: Blob) {
+        // 1. Basic size check
+        if (blob.size < 100) {
+            const text = await blob.text();
+            console.error("PDF too small:", text);
+            throw new Error("O servidor retornou um arquivo vazio ou muito pequeno.");
+        }
+
+        // 2. Check for HTML fallback (Routing error)
+        const headerBuffer = await blob.slice(0, 15).arrayBuffer();
+        const header = new TextDecoder().decode(headerBuffer);
+
+        if (header.toLowerCase().includes('<!doctype') || header.toLowerCase().includes('<html')) {
+            console.error("Received HTML instead of PDF:", header);
+            throw new Error("Erro de Roteamento: O aplicativo recebeu uma página HTML em vez de um PDF. Verifique se o endereço do servidor de relatórios está correto.");
+        }
+
+        // 3. Verify PDF Magic Bytes
+        if (!header.startsWith('%PDF-')) {
+            console.error("Invalid PDF Header:", header);
+            throw new Error("O arquivo recebido não é um PDF válido.");
+        }
+    },
     async generateReport(data: any) {
         try {
             const baseUrl = getBaseUrl();
@@ -45,8 +81,9 @@ export const ReportService = {
                 }
             }
 
-            // Return Blob for download
-            return await response.blob();
+            const blob = await response.blob();
+            await this.validatePdf(blob);
+            return blob;
         } catch (error: any) {
             console.error("Report Service Error:", error);
             if (error.message === 'Failed to fetch') {
@@ -150,7 +187,9 @@ export const ReportService = {
                 throw new Error(error.details || 'Failed to generate intervention plan report');
             }
 
-            return await response.blob();
+            const blob = await response.blob();
+            await this.validatePdf(blob);
+            return blob;
         } catch (error) {
             console.error("Intervention Plan Report Error:", error);
             throw error;
@@ -228,7 +267,9 @@ export const ReportService = {
                 throw new Error(error.details || 'Failed to generate tree report');
             }
 
-            return await response.blob();
+            const blob = await response.blob();
+            await this.validatePdf(blob);
+            return blob;
         } catch (error) {
             console.error("Tree Report Error:", error);
             throw error;
@@ -276,7 +317,9 @@ export const ReportService = {
                 throw new Error(error.details || 'Failed to generate schedule report');
             }
 
-            return await response.blob();
+            const blob = await response.blob();
+            await this.validatePdf(blob);
+            return blob;
         } catch (error) {
             console.error("Schedule Report Error:", error);
             throw error;
@@ -372,7 +415,9 @@ export const ReportService = {
                 throw new Error(error.details || 'Failed to generate risk inventory report');
             }
 
-            return await response.blob();
+            const blob = await response.blob();
+            await this.validatePdf(blob);
+            return blob;
         } catch (error) {
             console.error("Risk Inventory Report Error:", error);
             throw error;

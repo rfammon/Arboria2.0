@@ -1,4 +1,4 @@
-import { PlatformAdapter, DownloadResult } from '../types';
+import type { PlatformAdapter, DownloadResult } from '../types';
 
 export const WebAdapter: PlatformAdapter = {
     platformName: 'web',
@@ -23,5 +23,13 @@ export const WebAdapter: PlatformAdapter = {
 
     async openFile(path: string): Promise<void> {
         window.open(path, '_blank');
+    },
+
+    async getAppVersion(): Promise<string> {
+        return '1.0.0-web';
+    },
+
+    async installUpdate(localPath: string): Promise<void> {
+        window.open(localPath, '_blank');
     }
 };

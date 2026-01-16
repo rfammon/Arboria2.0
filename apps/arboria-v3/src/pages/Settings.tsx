@@ -141,8 +141,8 @@ function GeneralSettings() {
 function UpdateSettings() {
     const {
         checkForUpdates,
-        downloadApk,
-        installApk,
+        downloadUpdate,
+        installUpdate,
         currentVersion,
         latestVersion,
         releaseNotes,
@@ -207,7 +207,7 @@ function UpdateSettings() {
                     <div className="space-y-2 p-4 border rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
                         <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="font-medium">Baixando APK... {progress.toFixed(0)}%</span>
+                            <span className="font-medium">Baixando atualização... {progress.toFixed(0)}%</span>
                         </div>
                         <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
                             <div
@@ -222,7 +222,7 @@ function UpdateSettings() {
                     <div className="p-4 border rounded-lg bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
                         <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                             <CheckCircle2 className="h-5 w-5" />
-                            <span className="font-medium">APK baixado com sucesso!</span>
+                            <span className="font-medium">Atualização baixada com sucesso!</span>
                         </div>
                         <p className="text-sm text-green-600 dark:text-green-400 mt-1 ml-7">
                             Clique em "Instalar" para iniciar a instalação.
@@ -253,18 +253,18 @@ function UpdateSettings() {
 
                 {status === 'idle' && !hasUpdate && (
                     <div className="p-4 text-sm text-muted-foreground text-center">
-                        Toque em "Verificar Atualizações" para procurar novas versões.
+                        Clique em "Verificar Atualizações" para procurar novas versões.
                     </div>
                 )}
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-2">
                 {readyToInstall ? (
-                    <Button onClick={installApk} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={installUpdate} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white">
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Instalar Atualização
                     </Button>
                 ) : available ? (
-                    <Button onClick={downloadApk} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
+                    <Button onClick={downloadUpdate} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
                         <Download className="mr-2 h-4 w-4" />
                         Baixar v{latestVersion}
                     </Button>

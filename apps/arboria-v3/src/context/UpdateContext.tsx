@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import { App } from '@capacitor/app';
 import { toast } from 'sonner';
 import { supabase } from '../lib/supabase';
+import { platform } from '@/platform';
 
 // --- Types ---
 
@@ -14,16 +14,16 @@ interface UpdateState {
     currentVersion: string;
     latestVersion: string | null;
     releaseNotes: string | null;
-    apkUrl: string | null;
-    apkFilePath: string | null; // Local file path of downloaded APK
+    updateUrl: string | null;
+    localFilePath: string | null;
     hasUpdate: boolean;
 }
 
 interface UpdateContextType extends UpdateState {
     checkForUpdates: () => Promise<void>;
-    downloadApk: () => Promise<void>;
-    installApk: () => Promise<void>;
-    cleanupApk: () => Promise<void>;
+    downloadUpdate: () => Promise<void>;
+    installUpdate: () => Promise<void>;
+    cleanupUpdate: () => Promise<void>;
 }
 
 const UpdateContext = createContext<UpdateContextType | null>(null);
@@ -38,38 +38,39 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
         currentVersion: 'Loading...',
         latestVersion: null,
         releaseNotes: null,
-        apkUrl: null,
-        apkFilePath: null,
+        updateUrl: null,
+        localFilePath: null,
         hasUpdate: false,
     });
 
-    // Initialize - get current app version and cleanup old APKs
+    // Initialize - get current app version and cleanup old files
     useEffect(() => {
         const init = async () => {
             try {
-                const appInfo = await App.getInfo().catch(() => ({ version: 'Unknown' }));
-                setState(s => ({ ...s, currentVersion: appInfo.version }));
+                const version = await platform.getAppVersion().catch(() => 'Unknown');
+                setState(s => ({ ...s, currentVersion: version }));
 
-                // Cleanup any residual APKs in cache
-                const { Filesystem, Directory } = await import('@capacitor/filesystem');
-                try {
-                    const result = await Filesystem.readdir({
-                        path: '',
-                        directory: Directory.Cache
-                    });
+                // Platform specific cleanup if needed
+                if (platform.platformName === 'android') {
+                    const { Filesystem, Directory } = await import('@capacitor/filesystem');
+                    try {
+                        const result = await Filesystem.readdir({
+                            path: '',
+                            directory: Directory.Cache
+                        });
 
-                    for (const file of result.files) {
-                        if (file.name.endsWith('.apk')) {
-                            await Filesystem.deleteFile({
-                                path: file.name,
-                                directory: Directory.Cache
-                            }).catch(() => { });
-                            console.log('[Update] Residual APK cleaned up:', file.name);
+                        for (const file of result.files) {
+                            if (file.name.endsWith('.apk')) {
+                                await Filesystem.deleteFile({
+                                    path: file.name,
+                                    directory: Directory.Cache
+                                }).catch(() => { });
+                                console.log('[Update] Residual APK cleaned up:', file.name);
+                            }
                         }
+                    } catch (e) {
+                        console.log('[Update] Storage cleanup skipped or failed');
                     }
-                } catch (e) {
-                    // Ignore readdir errors
-                    console.log('[Update] Storage cleanup skipped or failed');
                 }
 
             } catch (error) {
@@ -86,24 +87,31 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
 
         try {
             const { data, error } = await supabase.functions.invoke('get-latest-version', {
-                body: { currentVersion: state.currentVersion }
+                body: {
+                    currentVersion: state.currentVersion,
+                    platform: platform.platformName
+                }
             });
 
             if (error) throw error;
 
-            if (data.hasUpdate && data.apkUrl) {
+            if (data.hasUpdate && data.updateUrl) {
                 setState(s => ({
                     ...s,
                     status: 'available',
                     latestVersion: data.latestVersion,
                     releaseNotes: data.releaseNotes,
-                    apkUrl: data.apkUrl,
+                    updateUrl: data.updateUrl,
                     hasUpdate: true,
                 }));
-                toast.info(`Nova versão ${data.latestVersion} disponível!`);
+                toast.info(`Nova versão ${data.latestVersion} disponível para ${platform.platformName}!`);
             } else {
                 setState(s => ({ ...s, status: 'idle', hasUpdate: false }));
-                toast.info('Você já está na versão mais recente.');
+                if (data.error) {
+                    console.log('[Update] Notice:', data.error);
+                } else {
+                    toast.info('Você já está na versão mais recente.');
+                }
             }
         } catch (e: any) {
             console.error('[Update] Check failed:', e);
@@ -112,70 +120,58 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
         }
     }, [state.currentVersion, state.status]);
 
-    // Download APK to local storage
-    const downloadApk = useCallback(async () => {
-        if (!state.apkUrl) {
-            toast.error('URL do APK não disponível.');
+    // Download update to local storage
+    const downloadUpdate = useCallback(async () => {
+        if (!state.updateUrl) {
+            toast.error('URL de atualização não disponível.');
             return;
         }
 
         setState(s => ({ ...s, status: 'downloading', progress: 0, error: null }));
 
         try {
-            const { Capacitor } = await import('@capacitor/core');
-            const { Filesystem, Directory } = await import('@capacitor/filesystem');
-            const platform = Capacitor.getPlatform();
-
-            console.log('[Update] Platform detected:', platform);
-            console.log('[Update] Downloading APK from:', state.apkUrl);
+            console.log('[Update] Downloading from:', state.updateUrl);
 
             // On web, just open the link
-            if (platform === 'web') {
-                window.open(state.apkUrl, '_blank');
+            if (platform.platformName === 'web') {
+                window.open(state.updateUrl, '_blank');
                 setState(s => ({ ...s, status: 'idle', progress: 0 }));
                 return;
             }
 
             toast.info('Baixando atualização...');
-            const fileName = `arboria-update-${state.latestVersion}.apk`;
 
-            console.log('[Update] Starting native download to:', fileName);
+            // Determine file name based on platform
+            const extension = platform.platformName === 'tauri' ? 'exe' : 'apk';
+            const fileName = `arboria-update-${state.latestVersion}.${extension}`;
 
-            // Use native downloadFile for binary safety and better performance
-            const downloadResult = await Filesystem.downloadFile({
-                url: state.apkUrl,
-                path: fileName,
-                directory: Directory.Cache,
-            });
+            if (platform.platformName === 'android') {
+                const { Filesystem, Directory } = await import('@capacitor/filesystem');
+                const downloadResult = await Filesystem.downloadFile({
+                    url: state.updateUrl,
+                    path: fileName,
+                    directory: Directory.Cache,
+                });
 
-            console.log('[Update] Download result:', JSON.stringify(downloadResult));
+                setState(s => ({
+                    ...s,
+                    status: 'ready-to-install',
+                    progress: 100,
+                    localFilePath: downloadResult.path || null
+                }));
+            } else if (platform.platformName === 'tauri') {
+                // For Tauri, we'll use a fetch-and-save approach via our custom save_download_file command
+                const response = await fetch(state.updateUrl);
+                const blob = await response.blob();
+                const { path } = await platform.downloadFile(blob, fileName);
 
-            // Verify file exists and has size
-            const fileInfo = await Filesystem.stat({
-                path: fileName,
-                directory: Directory.Cache
-            });
-            console.log('[Update] Downloaded file size:', fileInfo.size, 'bytes');
-
-            if (fileInfo.size < 1000000) { // Less than 1MB is suspicious for this APK
-                throw new Error(`Arquivo baixado parece incompleto (${(fileInfo.size / 1024).toFixed(0)} KB)`);
+                setState(s => ({
+                    ...s,
+                    status: 'ready-to-install',
+                    progress: 100,
+                    localFilePath: path
+                }));
             }
-
-            const stats = await Filesystem.getUri({
-                path: fileName,
-                directory: Directory.Cache
-            });
-
-            // Strip file:// prefix just in case FileOpener prefers raw path on some versions
-            const rawPath = stats.uri.replace(/^file:\/\//, '');
-            console.log('[Update] APK URIs:', { uri: stats.uri, rawPath });
-
-            setState(s => ({
-                ...s,
-                status: 'ready-to-install',
-                progress: 100,
-                apkFilePath: stats.uri
-            }));
 
             toast.success('Download concluído! Clique em Instalar.');
 
@@ -184,82 +180,73 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
             setState(s => ({ ...s, status: 'error', error: e.message }));
             toast.error('Falha no download: ' + e.message);
         }
-    }, [state.apkUrl, state.latestVersion]);
+    }, [state.updateUrl, state.latestVersion]);
 
-    // Install the downloaded APK
-    const installApk = useCallback(async () => {
-        if (!state.apkFilePath) {
-            toast.error('APK não encontrado. Faça o download primeiro.');
+    // Install the downloaded update
+    const installUpdate = useCallback(async () => {
+        if (!state.localFilePath) {
+            toast.error('Arquivo não encontrado. Faça o download primeiro.');
             return;
         }
 
         setState(s => ({ ...s, status: 'installing' }));
 
         try {
-            const { FileOpener } = await import('@capacitor-community/file-opener');
+            toast.info('Iniciando instalação...');
+            await platform.installUpdate(state.localFilePath);
 
-            console.log('[Update] Opening APK for installation:', state.apkFilePath);
-            toast.info('Abrindo instalador...');
-
-            await FileOpener.open({
-                filePath: state.apkFilePath,
-                contentType: 'application/vnd.android.package-archive',
-            });
-
-            console.log('[Update] FileOpener.open() succeeded');
-
-            // Keep the status as installing - user will restart app after install
-            toast.success('Instalador aberto! Siga as instruções do Android.', {
-                duration: 10000,
-            });
+            if (platform.platformName === 'tauri') {
+                toast.success('Instalador iniciado! O app será atualizado.', { duration: 5000 });
+            } else {
+                toast.success('Instalador aberto! Siga as instruções do Android.', { duration: 10000 });
+            }
 
         } catch (e: any) {
             console.error('[Update] Install failed:', e);
-            console.error('[Update] Error details:', JSON.stringify(e));
             setState(s => ({ ...s, status: 'error', error: e.message }));
             toast.error('Erro ao abrir instalador: ' + e.message);
         }
-    }, [state.apkFilePath]);
+    }, [state.localFilePath]);
 
-    // Cleanup - delete downloaded APK
-    const cleanupApk = useCallback(async () => {
-        if (!state.apkFilePath) return;
+    // Cleanup - delete downloaded file
+    const cleanupUpdate = useCallback(async () => {
+        if (!state.localFilePath) return;
 
         try {
-            const { Filesystem } = await import('@capacitor/filesystem');
+            if (platform.platformName === 'android') {
+                const { Filesystem, Directory } = await import('@capacitor/filesystem');
+                const fileName = state.localFilePath.split('/').pop();
+                if (fileName) {
+                    await Filesystem.deleteFile({
+                        path: fileName,
+                        directory: Directory.Cache,
+                    });
+                }
+            }
+            // Add Tauri cleanup if necessary, although usually installers are in Downloads
 
-            // Extract filename from URI
-            const fileName = state.apkFilePath.split('/').pop();
-            if (!fileName) return;
-
-            await Filesystem.deleteFile({
-                path: fileName,
-                directory: (await import('@capacitor/filesystem')).Directory.Cache,
-            });
-
-            console.log('[Update] APK cleaned up:', fileName);
+            console.log('[Update] Cleanup complete');
 
             setState(s => ({
                 ...s,
                 status: 'idle',
                 progress: 0,
-                apkFilePath: null,
+                localFilePath: null,
                 hasUpdate: false
             }));
 
         } catch (e: any) {
-            // Ignore cleanup errors - file may already be deleted
             console.warn('[Update] Cleanup warning:', e.message);
         }
-    }, [state.apkFilePath]);
+    }, [state.localFilePath]);
 
     return (
         <UpdateContext.Provider value={{
             ...state,
             checkForUpdates,
-            downloadApk,
-            installApk,
-            cleanupApk
+            downloadUpdate,
+            installUpdate,
+            cleanupUpdate
         }}>
             {children}
         </UpdateContext.Provider>

@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
-import { platform, DownloadResult } from '@/platform';
+import { platform } from '@/platform';
+import type { DownloadResult } from '@/platform';
 
 /**
  * Downloads or opens a file across different platforms using the Platform Adapter.

@@ -26,26 +26,7 @@ serve(async (req: Request) => {
     }
 
     try {
-        const { currentVersion } = await req.json().catch(() => ({}));
-
-        // --- MOCK LOGIC FOR TESTING ---
-        // Always return 1.1.0 if not already on 1.1.0
-        if (currentVersion !== "1.1.0") {
-            return new Response(
-                JSON.stringify({
-                    latestVersion: "1.1.0",
-                    apkUrl: "https://github.com/rfammon/Arboria2.0/releases/download/v1.0.49/app-debug.apk",
-                    releaseNotes: "TESTE MOCK: Verificando fluxo de download, botão instalar e limpeza automática (v1.1.0).",
-                    releaseName: "Mock Update for Test",
-                    hasUpdate: true,
-                }),
-                {
-                    headers: { ...corsHeaders, "Content-Type": "application/json" },
-                    status: 200,
-                }
-            );
-        }
-        // --- END MOCK LOGIC ---
+        const { currentVersion, platform } = await req.json().catch(() => ({}));
 
         // Fetch latest release from GitHub API
         const response = await fetch(
@@ -64,19 +45,23 @@ serve(async (req: Request) => {
 
         const release: GitHubRelease = await response.json();
 
-        // Find APK asset in release
-        const apkAsset = release.assets.find(
-            (asset) => asset.name.endsWith(".apk")
+        // Determine target asset extensions based on platform
+        const isTauri = platform === 'tauri' || platform === 'windows';
+        const targetExtensions = isTauri ? [".exe", ".msi"] : [".apk"];
+
+        // Find relevant asset in release
+        const targetAsset = release.assets.find(
+            (asset) => targetExtensions.some(ext => asset.name.toLowerCase().endsWith(ext))
         );
 
-        if (!apkAsset) {
+        if (!targetAsset) {
             return new Response(
                 JSON.stringify({
                     latestVersion: release.tag_name.replace(/^v/, ""),
-                    apkUrl: null,
+                    updateUrl: null,
                     releaseNotes: release.body || "Nova versão disponível.",
                     hasUpdate: false,
-                    error: "APK não encontrado na release.",
+                    error: `Asset ${isTauri ? "Windows" : "Android"} não encontrado na release.`,
                 }),
                 {
                     headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -93,7 +78,7 @@ serve(async (req: Request) => {
         return new Response(
             JSON.stringify({
                 latestVersion,
-                apkUrl: apkAsset.browser_download_url,
+                updateUrl: targetAsset.browser_download_url,
                 releaseNotes: release.body || "Nova versão disponível.",
                 releaseName: release.name,
                 hasUpdate,
