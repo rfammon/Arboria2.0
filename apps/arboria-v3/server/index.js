@@ -526,85 +526,29 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
             }]
         });
 
-        // HTML Shell
+        // 5. HTML Shell (Clean and minimal)
         const fullHtml = `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
-    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <style>
-        body { margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact; }
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: white !important; 
+            -webkit-print-color-adjust: exact; 
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body>
-    ${html}
-
+    <div id="report-content">${html}</div>
     <script>
-        const mapData = ${JSON.stringify(mapData || null)};
-        const style = ${mapStyle};
-
-        if (mapData && mapData.containerId && document.getElementById(mapData.containerId)) {
-            console.log('Initializing Minimap on ' + mapData.containerId);
-            
-            const map = new maplibregl.Map({
-                container: mapData.containerId,
-                style: style,
-                center: [mapData.lng, mapData.lat],
-                zoom: 18,
-                attributionControl: false,
-                preserveDrawingBuffer: true,
-                failIfMajorPerformanceCaveat: false,
-                interactive: false
-            });
-
-            const markerEl = document.createElement('div');
-            markerEl.style.width = '14px';
-            markerEl.style.height = '14px';
-            markerEl.style.backgroundColor = '#ef4444';
-            markerEl.style.border = '2px solid white';
-            markerEl.style.borderRadius = '50%';
-            markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
-
-            new maplibregl.Marker({ element: markerEl })
-                .setLngLat([mapData.lng, mapData.lat])
-                .addTo(map);
-
-            // Fail-safe timeout for map rendering
-            const mapTimeout = setTimeout(() => {
-                if (!document.getElementById('map-ready')) {
-                    console.log("Map render timeout - forcing ready signal");
-                    const el = document.createElement('div');
-                    el.id = 'map-ready';
-                    document.body.appendChild(el);
-                }
-            }, 10000);
-
-            // Wait for map to load
-            map.on('load', () => {
-                 setTimeout(() => {
-                     map.once('idle', () => {
-                        console.log("Map IDLE - Ready");
-                        clearTimeout(mapTimeout);
-                        if (!document.getElementById('map-ready')) {
-                            const el = document.createElement('div');
-                            el.id = 'map-ready';
-                            document.body.appendChild(el);
-                        }
-                    });
-                    map.triggerRepaint();
-                }, 1000); 
-            });
-        } else {
-            console.log('No map data or container not found (' + (mapData ? mapData.containerId : 'null') + ')');
-            // Immediate ready if no map
-            const el = document.createElement('div');
-            el.id = 'map-ready';
-            document.body.appendChild(el);
-        }
+        window.mapData = ${JSON.stringify(mapData || null)};
+        window.mapStyle = ${mapStyle};
     </script>
 </body>
 </html>
@@ -618,29 +562,93 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
             console.warn('[DEBUG] WARNING: HTML payload is very small.');
         }
 
+        // 6. Set Content and wait for base load
+        console.log('Setting page content...');
         await page.setContent(fullHtml, { waitUntil: 'load', timeout: 60000 });
 
-        // Give Tailwind and fonts time to "paint"
-        console.log('Waiting for styles to settle...');
-        await delay(3000);
-        // Critical for cloud: wait for tailwind/maps
-        await delay(2000);
-        await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 }).catch(() => console.log('Network idle timeout - proceeding anyway'));
+        // 7. Inject Scripts/Styles via Puppeteer (More stable than hardcoded tags)
+        console.log('Injecting dependencies...');
 
-        try {
-            if (mapData && mapData.containerId) {
-                console.log('Waiting for map to render...');
-                await page.waitForSelector('#map-ready', { timeout: 15000 });
-            }
-        } catch (e) {
-            console.warn('Map render timeout or error', e.message);
+        // CSS first
+        await page.addStyleTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' }).catch(e => console.warn('MapLibre CSS inject warning:', e.message));
+
+        // Scripts
+        await page.addScriptTag({ url: 'https://cdn.tailwindcss.com' }).catch(e => console.warn('Tailwind inject warning:', e.message));
+
+        if (mapData) {
+            await page.addScriptTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js' }).catch(e => console.warn('MapLibre JS inject warning:', e.message));
         }
 
+        // 8. Execute Map Logic if needed
+        if (mapData && mapData.containerId) {
+            await page.evaluate(() => {
+                const { mapData, mapStyle } = window;
+                const container = document.getElementById(mapData.containerId);
+
+                if (container && window.maplibregl) {
+                    console.log('Initializing Minimap...');
+                    const map = new window.maplibregl.Map({
+                        container: mapData.containerId,
+                        style: mapStyle,
+                        center: [mapData.lng, mapData.lat],
+                        zoom: 18,
+                        attributionControl: false,
+                        preserveDrawingBuffer: true,
+                        failIfMajorPerformanceCaveat: false,
+                        interactive: false
+                    });
+
+                    const markerEl = document.createElement('div');
+                    markerEl.style.width = '14px';
+                    markerEl.style.height = '14px';
+                    markerEl.style.backgroundColor = '#ef4444';
+                    markerEl.style.border = '2px solid white';
+                    markerEl.style.borderRadius = '50%';
+                    markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+
+                    new window.maplibregl.Marker({ element: markerEl })
+                        .setLngLat([mapData.lng, mapData.lat])
+                        .addTo(map);
+
+                    map.on('load', () => {
+                        map.once('idle', () => {
+                            const el = document.createElement('div');
+                            el.id = 'map-ready';
+                            document.body.appendChild(el);
+                        });
+                        map.triggerRepaint();
+                    });
+
+                    // Fail-safe
+                    setTimeout(() => {
+                        if (!document.getElementById('map-ready')) {
+                            const el = document.createElement('div');
+                            el.id = 'map-ready';
+                            document.body.appendChild(el);
+                        }
+                    }, 10000);
+                } else {
+                    const el = document.createElement('div');
+                    el.id = 'map-ready';
+                    document.body.appendChild(el);
+                }
+            });
+
+            console.log('Waiting for map-ready signal...');
+            await page.waitForSelector('#map-ready', { timeout: 15000 }).catch(() => console.warn('Map ready timeout'));
+        }
+
+        // 9. Final wait for network and styles (CRITICAL)
+        console.log('Waiting for network idle and final paints...');
+        await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 }).catch(() => console.log('Network idle timeout - proceeding'));
+        await delay(2000); // Final settlement delay
+
+        // 10. Generate PDF
         console.log('Printing to PDF...');
         const pdf = await page.pdf({
             format: 'A4',
             printBackground: true,
-            preferCSSPageSize: true, // Use CSS @page size/margins
+            preferCSSPageSize: true,
             margin: { top: '0', bottom: '0', left: '0', right: '0' }
         });
 
