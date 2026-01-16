@@ -53,9 +53,12 @@ async function getBrowser() {
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
+            '--disable-software-rasterizer',
+            '--use-gl=swiftshader',
             '--disable-features=IsolateOrigins,site-per-process',
             '--mute-audio',
-            '--window-size=1920,1080'
+            '--window-size=1200,800',
+            '--hide-scrollbars'
         ]
     });
 }
@@ -382,6 +385,96 @@ reportRouter.post('/generate-report', async (req, res) => {
 });
 
 // Generic HTML to PDF endpoint
+// GET Debug Screenshot (Easy Browser Test)
+reportRouter.get('/debug-test', async (req, res) => {
+    console.log('Received GET debug test request');
+    let browser;
+    let page;
+    try {
+        browser = await retryOperation(() => getBrowser());
+        page = await browser.newPage();
+        await page.setViewport({ width: 1200, height: 800 });
+        await page.emulateMediaType('print');
+
+        const testHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <script src="https://cdn.tailwindcss.com"></script>
+                <style>body { padding: 50px; text-align: center; background: white; }</style>
+            </head>
+            <body>
+                <h1 style="color: green; font-size: 40px;">ArborIA SERVER OK!</h1>
+                <p>Se você está vendo isso, o Puppeteer e o Tailwind estão funcionando.</p>
+                <div style="margin: 20px; padding: 20px; background: #f0f0f0; border: 2px dashed #ccc;">
+                    Este é um teste de renderização.
+                </div>
+            </body>
+            </html>
+        `;
+
+        await page.setContent(testHtml, { waitUntil: 'load' });
+        await delay(2000);
+
+        console.log('Taking test screenshot...');
+        const screenshot = await page.screenshot({ fullPage: true });
+
+        if (page) await page.close();
+        if (browser) await browser.close();
+
+        res.setHeader('Content-Type', 'image/png');
+        res.send(screenshot);
+    } catch (error) {
+        console.error('Debug Test Error:', error);
+        if (page) await page.close().catch(() => { });
+        if (browser) await browser.close().catch(() => { });
+        res.status(500).json({ error: 'Failed', details: error.message });
+    }
+});
+
+reportRouter.post('/debug-screenshot', async (req, res) => {
+    console.log('Received debug screenshot request');
+    const { html, mapData } = req.body;
+    let browser;
+    let page;
+    try {
+        browser = await retryOperation(() => getBrowser());
+        page = await browser.newPage();
+        await page.setViewport({ width: 1200, height: 800 });
+
+        // Build the same shell
+        const fullHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <script src="https://cdn.tailwindcss.com"></script>
+                <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+                <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+                <style>body { margin: 0; padding: 0; background: white; }</style>
+            </head>
+            <body>${html}</body>
+            </html>
+        `;
+
+        await page.setContent(fullHtml, { waitUntil: 'load' });
+        await delay(3000);
+
+        console.log('Taking screenshot...');
+        const screenshot = await page.screenshot({ fullPage: true });
+
+        if (page) await page.close();
+        if (browser) await browser.close();
+
+        res.setHeader('Content-Type', 'image/png');
+        res.send(screenshot);
+    } catch (error) {
+        console.error('Screenshot Error:', error);
+        if (page) await page.close().catch(() => { });
+        if (browser) await browser.close().catch(() => { });
+        res.status(500).json({ error: 'Failed to take screenshot', details: error.message });
+    }
+});
+
 reportRouter.post('/generate-pdf-from-html', async (req, res) => {
     console.log('Received HTML PDF generation request');
     const { html, mapData } = req.body;
@@ -444,7 +537,6 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <style>
-        @page { margin: 0; size: A4; }
         body { margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact; }
     </style>
 </head>
@@ -481,17 +573,30 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
                 .setLngLat([mapData.lng, mapData.lat])
                 .addTo(map);
 
+            // Fail-safe timeout for map rendering
+            const mapTimeout = setTimeout(() => {
+                if (!document.getElementById('map-ready')) {
+                    console.log("Map render timeout - forcing ready signal");
+                    const el = document.createElement('div');
+                    el.id = 'map-ready';
+                    document.body.appendChild(el);
+                }
+            }, 10000);
+
             // Wait for map to load
             map.on('load', () => {
                  setTimeout(() => {
                      map.once('idle', () => {
                         console.log("Map IDLE - Ready");
-                        const el = document.createElement('div');
-                        el.id = 'map-ready';
-                        document.body.appendChild(el);
+                        clearTimeout(mapTimeout);
+                        if (!document.getElementById('map-ready')) {
+                            const el = document.createElement('div');
+                            el.id = 'map-ready';
+                            document.body.appendChild(el);
+                        }
                     });
                     map.triggerRepaint();
-                }, 1000); // Reduced delay for performance
+                }, 1000); 
             });
         } else {
             console.log('No map data or container not found (' + (mapData ? mapData.containerId : 'null') + ')');
