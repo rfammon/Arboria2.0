@@ -610,13 +610,19 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 </html>
         `;
 
-        // DEBUG: Capture HTML length and content
+        // DEBUG: Capture HTML preview
         console.log(`[DEBUG] HTML payload length: ${html.length} characters`);
+        console.log(`[DEBUG] HTML Preview (first 500 chars): ${html.substring(0, 500)}`);
+
         if (html.length < 500) {
-            console.warn('[DEBUG] WARNING: HTML payload seems too small. Potential rendering issue on client.');
+            console.warn('[DEBUG] WARNING: HTML payload is very small.');
         }
 
         await page.setContent(fullHtml, { waitUntil: 'load', timeout: 60000 });
+
+        // Give Tailwind and fonts time to "paint"
+        console.log('Waiting for styles to settle...');
+        await delay(3000);
         // Critical for cloud: wait for tailwind/maps
         await delay(2000);
         await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 }).catch(() => console.log('Network idle timeout - proceeding anyway'));
