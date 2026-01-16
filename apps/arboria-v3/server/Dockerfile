@@ -17,11 +17,15 @@ RUN apt-get update && apt-get install -y \
     libxdamage1 \
     libxext6 \
     libxfixes3 \
-    librandr2 \
+    libxrandr2 \
     libgbm1 \
     libasound2 \
     libpangocairo-1.0-0 \
     libxshmfence1 \
+    fonts-liberation \
+    libnss3 \
+    liblsb-mesa-dev \
+    xdg-utils \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
