@@ -649,37 +649,45 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 
                 if (container && window.maplibregl) {
                     console.log('Initializing Minimap...');
-                    const map = new window.maplibregl.Map({
-                        container: mapData.containerId,
-                        style: mapStyle,
-                        center: [mapData.lng, mapData.lat],
-                        zoom: 18,
-                        attributionControl: false,
-                        preserveDrawingBuffer: true,
-                        failIfMajorPerformanceCaveat: false,
-                        interactive: false
-                    });
-
-                    const markerEl = document.createElement('div');
-                    markerEl.style.width = '14px';
-                    markerEl.style.height = '14px';
-                    markerEl.style.backgroundColor = '#ef4444';
-                    markerEl.style.border = '2px solid white';
-                    markerEl.style.borderRadius = '50%';
-                    markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
-
-                    new window.maplibregl.Marker({ element: markerEl })
-                        .setLngLat([mapData.lng, mapData.lat])
-                        .addTo(map);
-
-                    map.on('load', () => {
-                        map.once('idle', () => {
-                            const el = document.createElement('div');
-                            el.id = 'map-ready';
-                            document.body.appendChild(el);
+                    try {
+                        const map = new window.maplibregl.Map({
+                            container: mapData.containerId,
+                            style: mapStyle,
+                            center: [mapData.lng, mapData.lat],
+                            zoom: 18,
+                            attributionControl: false,
+                            preserveDrawingBuffer: true,
+                            failIfMajorPerformanceCaveat: false,
+                            interactive: false
                         });
-                        map.triggerRepaint();
-                    });
+
+                        const markerEl = document.createElement('div');
+                        markerEl.style.width = '14px';
+                        markerEl.style.height = '14px';
+                        markerEl.style.backgroundColor = '#ef4444';
+                        markerEl.style.border = '2px solid white';
+                        markerEl.style.borderRadius = '50%';
+                        markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+
+                        new window.maplibregl.Marker({ element: markerEl })
+                            .setLngLat([mapData.lng, mapData.lat])
+                            .addTo(map);
+
+                        map.on('load', () => {
+                            map.once('idle', () => {
+                                const el = document.createElement('div');
+                                el.id = 'map-ready';
+                                document.body.appendChild(el);
+                            });
+                            map.triggerRepaint();
+                        });
+                    } catch (mapErr) {
+                        console.error('MAP_INIT_ERROR: Failed to initialize map (likely WebGL):', mapErr.message);
+                        // Emergency fallback for the signal so the printer doesn't wait forever
+                        const el = document.createElement('div');
+                        el.id = 'map-ready';
+                        document.body.appendChild(el);
+                    }
 
                     // Fail-safe
                     setTimeout(() => {
