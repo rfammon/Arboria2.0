@@ -208,6 +208,9 @@ export function ReportGenerator() {
                 trees: trees,
                 mapImage: mapImage
             };
+            console.log('[ReportGenerator] Sending payload with keys:', Object.keys(payload));
+            console.log('[ReportGenerator] Installation:', activeInstallation);
+            console.log('[ReportGenerator] Trees count:', trees?.length);
 
             const baseFilename = `Relatorio_${activeInstallation?.nome || 'Inventario'}.pdf`;
             const filename = sanitizeFilename(baseFilename);

@@ -110,6 +110,9 @@ reportRouter.post('/generate-report', async (req, res) => {
     console.log('Received report generation request');
     const { installation, stats, trees, mapImage } = req.body;
     console.log(`[Step 1] Received report request. mapImage present: ${!!mapImage}${mapImage ? `, length: ${mapImage.length}` : ''}`);
+    console.log(`[Debug] Content-Type: ${req.get('Content-Type')}`);
+    console.log(`[Debug] Request Body Keys: ${Object.keys(req.body).join(', ')}`);
+    console.log(`[Debug] Installation present: ${!!installation}, Trees present: ${!!trees}`);
 
     if (!installation || !trees) {
         return res.status(400).json({ error: 'Missing data' });
