@@ -594,6 +594,18 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 
         // 6. Set Content and wait for base load
         console.log('[Step 6] Setting page content...');
+
+        // Listen to console for debugging
+        page.on('console', msg => {
+            const text = msg.text();
+            if (!text.includes('Download the Vue Devtools')) {
+                console.log(`[BROWSER CONSOLE] ${text}`);
+            }
+        });
+        page.on('pageerror', error => {
+            console.error(`[BROWSER CRITICAL ERROR] ${error.message}`);
+        });
+
         await page.setContent(fullHtml, { waitUntil: 'load', timeout: 30000 });
 
         // 7. Inject Scripts/Styles via Puppeteer (More stable than hardcoded tags)
@@ -695,6 +707,32 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 
         console.log('[Step 10] Final settlement delay (2s)...');
         await delay(2000);
+
+        // 10.5 DOM Audit & Diagnostic
+        console.log('[Step 10.5] Auditing DOM state...');
+        const audit = await page.evaluate(() => {
+            const content = document.getElementById('report-content');
+            const body = document.body;
+
+            // Helpful to see if anything is hidden
+            const styles = window.getComputedStyle(content || body);
+
+            return {
+                hasContentDiv: !!content,
+                contentHeight: content ? content.scrollHeight : 'N/A',
+                bodyHeight: body.scrollHeight,
+                numElements: document.querySelectorAll('*').length,
+                visible: styles.visibility,
+                opacity: styles.opacity,
+                display: styles.display,
+                textPreview: body.innerText.substring(0, 100).replace(/\n/g, ' ')
+            };
+        });
+        console.log(`[Step 10.5] Audit Result: ${JSON.stringify(audit)}`);
+
+        if (audit.bodyHeight < 100 && audit.numElements < 5) {
+            console.warn('[Step 10.5] WARNING: Page appears empty or too short. PDF might be blank.');
+        }
 
         // 11. Generate PDF
         console.log('[Step 11] Printing to PDF...');
