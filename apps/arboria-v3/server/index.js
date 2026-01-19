@@ -173,6 +173,9 @@ reportRouter.post('/generate-report', async (req, res) => {
         #map { width: 100%; height: 400px; border-radius: 8px; overflow: hidden; position: relative; }
         .map-legend { position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 5px; border-radius: 4px; font-size: 10px; z-index: 10; }
         .risk-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; border: 1px solid white; }
+        
+        /* HARDENING: Ensure visibility even if Tailwind fails */
+        #report-content, body { visibility: visible !important; opacity: 1 !important; display: block !important; }
     </style>
 </head>
 <body class="bg-white text-gray-800 font-sans text-sm selection:bg-none">
@@ -302,11 +305,36 @@ reportRouter.post('/generate-report', async (req, res) => {
         const style = ${mapStyle};
         const hasImage = ${!!mapImage};
 
-        if (hasImage) {
-            console.log("Using client-side snapshot, signaling Ready immediately");
+        async function signalReady() {
+            console.log("Checking readiness (images and fonts)...");
+            
+            // Wait for fonts
+            if (document.fonts) {
+                await document.fonts.ready;
+            }
+
+            // Wait for all images
+            const images = Array.from(document.querySelectorAll('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve; // Continue anyway if photo fails
+                });
+            }));
+
+            // Small settle delay for Tailwind
+            await new Promise(r => setTimeout(r, 2000));
+
+            console.log("Signaling Ready via #map-ready");
             const el = document.createElement('div');
             el.id = 'map-ready';
             document.body.appendChild(el);
+        }
+
+        if (hasImage) {
+            console.log("Using client-side snapshot, initializing readiness check...");
+            signalReady();
         } else {
             // Initialize Map
             try {
@@ -359,17 +387,13 @@ reportRouter.post('/generate-report', async (req, res) => {
                 setTimeout(() => {
                     map.once('idle', () => {
                         console.log("Map IDLE - Signaling Ready");
-                        const el = document.createElement('div');
-                        el.id = 'map-ready';
-                        document.body.appendChild(el);
+                        signalReady();
                     });
                     map.triggerRepaint();
                 }, 2000);
             } catch (err) {
                 console.error("Map Init Error:", err);
-                const el = document.createElement('div');
-                el.id = 'map-ready';
-                document.body.appendChild(el);
+                signalReady();
             }
         }
     </script>
@@ -571,11 +595,12 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         body { 
             margin: 0; 
             padding: 0; 
+            background-color: white !important;
             background: white !important; 
             -webkit-print-color-adjust: exact; 
-            visibility: visible !important;
-            opacity: 1 !important;
         }
+        /* HARDENING: Ensure visibility even if Tailwind fails */
+        #report-content, body { visibility: visible !important; opacity: 1 !important; display: block !important; }
     </style>
 </head>
 <body>
@@ -641,26 +666,40 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         // 8. Execute Map Logic if needed
         if (mapData && mapData.containerId) {
             console.log('[Step 8] Executing map logic in browser...');
-            await page.evaluate(() => {
-                const mapData = window.mapData;
-                const mapStyle = window.mapStyle;
-                const hasMapImage = window.hasMapImage;
+            await page.evaluate(async (mapData, mapStyle, hasMapImage) => {
+                async function signalReady() {
+                    console.log("Checking readiness (images and fonts)...");
+                    if (document.fonts) await document.fonts.ready;
 
-                if (hasMapImage) {
-                    console.log('Using client-side snapshot, signaling Ready immediately');
+                    const images = Array.from(document.querySelectorAll('img'));
+                    await Promise.all(images.map(img => {
+                        if (img.complete) return Promise.resolve();
+                        return new Promise(resolve => {
+                            img.onload = resolve;
+                            img.onerror = resolve;
+                        });
+                    }));
+
+                    await new Promise(r => setTimeout(r, 2000));
+                    console.log("Signaling Ready via #map-ready");
                     const el = document.createElement('div');
                     el.id = 'map-ready';
                     document.body.appendChild(el);
+                }
+
+                if (hasMapImage) {
+                    console.log('Using client-side snapshot, initiating readiness check...');
+                    await signalReady();
                     return;
                 }
 
                 if (!mapData || !mapData.containerId) {
-                    console.log('Skipping map: No mapData in window');
+                    console.log('No map logic required, signaling Ready...');
+                    await signalReady();
                     return;
                 }
 
                 const container = document.getElementById(mapData.containerId);
-
                 if (container && window.maplibregl) {
                     console.log('Initializing Minimap...');
                     try {
@@ -690,35 +729,19 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
                         map.on('load', () => {
                             map.once('idle', () => {
                                 console.log('Map IDLE - Signaling Ready');
-                                const el = document.createElement('div');
-                                el.id = 'map-ready';
-                                document.body.appendChild(el);
+                                signalReady();
                             });
                             map.triggerRepaint();
                         });
                     } catch (mapErr) {
-                        console.error('MAP_INIT_ERROR: Failed to initialize map (likely WebGL):', mapErr.message);
-                        // Emergency fallback for the signal so the printer doesn't wait forever
-                        const el = document.createElement('div');
-                        el.id = 'map-ready';
-                        document.body.appendChild(el);
+                        console.error('MAP_INIT_ERROR:', mapErr.message);
+                        await signalReady();
                     }
-
-                    // Fail-safe
-                    setTimeout(() => {
-                        if (!document.getElementById('map-ready')) {
-                            const el = document.createElement('div');
-                            el.id = 'map-ready';
-                            document.body.appendChild(el);
-                        }
-                    }, 10000);
                 } else {
-                    console.log('Map container not found or MapLibre missing');
-                    const el = document.createElement('div');
-                    el.id = 'map-ready';
-                    document.body.appendChild(el);
+                    console.warn('Map container/lib not available');
+                    await signalReady();
                 }
-            });
+            }, mapData, mapStyle, !!mapImage);
 
             console.log('[Step 8.1] Waiting for map-ready signal...');
             await page.waitForSelector('#map-ready', { timeout: 15000 }).catch(() => console.warn('Map ready timeout'));
