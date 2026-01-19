@@ -45,8 +45,27 @@ async function retryOperation(operation, maxRetries = 3, delayMs = 1000) {
     throw lastError;
 }
 
+let globalBrowser = null;
+let browserPromise = null;
+
 async function getBrowser() {
-    return puppeteer.launch({
+    // If we're already launching, return the existing promise
+    if (browserPromise) return browserPromise;
+
+    // If browser is already initialized and working
+    if (globalBrowser) {
+        try {
+            // Quick check if browser is alive
+            await globalBrowser.version();
+            return globalBrowser;
+        } catch (e) {
+            console.warn('Browser instance crashed or closed, restarting...');
+            globalBrowser = null;
+        }
+    }
+
+    console.log('Starting a NEW persistent browser instance...');
+    browserPromise = puppeteer.launch({
         headless: 'new',
         args: [
             '--no-sandbox',
@@ -60,7 +79,23 @@ async function getBrowser() {
             '--window-size=1200,800',
             '--hide-scrollbars'
         ]
+    }).then(b => {
+        globalBrowser = b;
+        browserPromise = null;
+
+        // Auto-cleanup on disconnect
+        b.on('disconnected', () => {
+            console.warn('Browser disconnected!');
+            globalBrowser = null;
+        });
+
+        return b;
+    }).catch(err => {
+        browserPromise = null;
+        throw err;
     });
+
+    return browserPromise;
 }
 
 // Health check
@@ -368,7 +403,7 @@ reportRouter.post('/generate-report', async (req, res) => {
         });
 
         if (page) await page.close();
-        if (browser) await browser.close();
+        if (page) await page.close();
 
         console.log('PDF generated successfully');
 
@@ -563,26 +598,46 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         }
 
         // 6. Set Content and wait for base load
-        console.log('Setting page content...');
-        await page.setContent(fullHtml, { waitUntil: 'load', timeout: 60000 });
+        console.log('[Step 6] Setting page content...');
+        await page.setContent(fullHtml, { waitUntil: 'load', timeout: 30000 });
 
         // 7. Inject Scripts/Styles via Puppeteer (More stable than hardcoded tags)
-        console.log('Injecting dependencies...');
+        console.log('[Step 7] Injecting dependencies...');
 
         // CSS first
-        await page.addStyleTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' }).catch(e => console.warn('MapLibre CSS inject warning:', e.message));
+        try {
+            await page.addStyleTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' });
+        } catch (e) {
+            console.warn('[Step 7.1] MapLibre CSS inject warning:', e.message);
+        }
 
         // Scripts
-        await page.addScriptTag({ url: 'https://cdn.tailwindcss.com' }).catch(e => console.warn('Tailwind inject warning:', e.message));
+        try {
+            await page.addScriptTag({ url: 'https://cdn.tailwindcss.com' });
+        } catch (e) {
+            console.warn('[Step 7.2] Tailwind inject warning (PDF might be unstyled):', e.message);
+        }
 
         if (mapData) {
-            await page.addScriptTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js' }).catch(e => console.warn('MapLibre JS inject warning:', e.message));
+            try {
+                await page.addScriptTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js' });
+            } catch (e) {
+                console.warn('[Step 7.3] MapLibre JS inject warning:', e.message);
+            }
         }
 
         // 8. Execute Map Logic if needed
         if (mapData && mapData.containerId) {
+            console.log('[Step 8] Executing map logic in browser...');
             await page.evaluate(() => {
-                const { mapData, mapStyle } = window;
+                const mapData = window.mapData;
+                const mapStyle = window.mapStyle;
+
+                if (!mapData || !mapData.containerId) {
+                    console.log('Skipping map: No mapData in window');
+                    return;
+                }
+
                 const container = document.getElementById(mapData.containerId);
 
                 if (container && window.maplibregl) {
@@ -628,23 +683,26 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
                         }
                     }, 10000);
                 } else {
+                    console.log('Map container not found or MapLibre missing');
                     const el = document.createElement('div');
                     el.id = 'map-ready';
                     document.body.appendChild(el);
                 }
             });
 
-            console.log('Waiting for map-ready signal...');
+            console.log('[Step 8.1] Waiting for map-ready signal...');
             await page.waitForSelector('#map-ready', { timeout: 15000 }).catch(() => console.warn('Map ready timeout'));
         }
 
         // 9. Final wait for network and styles (CRITICAL)
-        console.log('Waiting for network idle and final paints...');
-        await page.waitForNetworkIdle({ idleTime: 500, timeout: 30000 }).catch(() => console.log('Network idle timeout - proceeding'));
-        await delay(2000); // Final settlement delay
+        console.log('[Step 9] Waiting for network idle...');
+        await page.waitForNetworkIdle({ idleTime: 500, timeout: 20000 }).catch(() => console.log('Network idle timeout - proceeding'));
 
-        // 10. Generate PDF
-        console.log('Printing to PDF...');
+        console.log('[Step 10] Final settlement delay (2s)...');
+        await delay(2000);
+
+        // 11. Generate PDF
+        console.log('[Step 11] Printing to PDF...');
         const pdf = await page.pdf({
             format: 'A4',
             printBackground: true,
@@ -654,7 +712,7 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 
         if (page) await page.close();
 
-        console.log('PDF generated successfully');
+        console.log('[Step 12] PDF generated successfully');
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=relatorio.pdf`);
         res.send(pdf);
@@ -689,7 +747,6 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
                 await fallbackPage.setContent(safeHtml, { waitUntil: 'load', timeout: 30000 });
                 const fallbackPdf = await fallbackPage.pdf({ format: 'A4', printBackground: true });
                 await fallbackPage.close();
-                await fallbackBrowser.close();
 
                 res.setHeader('Content-Type', 'application/pdf');
                 res.setHeader('Content-Disposition', `attachment; filename=relatorio-fallback.pdf`);
