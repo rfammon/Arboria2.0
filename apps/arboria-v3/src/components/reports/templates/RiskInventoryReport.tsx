@@ -23,9 +23,10 @@ interface RiskInventoryReportProps {
     installationName: string;
     trees: any[]; // Using any to be safe with varied tree shapes, but ideally Tree[]
     stats: Stats;
+    mapImage?: string;
 }
 
-export function RiskInventoryReport({ installationName, trees, stats }: RiskInventoryReportProps) {
+export function RiskInventoryReport({ installationName, trees, stats, mapImage }: RiskInventoryReportProps) {
     return (
         <div className="risk-inventory-report" style={{
             fontFamily: "'Helvetica Neue', Arial, sans-serif",
@@ -89,17 +90,24 @@ export function RiskInventoryReport({ installationName, trees, stats }: RiskInve
                     position: 'relative',
                     overflow: 'hidden'
                 }}>
-                    {/* Server script will inject MapLibre here */}
-                    <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        color: '#999',
-                        fontSize: '10pt'
-                    }}>
-                        Renderizando mapa...
-                    </div>
+                    {mapImage ? (
+                        <img
+                            src={mapImage}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            alt="Mapa de Localização"
+                        />
+                    ) : (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            color: '#999',
+                            fontSize: '10pt'
+                        }}>
+                            Renderizando mapa...
+                        </div>
+                    )}
                 </div>
                 <div style={{
                     display: 'flex',

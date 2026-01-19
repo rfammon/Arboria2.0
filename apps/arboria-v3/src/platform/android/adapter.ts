@@ -41,7 +41,7 @@ export const AndroidAdapter: PlatformAdapter = {
         const writeResult = await Filesystem.writeFile({
             path: sanitizedFilename,
             data: base64Data,
-            directory: Directory.Cache,
+            directory: Directory.Documents,
         });
 
         console.log(`[AndroidAdapter] File written to: ${writeResult.uri}`);
@@ -53,8 +53,14 @@ export const AndroidAdapter: PlatformAdapter = {
         const cleanPath = writeResult.uri.replace('file://', '');
 
         await FileOpener.open({
-            filePath: writeResult.uri, // FileOpener usually prefers the URI with provider
+            filePath: writeResult.uri,
             contentType: blob.type || 'application/pdf',
+        });
+
+        const { Toast } = await import('@capacitor/toast');
+        await Toast.show({
+            text: `Relatório salvo em Documentos/${sanitizedFilename}`,
+            duration: 'long'
         });
 
         return { path: cleanPath, platform: 'android' };

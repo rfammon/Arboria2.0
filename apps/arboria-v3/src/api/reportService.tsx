@@ -8,8 +8,15 @@ import { RiskInventoryReport } from '../components/reports/templates/RiskInvento
 
 const getBaseUrl = () => {
     // Priority 1: Environment variable
-    if (import.meta.env.VITE_REPORT_SERVER_URL) {
-        return import.meta.env.VITE_REPORT_SERVER_URL;
+    let url = import.meta.env.VITE_REPORT_SERVER_URL || '';
+
+    if (url) {
+        url = url.trim();
+        // Remove trailing slash
+        url = url.replace(/\/$/, '');
+        // Remove /api/reports if it was included in the .env by mistake
+        url = url.replace(/\/api\/reports$/, '');
+        return url;
     }
 
     // In Tauri v2 production, protocol is often 'http:' with hostname 'tauri.localhost'
@@ -24,17 +31,46 @@ const getBaseUrl = () => {
         return 'http://127.0.0.1:3001';
     }
 
-    // Check if we are on Capacitor (Android/iOS)
+    // On Capacitor, we must NOT use relative URLs as they fetch index.html
     const isCapacitor = window.location.protocol === 'capacitor:';
-    if (isCapacitor && !import.meta.env.VITE_REPORT_SERVER_URL) {
-        console.warn('[ReportService] VITE_REPORT_SERVER_URL is missing on mobile. Relative fetches will likely fail or return index.html.');
+    if (isCapacitor) {
+        return '';
     }
 
-    // Fallback for Android/Capacitor: it usually needs a full IP if not local
     return '';
 };
 
 export const ReportService = {
+    async healthCheck() {
+        try {
+            const baseUrl = getBaseUrl();
+            if (!baseUrl) return;
+
+            const response = await fetch(`${baseUrl}/health`);
+            if (response.ok) {
+                console.log('[ReportService] Health check OK');
+            }
+        } catch (e) {
+            console.warn('[ReportService] Health check failed', e);
+        }
+    },
+
+    async handleResponseError(response: Response, fallbackMessage: string) {
+        const text = await response.text();
+        try {
+            // Check if it's actually HTML (common routing error)
+            if (text.toLowerCase().includes('<!doctype') || text.toLowerCase().includes('<html')) {
+                throw new Error("O servidor retornou uma página HTML em vez de um erro JSON. Verifique se a URL do servidor está correta.");
+            }
+
+            const error = JSON.parse(text);
+            throw new Error(error.details || error.error || fallbackMessage);
+        } catch (e: any) {
+            if (e.message.includes("página HTML")) throw e;
+            throw new Error(`Erro do Servidor (${response.status}): ${text.slice(0, 100)}...`);
+        }
+    },
+
     async validatePdf(blob: Blob) {
         // 1. Basic size check
         if (blob.size < 100) {
@@ -61,6 +97,9 @@ export const ReportService = {
     async generateReport(data: any) {
         try {
             const baseUrl = getBaseUrl();
+            if (!baseUrl && window.location.protocol === 'capacitor:') {
+                throw new Error("Configuração ausente: A URL do servidor de relatórios não foi definida. Verifique o arquivo .env.");
+            }
             const endpoint = `${baseUrl}/api/reports/generate-report`;
 
             const response = await fetch(endpoint, {
@@ -72,13 +111,7 @@ export const ReportService = {
             });
 
             if (!response.ok) {
-                const text = await response.text();
-                try {
-                    const error = JSON.parse(text);
-                    throw new Error(error.details || error.error || 'Failed to generate PDF');
-                } catch (e) {
-                    throw new Error(`Erro do Servidor (${response.status}): ${text.slice(0, 100)}...`);
-                }
+                await this.handleResponseError(response, 'Failed to generate PDF');
             }
 
             const blob = await response.blob();
@@ -93,7 +126,7 @@ export const ReportService = {
         }
     },
 
-    async generateInterventionPlanReport(planId: string) {
+    async generateInterventionPlanReport(planId: string, mapImage?: string) {
         try {
             // 1. Fetch Plan Details
             const { data: plan, error: planError } = await supabase
@@ -157,6 +190,7 @@ export const ReportService = {
                     plan={plan}
                     tree={tree}
                     installationName={plan.instalacao?.nome}
+                    mapImage={mapImage}
                 />
             );
 
@@ -172,6 +206,9 @@ export const ReportService = {
 
             // 5. Send to Server for PDF Generation
             const baseUrl = getBaseUrl();
+            if (!baseUrl && window.location.protocol === 'capacitor:') {
+                throw new Error("Configuração ausente: A URL do servidor de relatórios não foi definida. Verifique o arquivo .env.");
+            }
             const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
             console.log("Fetching PDF from:", endpoint);
             const response = await fetch(endpoint, {
@@ -179,12 +216,11 @@ export const ReportService = {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ html, mapData }),
+                body: JSON.stringify({ html, mapData, mapImage }),
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.details || 'Failed to generate intervention plan report');
+                await this.handleResponseError(response, 'Failed to generate intervention plan report');
             }
 
             const blob = await response.blob();
@@ -196,7 +232,7 @@ export const ReportService = {
         }
     },
 
-    async generateTreeReport(treeId: string) {
+    async generateTreeReport(treeId: string, mapImage?: string) {
         try {
             // 1. Fetch Tree Data
             const { data: tree, error: treeError } = await supabase
@@ -239,6 +275,7 @@ export const ReportService = {
                     tree={tree}
                     photos={photos}
                     installationName={tree.instalacao?.nome || 'Instalação não identificada'}
+                    mapImage={mapImage}
                 />
             );
 
@@ -259,12 +296,11 @@ export const ReportService = {
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ html, mapData }),
+                body: JSON.stringify({ html, mapData, mapImage }),
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.details || 'Failed to generate tree report');
+                await this.handleResponseError(response, 'Failed to generate tree report');
             }
 
             const blob = await response.blob();
@@ -313,8 +349,7 @@ export const ReportService = {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.details || 'Failed to generate schedule report');
+                await this.handleResponseError(response, 'Failed to generate schedule report');
             }
 
             const blob = await response.blob();
@@ -328,7 +363,7 @@ export const ReportService = {
 
     async generateRiskInventoryReport(payload: any) {
         try {
-            const { installation, trees: payloadTrees, stats } = payload;
+            const { installation, trees: payloadTrees, stats, mapImage } = payload;
             const installationName = installation.nome || 'Instalação';
 
             // 1. Enrich Trees with Photos (Optimized)
@@ -382,6 +417,7 @@ export const ReportService = {
                     installationName={installationName}
                     trees={trees}
                     stats={stats}
+                    mapImage={mapImage}
                 />
             );
 
@@ -407,12 +443,11 @@ export const ReportService = {
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ html, mapData }),
+                body: JSON.stringify({ html, mapData, mapImage }),
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.details || 'Failed to generate risk inventory report');
+                await this.handleResponseError(response, 'Failed to generate risk inventory report');
             }
 
             const blob = await response.blob();

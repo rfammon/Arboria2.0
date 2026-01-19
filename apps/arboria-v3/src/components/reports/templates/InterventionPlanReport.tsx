@@ -8,6 +8,7 @@ interface InterventionPlanReportProps {
     plan: InterventionPlan;
     tree?: any; // Tree data with photo
     installationName?: string;
+    mapImage?: string;
 }
 
 const INTERVENTION_ICONS: Record<string, string> = {
@@ -34,7 +35,7 @@ const INTERVENTION_LABELS: Record<string, string> = {
     'monitoramento': 'Monitoramento'
 };
 
-export function InterventionPlanReport({ plan, tree, installationName }: InterventionPlanReportProps) {
+export function InterventionPlanReport({ plan, tree, installationName, mapImage }: InterventionPlanReportProps) {
     const icon = INTERVENTION_ICONS[plan.intervention_type] || '📌';
     const color = INTERVENTION_COLORS[plan.intervention_type] || '#666';
     const label = INTERVENTION_LABELS[plan.intervention_type] || plan.intervention_type;
@@ -150,7 +151,15 @@ export function InterventionPlanReport({ plan, tree, installationName }: Interve
                                 overflow: 'hidden',
                                 position: 'relative'
                             }}>
-                                <div id="report-minimap" style={{ width: '100%', height: '100%' }}></div>
+                                {mapImage ? (
+                                    <img
+                                        src={mapImage}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        alt="Localização"
+                                    />
+                                ) : (
+                                    <div id="report-minimap" style={{ width: '100%', height: '100%' }}></div>
+                                )}
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '5px',

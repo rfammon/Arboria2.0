@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -50,6 +50,7 @@ export function ReportGenerator() {
 
     // State
     const [mapReady, setMapReady] = useState(false);
+    const mapRef = useRef<any>(null);
 
     // Load initial data
     useEffect(() => {
@@ -212,11 +213,22 @@ export function ReportGenerator() {
         setGenerating(true);
         let downloadId = '';
         try {
-            // 1. Prepare Payload (No map image needed, server handles it)
+            // 1. Prepare Payload (Capture map snapshot from canvas)
+            let mapImage = null;
+            if (mapRef.current) {
+                try {
+                    mapImage = mapRef.current.getCanvas().toDataURL('image/png');
+                    console.log("Map snapshot captured successfully");
+                } catch (err) {
+                    console.warn("Failed to capture map snapshot:", err);
+                }
+            }
+
             const payload = {
                 installation: activeInstallation,
                 stats: stats,
-                trees: trees
+                trees: trees,
+                mapImage: mapImage
             };
 
             const baseFilename = `Relatorio_${activeInstallation?.nome || 'Inventario'}.pdf`;
@@ -349,7 +361,10 @@ export function ReportGenerator() {
                         <div className="border rounded-lg overflow-hidden bg-white h-[400px] w-full relative">
                             <ReportMap
                                 trees={trees}
-                                onLoad={() => setMapReady(true)}
+                                onLoad={(map) => {
+                                    mapRef.current = map;
+                                    setMapReady(true);
+                                }}
                             />
                         </div>
                         <p className="text-[10px] text-gray-400 mt-1">* O mapa do PDF será gerado em alta resolução no servidor.</p>

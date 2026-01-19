@@ -32,7 +32,10 @@ import { useDensity } from './hooks/useDensity';
 
 import { useDeepLinking } from './hooks/useDeepLinking';
 
+import { useKeepAlive } from './hooks/useKeepAlive';
+
 function AppContent() {
+  useKeepAlive();
   usePushNotifications();
   useDeepLinking();
   useBackButton();

@@ -6,6 +6,7 @@ interface TreeReportProps {
     tree: any;
     photos: any[];
     installationName?: string;
+    mapImage?: string;
 }
 
 const RISK_MAP: Record<string, string> = {
@@ -18,7 +19,7 @@ const RISK_MAP: Record<string, string> = {
     'low': 'Baixo'
 };
 
-export function TreeReport({ tree, photos, installationName }: TreeReportProps) {
+export function TreeReport({ tree, photos, installationName, mapImage }: TreeReportProps) {
     const mainPhotoUrl = photos.find(p => p.is_cover)?.url || photos[0]?.url;
 
     return (
@@ -122,7 +123,15 @@ export function TreeReport({ tree, photos, installationName }: TreeReportProps) 
                     position: 'relative',
                     marginBottom: '1rem'
                 }}>
-                    <div id="report-minimap" style={{ width: '100%', height: '100%' }}></div>
+                    {mapImage ? (
+                        <img
+                            src={mapImage}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            alt="Localização"
+                        />
+                    ) : (
+                        <div id="report-minimap" style={{ width: '100%', height: '100%' }}></div>
+                    )}
                 </div>
                 <div style={{ fontSize: '9pt', color: '#666' }}>
                     <strong>Coordenadas:</strong> Lat {tree.latitude?.toFixed(6)}, Lng {tree.longitude?.toFixed(6)}

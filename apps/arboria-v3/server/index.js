@@ -107,7 +107,7 @@ const reportRouter = express.Router();
 
 reportRouter.post('/generate-report', async (req, res) => {
     console.log('Received report generation request');
-    const { installation, stats, trees } = req.body;
+    const { installation, stats, trees, mapImage } = req.body;
 
     if (!installation || !trees) {
         return res.status(400).json({ error: 'Missing data' });
@@ -218,15 +218,20 @@ reportRouter.post('/generate-report', async (req, res) => {
     <!-- MAP SECTION -->
     <div class="mb-8 avoid-break relative">
         <h2 class="text-xl font-bold text-gray-800 border-l-4 border-green-500 pl-3 mb-4">Mapa de Localização</h2>
-        <div class="border-2 border-slate-200 rounded-lg shadow-sm relative">
-             <div id="map"></div>
+        <div class="border-2 border-slate-200 rounded-lg shadow-sm relative overflow-hidden">
+             ${mapImage
+                ? `<img src="${mapImage}" style="width: 100%; height: 400px; object-fit: cover;" alt="Mapa">`
+                : `<div id="map" style="width: 100%; height: 400px;"></div>`
+            }
+             ${!mapImage ? `
              <div class="map-legend">
                  <div><span class="risk-dot" style="background: #ef4444;"></span> Alto</div>
                  <div><span class="risk-dot" style="background: #eab308;"></span> Médio</div>
                  <div><span class="risk-dot" style="background: #22c55e;"></span> Baixo/Nenhum</div>
              </div>
+             ` : ''}
         </div>
-        <p class="text-xs text-gray-400 mt-2 text-center">Visualização de Satélite - Gerada em Tempo Real</p>
+        <p class="text-xs text-gray-400 mt-2 text-center">${mapImage ? 'Snapshot do Mapa do Cliente' : 'Visualização de Satélite - Gerada em Tempo Real'}</p>
     </div>
 
     <!-- DETAILED INVENTORY -->
@@ -248,9 +253,9 @@ reportRouter.post('/generate-report', async (req, res) => {
             <tr class="hover:bg-gray-50 avoid-break ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}">
                 <td class="px-4 py-3 align-top">
                     ${t.photoUrl
-                ? `<img src="${t.photoUrl}" class="w-12 h-12 object-cover rounded shadow-sm border border-gray-200">`
-                : `<div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400 border border-gray-200">Sem foto</div>`
-            }
+                    ? `<img src="${t.photoUrl}" class="w-12 h-12 object-cover rounded shadow-sm border border-gray-200">`
+                    : `<div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400 border border-gray-200">Sem foto</div>`
+                }
                 </td>
                 <td class="px-4 py-3 align-top">
                     <div class="font-bold text-gray-900">#${t.id.slice(0, 8)}</div>
@@ -262,22 +267,22 @@ reportRouter.post('/generate-report', async (req, res) => {
                 </td>
                 <td class="px-4 py-3 align-top">
                     ${t.risco === 'Alto'
-                ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Alto</span>'
-                : t.risco === 'Médio'
-                    ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Médio</span>'
-                    : '<span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">Baixo</span>'
-            }
+                    ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Alto</span>'
+                    : t.risco === 'Médio'
+                        ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Médio</span>'
+                        : '<span class="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">Baixo</span>'
+                }
                 </td>
                 <td class="px-4 py-3 align-top">
                     <div class="flex flex-wrap gap-1">
                         ${(t.fatores_risco && t.fatores_risco.length > 0)
-                ? t.fatores_risco.map(f => `
+                    ? t.fatores_risco.map(f => `
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
                                     ${f}
                                 </span>
                               `).join('')
-                : '<span class="text-xs text-gray-400 italic">Nenhum fator registrado</span>'
-            }
+                    : '<span class="text-xs text-gray-400 italic">Nenhum fator registrado</span>'
+                }
                     </div>
                 </td>
             </tr>
@@ -294,81 +299,78 @@ reportRouter.post('/generate-report', async (req, res) => {
     <script>
         const trees = ${treesJson};
         const style = ${mapStyle};
+        const hasImage = ${!!mapImage};
 
-        // Initialize Map
-        const map = new maplibregl.Map({
-            container: 'map',
-            style: style,
-            center: [ -46.6333, -23.5505 ],
-            zoom: 12,
-            attributionControl: false,
-            preserveDrawingBuffer: true,
-            failIfMajorPerformanceCaveat: false
-        });
-
-        map.on('load', () => {
-            // Add Trees Source
-            const features = trees
-                .filter(t => t.latitude && t.longitude)
-                .map(t => ({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [t.longitude, t.latitude]
-                    },
-                    properties: {
-                        risk: t.risco
-                    }
-                }));
-
-            if (features.length > 0) {
-                map.addSource('trees', {
-                    type: 'geojson',
-                    data: {
-                        type: 'FeatureCollection',
-                        features: features
-                    }
+        if (hasImage) {
+            console.log("Using client-side snapshot, signaling Ready immediately");
+            const el = document.createElement('div');
+            el.id = 'map-ready';
+            document.body.appendChild(el);
+        } else {
+            // Initialize Map
+            try {
+                const map = new maplibregl.Map({
+                    container: 'map',
+                    style: style,
+                    center: trees.length > 0 ? [trees[0].longitude, trees[0].latitude] : [-46.6333, -23.5505],
+                    zoom: 15,
+                    attributionControl: false,
+                    preserveDrawingBuffer: true,
+                    failIfMajorPerformanceCaveat: false,
+                    interactive: false
                 });
 
-                // Add Circle Layer
-                map.addLayer({
-                    id: 'tree-points',
-                    type: 'circle',
-                    source: 'trees',
-                    paint: {
-                        'circle-radius': 8,
-                        'circle-color': [
-                            'match',
-                            ['get', 'risk'],
-                            'Alto', '#ef4444',
-                            'Médio', '#eab308',
-                            '#22c55e' // Default/Low
-                        ],
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ffffff'
-                    }
+                map.on('load', () => {
+                    const features = trees.map(t => ({
+                        type: 'Feature',
+                        geometry: { type: 'Point', coordinates: [t.longitude, t.latitude] },
+                        properties: { risk: t.risco }
+                    }));
+
+                    map.addSource('trees', { type: 'geojson', data: { type: 'FeatureCollection', features } });
+
+                    map.addLayer({
+                        id: 'trees-layer',
+                        type: 'circle',
+                        source: 'trees',
+                        paint: {
+                            'circle-radius': 6,
+                            'circle-color': [
+                                'match', ['get', 'risk'],
+                                'Alto', '#ef4444',
+                                'Médio', '#eab308',
+                                '#22c55e'
+                            ],
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#ffffff'
+                        }
+                    });
+
+                    // Fit Bounds
+                    const bounds = new maplibregl.LngLatBounds();
+                    features.forEach(f => {
+                        bounds.extend(f.geometry.coordinates);
+                    });
+
+                    map.fitBounds(bounds, { padding: 100, maxZoom: 17 });
                 });
 
-                // Fit Bounds
-                const bounds = new maplibregl.LngLatBounds();
-                features.forEach(f => {
-                    bounds.extend(f.geometry.coordinates);
-                });
-
-                map.fitBounds(bounds, { padding: 100, maxZoom: 17 });
+                setTimeout(() => {
+                    map.once('idle', () => {
+                        console.log("Map IDLE - Signaling Ready");
+                        const el = document.createElement('div');
+                        el.id = 'map-ready';
+                        document.body.appendChild(el);
+                    });
+                    map.triggerRepaint();
+                }, 2000);
+            } catch (err) {
+                console.error("Map Init Error:", err);
+                const el = document.createElement('div');
+                el.id = 'map-ready';
+                document.body.appendChild(el);
             }
-
-            setTimeout(() => {
-                 map.once('idle', () => {
-                    console.log("Map IDLE - Signaling Ready");
-                    const el = document.createElement('div');
-                    el.id = 'map-ready';
-                    document.body.appendChild(el);
-                });
-                map.triggerRepaint();
-
-            }, 2000); 
-        });
+        }
     </script>
 </body>
 </html>
@@ -507,7 +509,7 @@ reportRouter.post('/debug-screenshot', async (req, res) => {
 
 reportRouter.post('/generate-pdf-from-html', async (req, res) => {
     console.log('Received HTML PDF generation request');
-    const { html, mapData } = req.body;
+    const { html, mapData, mapImage } = req.body;
 
     if (!html) {
         return res.status(400).json({ error: 'Missing HTML content' });
@@ -579,6 +581,7 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
     <script>
         window.mapData = ${JSON.stringify(mapData || null)};
         window.mapStyle = ${mapStyle};
+        window.hasMapImage = ${!!mapImage};
     </script>
 </body>
 </html>
@@ -625,7 +628,7 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
             console.warn('[Step 7.2] Tailwind inject warning (PDF might be unstyled):', e.message);
         }
 
-        if (mapData) {
+        if (mapData && !mapImage) {
             try {
                 await page.addScriptTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js' });
             } catch (e) {
@@ -639,6 +642,15 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
             await page.evaluate(() => {
                 const mapData = window.mapData;
                 const mapStyle = window.mapStyle;
+                const hasMapImage = window.hasMapImage;
+
+                if (hasMapImage) {
+                    console.log('Using client-side snapshot, signaling Ready immediately');
+                    const el = document.createElement('div');
+                    el.id = 'map-ready';
+                    document.body.appendChild(el);
+                    return;
+                }
 
                 if (!mapData || !mapData.containerId) {
                     console.log('Skipping map: No mapData in window');
@@ -675,6 +687,7 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 
                         map.on('load', () => {
                             map.once('idle', () => {
+                                console.log('Map IDLE - Signaling Ready');
                                 const el = document.createElement('div');
                                 el.id = 'map-ready';
                                 document.body.appendChild(el);
