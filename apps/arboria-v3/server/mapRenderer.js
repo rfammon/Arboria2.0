@@ -1,13 +1,12 @@
-const mbgl = require('@maplibre/maplibre-gl-native');
-const sharp = require('sharp');
+const https = require('https');
+const http = require('http');
 
 /**
  * Calculate bounds from GeoJSON tree data
  */
 function calculateBounds(trees) {
     if (!trees || trees.length === 0) {
-        // Default bounds (fallback)
-        return [-180, -85, 180, 85];
+        return { center: [0, 0], bounds: [-180, -85, 180, 85] };
     }
 
     let minLng = Infinity;
@@ -24,166 +23,148 @@ function calculateBounds(trees) {
         }
     });
 
-    // Add 10% padding
+    // Calculate center
+    const centerLng = (minLng + maxLng) / 2;
+    const centerLat = (minLat + maxLat) / 2;
+
+    // Add 10% padding to bounds
     const lngPadding = (maxLng - minLng) * 0.1;
     const latPadding = (maxLat - minLat) * 0.1;
 
-    return [
-        minLng - lngPadding,
-        minLat - latPadding,
-        maxLng + lngPadding,
-        maxLat + latPadding
-    ];
-}
-
-/**
- * Create MapLibre style with tree markers
- */
-function createMapStyle(trees) {
-    const geojsonFeatures = trees
-        .filter(tree => tree.longitude && tree.latitude)
-        .map(tree => ({
-            type: 'Feature',
-            geometry: {
-                type: 'Point',
-                coordinates: [tree.longitude, tree.latitude]
-            },
-            properties: {
-                risco: tree.risco || 'Baixo'
-            }
-        }));
-
-    // Risk color mapping
-    const riskColors = {
-        'Alto': '#ef4444',
-        'Médio': '#f59e0b',
-        'Baixo': '#22c55e'
-    };
-
     return {
-        version: 8,
-        sources: {
-            'osm': {
-                type: 'raster',
-                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '© OpenStreetMap contributors'
-            },
-            'trees': {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: geojsonFeatures
-                }
-            }
-        },
-        layers: [
-            {
-                id: 'osm-tiles',
-                type: 'raster',
-                source: 'osm',
-                minzoom: 0,
-                maxzoom: 22
-            },
-            {
-                id: 'tree-circles',
-                type: 'circle',
-                source: 'trees',
-                paint: {
-                    'circle-radius': 8,
-                    'circle-color': [
-                        'match',
-                        ['get', 'risco'],
-                        'Alto', riskColors['Alto'],
-                        'Médio', riskColors['Médio'],
-                        'Baixo', riskColors['Baixo'],
-                        '#999999'
-                    ],
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#ffffff'
-                }
-            }
+        center: [centerLng, centerLat],
+        bounds: [
+            minLng - lngPadding,
+            minLat - latPadding,
+            maxLng + lngPadding,
+            maxLat + latPadding
         ]
     };
 }
 
 /**
- * Render map to PNG buffer using MapLibre GL Native
- * @param {Array} trees - Array of tree objects with latitude/longitude
- * @param {Object} options - Rendering options
- * @returns {Promise<Buffer>} - PNG image buffer
+ * Calculate appropriate zoom level based on bounds
+ */
+function calculateZoom(bounds, width, height) {
+    const WORLD_DIM = { height: 256, width: 256 };
+    const ZOOM_MAX = 18;
+
+    function latRad(lat) {
+        const sin = Math.sin(lat * Math.PI / 180);
+        const radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+        return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+    }
+
+    function zoom(mapPx, worldPx, fraction) {
+        return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
+    }
+
+    const [west, south, east, north] = bounds;
+
+    const latFraction = (latRad(north) - latRad(south)) / Math.PI;
+    const lngDiff = east - west;
+    const lngFraction = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+
+    const latZoom = zoom(height, WORLD_DIM.height, latFraction);
+    const lngZoom = zoom(width, WORLD_DIM.width, lngFraction);
+
+    return Math.min(latZoom, lngZoom, ZOOM_MAX);
+}
+
+/**
+ * Fetch image from URL and return as buffer
+ */
+function fetchImage(url) {
+    return new Promise((resolve, reject) => {
+        const protocol = url.startsWith('https') ? https : http;
+
+        protocol.get(url, (res) => {
+            if (res.statusCode !== 200) {
+                reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+                return;
+            }
+
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
+            res.on('end', () => resolve(Buffer.concat(chunks)));
+            res.on('error', reject);
+        }).on('error', reject);
+    });
+}
+
+/**
+ * Build marker parameters for trees
+ */
+function buildMarkers(trees) {
+    // Group trees by risk level
+    const riskColors = {
+        'Alto': 'red',
+        'Médio': 'orange',
+        'Baixo': 'green'
+    };
+
+    const markers = [];
+
+    trees.forEach(tree => {
+        if (tree.longitude && tree.latitude) {
+            const risco = tree.risco || 'Baixo';
+            const color = riskColors[risco] || 'gray';
+            markers.push({
+                lonlat: `${tree.longitude},${tree.latitude}`,
+                color: color,
+                size: 'small'
+            });
+        }
+    });
+
+    return markers;
+}
+
+/**
+ * Render map using OSM Static Map service
+ * Uses staticmap.openstreetmap.de which is free and requires no API key
  */
 async function renderMapImage(trees, options = {}) {
     const {
         width = 800,
-        height = 600,
-        pixelRatio = 2
+        height = 400
     } = options;
 
-    return new Promise((resolve, reject) => {
-        try {
-            // Calculate bounds
-            const bounds = calculateBounds(trees);
+    try {
+        const { center, bounds } = calculateBounds(trees);
+        const zoom = calculateZoom(bounds, width, height);
 
-            // Create map style
-            const style = createMapStyle(trees);
+        // Build markers
+        const markers = buildMarkers(trees);
 
-            // Create map options
-            const mapOptions = {
-                request: (req, callback) => {
-                    // Simple tile fetcher
-                    const https = require('https');
-                    const http = require('http');
+        // Build URL for staticmap.openstreetmap.de
+        // Format: http://staticmap.openstreetmap.de/staticmap.php?center=LAT,LON&zoom=ZOOM&size=WIDTHxHEIGHT&markers=LAT,LON,COLOR,SIZE
+        const baseUrl = 'http://staticmap.openstreetmap.de/staticmap.php';
+        const params = new URLSearchParams({
+            center: `${center[1]},${center[0]}`, // lat,lon
+            zoom: Math.max(zoom - 1, 1), // Slightly zoomed out for better context
+            size: `${width}x${height}`,
+            maptype: 'mapnik'
+        });
 
-                    const protocol = req.url.startsWith('https') ? https : http;
+        // Add markers
+        markers.forEach((marker, index) => {
+            const [lon, lat] = marker.lonlat.split(',');
+            params.append('markers', `${lat},${lon},ol-marker-${marker.color}`);
+        });
 
-                    protocol.get(req.url, (res) => {
-                        const data = [];
-                        res.on('data', chunk => data.push(chunk));
-                        res.on('end', () => {
-                            callback(null, {
-                                data: Buffer.concat(data)
-                            });
-                        });
-                    }).on('error', (err) => {
-                        callback(err);
-                    });
-                },
-                ratio: pixelRatio
-            };
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log('[MapRenderer] Fetching static map from:', url.substring(0, 100) + '...');
 
-            // Create map instance
-            const map = new mbgl.Map(mapOptions);
-            map.load(style);
+        const imageBuffer = await fetchImage(url);
+        console.log('[MapRenderer] Successfully fetched map image, size:', imageBuffer.length, 'bytes');
 
-            // Fit bounds
-            map.fitBounds(bounds, {
-                padding: 50
-            });
+        return imageBuffer;
 
-            // Render static image
-            map.renderStill({
-                width,
-                height,
-                zoom: 15
-            }, (err, buffer) => {
-                if (err) {
-                    console.error('MapLibre rendering error:', err);
-                    reject(err);
-                    return;
-                }
-
-                // Release map resources
-                map.release();
-
-                resolve(buffer);
-            });
-
-        } catch (err) {
-            console.error('Error creating map:', err);
-            reject(err);
-        }
-    });
+    } catch (error) {
+        console.error('[MapRenderer] Error generating map:', error.message);
+        throw error;
+    }
 }
 
 /**
@@ -203,6 +184,5 @@ async function renderMapAsDataUrl(trees, options = {}) {
 module.exports = {
     renderMapImage,
     renderMapAsDataUrl,
-    calculateBounds,
-    createMapStyle
+    calculateBounds
 };
