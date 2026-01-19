@@ -218,7 +218,11 @@ export function ReportGenerator() {
             if (mapRef.current) {
                 try {
                     mapImage = mapRef.current.getCanvas().toDataURL('image/png');
-                    console.log("Map snapshot captured successfully");
+                    const length = mapImage ? mapImage.length : 0;
+                    console.log(`[Snapshot] Status: ${mapImage ? 'SUCCESS' : 'EMPTY'}, Length: ${length}`);
+                    if (length > 0) {
+                        console.log(`[Snapshot] Sample: ${mapImage.substring(0, 50)}...`);
+                    }
                 } catch (err) {
                     console.warn("Failed to capture map snapshot:", err);
                 }

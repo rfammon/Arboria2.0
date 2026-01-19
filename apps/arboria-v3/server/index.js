@@ -108,6 +108,7 @@ const reportRouter = express.Router();
 reportRouter.post('/generate-report', async (req, res) => {
     console.log('Received report generation request');
     const { installation, stats, trees, mapImage } = req.body;
+    console.log(`[Step 1] Received report request. mapImage present: ${!!mapImage}${mapImage ? `, length: ${mapImage.length}` : ''}`);
 
     if (!installation || !trees) {
         return res.status(400).json({ error: 'Missing data' });
@@ -510,6 +511,7 @@ reportRouter.post('/debug-screenshot', async (req, res) => {
 reportRouter.post('/generate-pdf-from-html', async (req, res) => {
     console.log('Received HTML PDF generation request');
     const { html, mapData, mapImage } = req.body;
+    console.log(`[Step 1] Received PDF from HTML request. mapImage present: ${!!mapImage}${mapImage ? `, length: ${mapImage.length}` : ''}`);
 
     if (!html) {
         return res.status(400).json({ error: 'Missing HTML content' });
