@@ -414,7 +414,6 @@ reportRouter.post('/generate-report', async (req, res) => {
     } catch (error) {
         console.error('Error generating PDF:', error);
         if (page) await page.close().catch(() => { });
-        if (browser) await browser.close().catch(() => { });
         res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
     }
 });
@@ -455,14 +454,12 @@ reportRouter.get('/debug-test', async (req, res) => {
         const screenshot = await page.screenshot({ fullPage: true });
 
         if (page) await page.close();
-        if (browser) await browser.close();
 
         res.setHeader('Content-Type', 'image/png');
         res.send(screenshot);
     } catch (error) {
         console.error('Debug Test Error:', error);
         if (page) await page.close().catch(() => { });
-        if (browser) await browser.close().catch(() => { });
         res.status(500).json({ error: 'Failed', details: error.message });
     }
 });
@@ -498,14 +495,12 @@ reportRouter.post('/debug-screenshot', async (req, res) => {
         const screenshot = await page.screenshot({ fullPage: true });
 
         if (page) await page.close();
-        if (browser) await browser.close();
 
         res.setHeader('Content-Type', 'image/png');
         res.send(screenshot);
     } catch (error) {
         console.error('Screenshot Error:', error);
         if (page) await page.close().catch(() => { });
-        if (browser) await browser.close().catch(() => { });
         res.status(500).json({ error: 'Failed to take screenshot', details: error.message });
     }
 });
@@ -757,7 +752,6 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         }
 
         if (page) await page.close().catch(() => { });
-        if (browser) await browser.close().catch(() => { });
 
         if (!res.headersSent) {
             res.status(500).json({
