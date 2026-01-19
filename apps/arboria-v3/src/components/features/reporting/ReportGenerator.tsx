@@ -4,8 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../ui/card';
-import { Loader2, FileText, Download, AlertCircle } from 'lucide-react';
-import { ReportStats } from './ReportStats';
+import { Loader2, FileText, Download } from 'lucide-react';
 import { ReportMap } from './ReportMap';
 import { toast } from 'sonner';
 import { ReportService } from '../../../api/reportService';
@@ -34,11 +33,6 @@ interface Stats {
     highRiskCount: number;
 }
 
-interface ChartsData {
-    riskDistribution: { name: string; value: number; color: string }[];
-    speciesDistribution: { name: string; value: number }[];
-}
-
 export function ReportGenerator() {
     const navigate = useNavigate();
     const { activeInstallation } = useAuth();
@@ -46,7 +40,6 @@ export function ReportGenerator() {
     const [generating, setGenerating] = useState(false);
     const [stats, setStats] = useState<Stats | null>(null);
     const [trees, setTrees] = useState<TreeData[]>([]);
-    const [chartsData, setChartsData] = useState<ChartsData | null>(null);
 
     // State
     const [mapReady, setMapReady] = useState(false);
@@ -178,17 +171,6 @@ export function ReportGenerator() {
 
         const highRiskCount = riskCounts['Alto'];
 
-        const speciesCounts: Record<string, number> = {};
-        treesList.forEach(t => {
-            const sp = t.especie || 'Não Identificada';
-            speciesCounts[sp] = (speciesCounts[sp] || 0) + 1;
-        });
-
-        const sortedSpecies = Object.entries(speciesCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([name, value]) => ({ name, value }));
-
         setStats({
             totalTrees,
             totalSpecies: distinctSpecies,
@@ -196,37 +178,29 @@ export function ReportGenerator() {
             avgHeight,
             highRiskCount
         });
-
-        setChartsData({
-            riskDistribution: [
-                { name: 'Alto', value: riskCounts['Alto'], color: '#ef4444' },
-                { name: 'Médio', value: riskCounts['Médio'], color: '#f59e0b' },
-                { name: 'Baixo', value: riskCounts['Baixo'], color: '#22c55e' },
-            ].filter(d => d.value > 0),
-            speciesDistribution: sortedSpecies
-        });
     };
 
     const { addDownload, updateDownload } = useDownloads();
+
+    // 1. Prepare Map Snapshot
+    const getMapSnapshot = () => {
+        if (mapRef.current) {
+            try {
+                return mapRef.current.getCanvas().toDataURL('image/png');
+            } catch (err) {
+                console.warn("Failed to capture map snapshot:", err);
+            }
+        }
+        return null;
+    };
+
+
 
     const handleGenerateReport = async () => {
         setGenerating(true);
         let downloadId = '';
         try {
-            // 1. Prepare Payload (Capture map snapshot from canvas)
-            let mapImage = null;
-            if (mapRef.current) {
-                try {
-                    mapImage = mapRef.current.getCanvas().toDataURL('image/png');
-                    const length = mapImage ? mapImage.length : 0;
-                    console.log(`[Snapshot] Status: ${mapImage ? 'SUCCESS' : 'EMPTY'}, Length: ${length}`);
-                    if (length > 0) {
-                        console.log(`[Snapshot] Sample: ${mapImage.substring(0, 50)}...`);
-                    }
-                } catch (err) {
-                    console.warn("Failed to capture map snapshot:", err);
-                }
-            }
+            const mapImage = getMapSnapshot();
 
             const payload = {
                 installation: activeInstallation,
@@ -243,17 +217,14 @@ export function ReportGenerator() {
                 type: 'pdf'
             });
 
-            // Redirect to downloads immediately
             navigate('/downloads');
 
-            // 2. Call Backend
-            toast.info("Gerando PDF no servidor (renderizando mapa)...");
+            toast.info("Gerando PDF no servidor...");
             updateDownload(downloadId, { progress: 30 });
+
             const pdfBlob = await ReportService.generateReport(payload);
 
-            // 3. Trigger Download
             updateDownload(downloadId, { progress: 70 });
-            // downloadDirectory is already available from hook above
             const result = await downloadFile(pdfBlob, filename);
 
             updateDownload(downloadId, {
@@ -270,7 +241,7 @@ export function ReportGenerator() {
             if (downloadId) {
                 updateDownload(downloadId, { status: 'error', error: e.message });
             }
-            toast.warning("Certifique-se que o servidor está rodando (npm run server em /server)");
+            toast.warning("Tente o modo Offline se o servidor falhar.");
         } finally {
             setGenerating(false);
         }
@@ -293,7 +264,7 @@ export function ReportGenerator() {
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Relatórios</h2>
                     <p className="text-muted-foreground">
-                        Gere relatórios PDF profissionais (Processamento no Servidor).
+                        Gere relatórios PDF do inventário.
                     </p>
                 </div>
             </div>
@@ -312,12 +283,15 @@ export function ReportGenerator() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="rounded-md border p-4 bg-muted/50">
-                            <h4 className="font-medium mb-2 text-sm">Conteúdo:</h4>
+                            <h4 className="font-medium mb-2 text-sm">Conteúdo do Relatório:</h4>
+
                             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                                 <li>Estatísticas Gerais</li>
-                                <li>Mapa de Localização (Satélite)</li>
+                                <li>Mapa de Localização</li>
                                 <li>Tabela de Inventário ({trees.length} árvores)</li>
-                                <li className="text-green-600 font-semibold">Renderização pelo Puppeteer (Server-Side)</li>
+                                <li className="text-green-600 font-semibold">
+                                    Renderização no Servidor (Alta Qualidade)
+                                </li>
                             </ul>
                         </div>
 
@@ -349,19 +323,9 @@ export function ReportGenerator() {
 
                 {/* Preview Section */}
                 <div className="relative space-y-6">
-                    {/* Charts Preview */}
-                    <div>
-                        <div className="text-sm text-muted-foreground mb-2">Pré-visualização dos Gráficos:</div>
-                        {chartsData && (
-                            <div className="border rounded-lg overflow-hidden bg-white h-[400px] w-full p-4">
-                                <ReportStats stats={chartsData} />
-                            </div>
-                        )}
-                    </div>
-
                     {/* Map Preview (Only for visual feedback, not capture) */}
                     <div>
-                        <div className="text-sm text-muted-foreground mb-2">Pré-visualização do Mapa (Interativo):</div>
+                        <div className="text-sm text-muted-foreground mb-2">Pré-visualização do Mapa:</div>
                         <div className="border rounded-lg overflow-hidden bg-white h-[400px] w-full relative">
                             <ReportMap
                                 trees={trees}
@@ -371,17 +335,13 @@ export function ReportGenerator() {
                                 }}
                             />
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-1">* O mapa do PDF será gerado em alta resolução no servidor.</p>
                     </div>
                 </div>
             </div>
 
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-800 flex gap-3 text-sm">
-                <AlertCircle className="h-5 w-5 shrink-0" />
-                <div>
-                    <strong>Backend Ativo:</strong> A geração do PDF agora é feita por um serviço Node.js dedicado.
-                </div>
-            </div>
+
         </div>
     );
 }
+
+

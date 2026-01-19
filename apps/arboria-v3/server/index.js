@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const mapRenderer = require('./mapRenderer');
 require('dotenv').config();
 
 const app = express();
@@ -112,6 +113,23 @@ reportRouter.post('/generate-report', async (req, res) => {
 
     if (!installation || !trees) {
         return res.status(400).json({ error: 'Missing data' });
+    }
+
+    // Phase 11: Generate map server-side if not provided by client
+    let finalMapImage = mapImage;
+    if (!mapImage && trees && trees.length > 0) {
+        try {
+            console.log('[Step 1.1] Generating map image server-side using MapLibre Native...');
+            finalMapImage = await mapRenderer.renderMapAsDataUrl(trees, {
+                width: 800,
+                height: 400,
+                pixelRatio: 2
+            });
+            console.log('[Step 1.2] Server-side map generated successfully');
+        } catch (mapError) {
+            console.error('[Step 1.2] Failed to generate server-side map:', mapError.message);
+            // Continue without map rather than failing completely
+        }
     }
 
     let browser;
@@ -223,11 +241,11 @@ reportRouter.post('/generate-report', async (req, res) => {
     <div class="mb-8 avoid-break relative">
         <h2 class="text-xl font-bold text-gray-800 border-l-4 border-green-500 pl-3 mb-4">Mapa de Localização</h2>
         <div class="border-2 border-slate-200 rounded-lg shadow-sm relative overflow-hidden">
-             ${mapImage
-                ? `<img src="${mapImage}" style="width: 100%; height: 400px; object-fit: cover;" alt="Mapa">`
+             ${finalMapImage
+                ? `<img src="${finalMapImage}" style="width: 100%; height: 400px; object-fit: cover;" alt="Mapa">`
                 : `<div id="map" style="width: 100%; height: 400px;"></div>`
             }
-             ${!mapImage ? `
+             ${!finalMapImage ? `
              <div class="map-legend">
                  <div><span class="risk-dot" style="background: #ef4444;"></span> Alto</div>
                  <div><span class="risk-dot" style="background: #eab308;"></span> Médio</div>
@@ -235,7 +253,7 @@ reportRouter.post('/generate-report', async (req, res) => {
              </div>
              ` : ''}
         </div>
-        <p class="text-xs text-gray-400 mt-2 text-center">${mapImage ? 'Snapshot do Mapa do Cliente' : 'Visualização de Satélite - Gerada em Tempo Real'}</p>
+        <p class="text-xs text-gray-400 mt-2 text-center">${finalMapImage ? 'Mapa Renderizado via MapLibre GL Native' : 'Visualização de Satélite - Gerada em Tempo Real'}</p>
     </div>
 
     <!-- DETAILED INVENTORY -->
@@ -313,12 +331,12 @@ reportRouter.post('/generate-report', async (req, res) => {
                 await document.fonts.ready;
             }
 
-            // Wait for all images
+            // Wait for all images to decode
             const images = Array.from(document.querySelectorAll('img'));
             await Promise.all(images.map(img => {
-                if (img.complete) return Promise.resolve();
+                if (img.complete) return img.decode().catch(e => console.warn('Decode failed', e));
                 return new Promise(resolve => {
-                    img.onload = resolve;
+                    img.onload = () => img.decode().then(resolve).catch(resolve);
                     img.onerror = resolve; // Continue anyway if photo fails
                 });
             }));
@@ -605,11 +623,6 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
 </head>
 <body>
     <div id="report-content">${html}</div>
-    <script>
-        window.mapData = ${JSON.stringify(mapData || null)};
-        window.mapStyle = ${mapStyle};
-        window.hasMapImage = ${!!mapImage};
-    </script>
 </body>
 </html>
         `;
@@ -641,111 +654,33 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         // 7. Inject Scripts/Styles via Puppeteer (More stable than hardcoded tags)
         console.log('[Step 7] Injecting dependencies...');
 
-        // CSS first
-        try {
-            await page.addStyleTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' });
-        } catch (e) {
-            console.warn('[Step 7.1] MapLibre CSS inject warning:', e.message);
-        }
-
         // Scripts
         try {
             await page.addScriptTag({ url: 'https://cdn.tailwindcss.com' });
         } catch (e) {
-            console.warn('[Step 7.2] Tailwind inject warning (PDF might be unstyled):', e.message);
-        }
-
-        if (mapData && !mapImage) {
-            try {
-                await page.addScriptTag({ url: 'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js' });
-            } catch (e) {
-                console.warn('[Step 7.3] MapLibre JS inject warning:', e.message);
-            }
+            console.warn('[Step 7.1] Tailwind inject warning (PDF might be unstyled):', e.message);
         }
 
         // 8. Execute Map Logic if needed
-        if (mapData && mapData.containerId) {
-            console.log('[Step 8] Executing map logic in browser...');
-            await page.evaluate(async (mapData, mapStyle, hasMapImage) => {
-                async function signalReady() {
-                    console.log("Checking readiness (images and fonts)...");
-                    if (document.fonts) await document.fonts.ready;
+        // 8. Wait for images and fonts to load (simplified - no more dynamic maps!)
+        console.log('[Step 8] Waiting for images and fonts...');
+        await page.evaluate(async () => {
+            console.log("Checking readiness (images and fonts)...");
+            if (document.fonts) await document.fonts.ready;
 
-                    const images = Array.from(document.querySelectorAll('img'));
-                    await Promise.all(images.map(img => {
-                        if (img.complete) return Promise.resolve();
-                        return new Promise(resolve => {
-                            img.onload = resolve;
-                            img.onerror = resolve;
-                        });
-                    }));
+            const images = Array.from(document.querySelectorAll('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            }));
 
-                    await new Promise(r => setTimeout(r, 2000));
-                    console.log("Signaling Ready via #map-ready");
-                    const el = document.createElement('div');
-                    el.id = 'map-ready';
-                    document.body.appendChild(el);
-                }
-
-                if (hasMapImage) {
-                    console.log('Using client-side snapshot, initiating readiness check...');
-                    await signalReady();
-                    return;
-                }
-
-                if (!mapData || !mapData.containerId) {
-                    console.log('No map logic required, signaling Ready...');
-                    await signalReady();
-                    return;
-                }
-
-                const container = document.getElementById(mapData.containerId);
-                if (container && window.maplibregl) {
-                    console.log('Initializing Minimap...');
-                    try {
-                        const map = new window.maplibregl.Map({
-                            container: mapData.containerId,
-                            style: mapStyle,
-                            center: [mapData.lng, mapData.lat],
-                            zoom: 18,
-                            attributionControl: false,
-                            preserveDrawingBuffer: true,
-                            failIfMajorPerformanceCaveat: false,
-                            interactive: false
-                        });
-
-                        const markerEl = document.createElement('div');
-                        markerEl.style.width = '14px';
-                        markerEl.style.height = '14px';
-                        markerEl.style.backgroundColor = '#ef4444';
-                        markerEl.style.border = '2px solid white';
-                        markerEl.style.borderRadius = '50%';
-                        markerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
-
-                        new window.maplibregl.Marker({ element: markerEl })
-                            .setLngLat([mapData.lng, mapData.lat])
-                            .addTo(map);
-
-                        map.on('load', () => {
-                            map.once('idle', () => {
-                                console.log('Map IDLE - Signaling Ready');
-                                signalReady();
-                            });
-                            map.triggerRepaint();
-                        });
-                    } catch (mapErr) {
-                        console.error('MAP_INIT_ERROR:', mapErr.message);
-                        await signalReady();
-                    }
-                } else {
-                    console.warn('Map container/lib not available');
-                    await signalReady();
-                }
-            }, mapData, mapStyle, !!mapImage);
-
-            console.log('[Step 8.1] Waiting for map-ready signal...');
-            await page.waitForSelector('#map-ready', { timeout: 15000 }).catch(() => console.warn('Map ready timeout'));
-        }
+            // Give extra time for rendering to settle
+            await new Promise(r => setTimeout(r, 2000));
+            console.log("Content ready for PDF generation");
+        });
 
         // 9. Final wait for network and styles (CRITICAL)
         console.log('[Step 9] Waiting for network idle...');
@@ -785,8 +720,13 @@ reportRouter.post('/generate-pdf-from-html', async (req, res) => {
         const pdf = await page.pdf({
             format: 'A4',
             printBackground: true,
-            preferCSSPageSize: true,
-            margin: { top: '0', bottom: '0', left: '0', right: '0' }
+            preferCSSPageSize: false, // Force Puppeteer's size to ensure consistency
+            margin: {
+                top: '10mm',
+                bottom: '10mm',
+                left: '10mm',
+                right: '10mm'
+            }
         });
 
         if (page) await page.close();
