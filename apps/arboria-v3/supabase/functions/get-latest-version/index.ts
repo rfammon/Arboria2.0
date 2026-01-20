@@ -4,7 +4,7 @@ const GITHUB_REPO = "rfammon/Arboria2.0";
 
 serve(async (req) => {
     try {
-        const { currentVersion } = await req.json();
+        const { currentVersion, platform = 'android' } = await req.json();
 
         if (!currentVersion) {
             return new Response(JSON.stringify({ error: "Missing currentVersion" }), {
@@ -13,7 +13,7 @@ serve(async (req) => {
             });
         }
 
-        console.log(`Checking update for version: ${currentVersion}`);
+        console.log(`Checking update for version: ${currentVersion} on platform: ${platform}`);
 
         // Fetch releases from GitHub
         const githubUrl = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
@@ -40,16 +40,19 @@ serve(async (req) => {
         // Simple semantic comparison (can be improved but sufficient for incrementing tags)
         const hasUpdate = normalizedLatest !== normalizedCurrent;
 
-        // Find the APK asset
-        const apkAsset = release.assets.find((asset: any) => asset.name.endsWith(".apk"));
-        const apkUrl = apkAsset ? apkAsset.browser_download_url : null;
+        // Find the appropriate asset based on platform
+        const extension = (platform === 'tauri' || platform === 'windows') ? ".exe" : ".apk";
+        const asset = release.assets.find((asset: any) => asset.name.toLowerCase().endsWith(extension));
+        const updateUrl = asset ? asset.browser_download_url : null;
 
         return new Response(
             JSON.stringify({
                 hasUpdate,
                 latestVersion: normalizedLatest,
                 releaseNotes: release.body,
-                apkUrl: apkUrl,
+                updateUrl: updateUrl,
+                // Add legacy field for backward compatibility with older app versions if any exist
+                apkUrl: platform === 'android' ? updateUrl : null,
             }),
             {
                 headers: { "Content-Type": "application/json" },

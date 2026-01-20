@@ -159,15 +159,18 @@ export const PDFReport = ({ installationName, stats, chartsImages, mapImage, tre
     <Document>
         <Page size="A4" style={styles.page}>
 
-            {/* Header */}
+            {/* Header with Logo */}
             <View style={styles.header}>
-                <View>
-                    <Text style={styles.title}>Relatório de Inventário</Text>
+                <View style={{ flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#000' }}>
+                        Arbor<Text style={{ color: '#2e7d32' }}>IA</Text>
+                    </Text>
+                    <Text style={[styles.title, { fontSize: 14, marginTop: 4 }]}>Relatório de Inventário</Text>
                     <Text style={styles.subtitle}>{installationName}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                     <Text style={styles.subtitle}>Gerado em: {format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}</Text>
-                    <Text style={styles.subtitle}>ArborIA v3</Text>
+                    <Text style={styles.subtitle}>Documento Oficial</Text>
                 </View>
             </View>
 

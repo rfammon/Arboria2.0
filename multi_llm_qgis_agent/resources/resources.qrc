@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/multi_llm_qgis_agent" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>

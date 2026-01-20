@@ -1,7 +1,7 @@
 {
     "name": "arboria-v3",
     "private": true,
-    "version": "1.1.51",
+    "version": "1.1.57",
     "type": "module",
     "scripts": {
         "dev": "node scripts/dev.mjs",
@@ -63,6 +63,7 @@
         "html2canvas": "^1.4.1",
         "idb": "^8.0.3",
         "idb-keyval": "^6.2.2",
+        "jspdf": "^4.0.0",
         "jszip": "^3.10.1",
         "lucide-react": "^0.560.0",
         "maplibre-gl": "^5.14.0",

@@ -1,0 +1,17 @@
+[general]
+name=Multi-LLM QGIS Agent
+description=Plugin QGIS com suporte a múltiplas APIs de LLM (Groq, Qwen, OpenAI) para comandos em linguagem natural.
+about=Este plugin permite interagir com o QGIS usando IA. Suporta modelos gratuitos como Llama 3 (via Groq) e Qwen.
+version=0.1
+qgisMinimumVersion=3.0
+author=Arboria Team
+email=contato@arboria.com.br
+
+[repository]
+repository=https://github.com/arboria/multi_llm_qgis_agent
+
+[icons]
+icon=icon.png
+
+[category]
+category=Plugins

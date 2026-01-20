@@ -1,4 +1,4 @@
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -10,9 +10,15 @@ import { usePlans } from '../hooks/usePlans';
 import { useTrees } from '../hooks/useTrees';
 import { supabase } from '../lib/supabase';
 import { BackupService } from '../services/backupService';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { downloadFile } from '../utils/downloadUtils';
 import { useDownloads } from '../context/DownloadContext';
+import html2canvas from 'html2canvas';
+
+// Visual Components for Capture
+import { ReportMap } from '../components/features/reporting/ReportMap';
+import { ReportGantt } from '../components/reports/shared/ReportGantt';
+import { ReportGeneralGantt } from '../components/reports/shared/ReportGeneralGantt';
 
 export default function Reports() {
     const { activeInstallation } = useAuth();
@@ -21,18 +27,38 @@ export default function Reports() {
     const { addDownload, updateDownload } = useDownloads();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleGenerateReport = async (type: ReportType, selectedId?: string) => {
-        if (!activeInstallation) {
-            toast.error('Selecione uma instalação');
-            return;
-        }
+    // State for Headless Capture
+    const [generating, setGenerating] = useState(false);
+    const [captureConfig, setCaptureConfig] = useState<{
+        type: ReportType | null;
+        id?: string;
+        data?: any; // The tree or plan object
+    }>({ type: null });
 
+    // Unused state removed
+    const mapRef = useRef<any>(null);
+    const ganttRef = useRef<HTMLDivElement>(null);
+    const generalGanttRef = useRef<HTMLDivElement>(null);
+
+    // Cleanup state when finished
+    const resetCapture = () => {
+        setCaptureConfig({ type: null });
+        setGenerating(false);
+        mapRef.current = null;
+    };
+
+    // The actual generation function triggered after capture readiness or immediate if no capture needed
+    const executeGeneration = async (images: { mapImage?: string; ganttImage?: string } = {}) => {
+        if (!activeInstallation || !captureConfig.type) return;
+
+        const { type, id: selectedId } = captureConfig;
         let downloadId = '';
+
         try {
-            let pdfBlob: Blob;
+            let reportResult: Blob | { path: string; platform: 'android' };
             let filename: string;
 
-            // Pre-calculate filename for early registration
+            // Pre-calculate filename
             let initialFilename = 'Relatorio.pdf';
             if (type === 'intervention-plan') {
                 const plan = (plans || []).find(p => p.id === selectedId);
@@ -51,47 +77,48 @@ export default function Reports() {
                 type: 'pdf'
             });
 
+            updateDownload(downloadId, { progress: 30 }); // Started
+
             switch (type) {
                 case 'intervention-plan':
-                    if (!selectedId) {
-                        toast.error('Selecione um plano');
-                        return;
-                    }
+                    if (!selectedId) throw new Error('Selecione um plano');
                     toast.info('Gerando relatório de plano de intervenção...');
-                    const planBlob = await ReportService.generateInterventionPlanReport(selectedId);
-                    pdfBlob = new Blob([planBlob], { type: 'application/pdf' });
 
-                    // Try to find human readable ID
+                    reportResult = await ReportService.generateInterventionPlanReport(selectedId, {
+                        mapImage: images.mapImage,
+                        ganttImage: images.ganttImage
+                    });
+
                     const plan = (plans || []).find(p => p.id === selectedId);
-                    const planCode = plan?.plan_id || selectedId.slice(0, 8);
-                    filename = `Plano_${planCode}.pdf`;
+                    filename = `Plano_${plan?.plan_id || selectedId.slice(0, 8)}.pdf`;
                     break;
 
                 case 'tree-individual':
-                    if (!selectedId) {
-                        toast.error('Selecione uma árvore');
-                        return;
-                    }
+                    if (!selectedId) throw new Error('Selecione uma árvore');
                     toast.info('Gerando ficha individual...');
-                    const treeBlob = await ReportService.generateTreeReport(selectedId);
-                    pdfBlob = new Blob([treeBlob], { type: 'application/pdf' });
+
+                    reportResult = await ReportService.generateTreeReport(selectedId, {
+                        mapImage: images.mapImage
+                    });
 
                     const tree = (trees || []).find(t => t.id === selectedId);
-                    const treeCode = tree?.codigo || selectedId.slice(0, 8);
-                    filename = `Ficha_${treeCode}.pdf`;
+                    filename = `Ficha_${tree?.codigo || selectedId.slice(0, 8)}.pdf`;
                     break;
 
                 case 'schedule':
                     toast.info('Gerando cronograma...');
-                    const scheduleBlob = await ReportService.generateScheduleReport();
-                    pdfBlob = new Blob([scheduleBlob], { type: 'application/pdf' });
+
+                    reportResult = await ReportService.generateScheduleReport({
+                        ganttImage: images.ganttImage
+                    });
+
                     filename = `Cronograma_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
                     break;
 
                 case 'risk-inventory':
                 default:
                     toast.info('Gerando inventário de risco...');
-                    // Fetch trees for the installation
+                    // Logic from ReportGenerator usually handles this via other means, but if called here:
                     const { data: treesData } = await supabase
                         .from('arvores')
                         .select('*')
@@ -100,7 +127,6 @@ export default function Reports() {
 
                     if (!treesData) throw new Error('Falha ao carregar dados das árvores');
 
-                    // Calculate stats
                     const stats = {
                         totalTrees: treesData.length,
                         highRiskCount: treesData.filter(t => t.risklevel === 'Alto').length,
@@ -112,24 +138,26 @@ export default function Reports() {
                     const payload = {
                         installation: activeInstallation,
                         trees: treesData,
-                        stats: stats
+                        stats: stats,
+                        mapImage: images.mapImage
+                        // Note: Charts are missed here unless we also render them hidden. 
+                        // Assuming Risk Inventory usually goes via ReportGenerator component.
                     };
-                    const inventoryBlob = await ReportService.generateRiskInventoryReport(payload);
-                    pdfBlob = new Blob([inventoryBlob], { type: 'application/pdf' });
-
-                    const safeInstallName = activeInstallation.nome?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_');
-                    filename = `Inventario_Risco_${safeInstallName || 'Geral'}.pdf`;
+                    reportResult = await ReportService.generateRiskInventoryReport(payload);
+                    filename = `Inventario_Risco.pdf`;
                     break;
             }
 
+            updateDownload(downloadId, { progress: 80 });
+
             // Download PDF
-            updateDownload(downloadId, { progress: 50 });
-            const result = await downloadFile(pdfBlob, filename);
+            const result = await downloadFile(reportResult as Blob, filename);
+
             updateDownload(downloadId, {
                 status: 'success',
                 progress: 100,
                 path: result.path,
-                filename: filename // Update in case it changed
+                filename: filename
             });
 
             toast.success('Relatório gerado com sucesso!');
@@ -137,11 +165,133 @@ export default function Reports() {
         } catch (error: any) {
             console.error('Error generating report:', error);
             toast.error(`Erro ao gerar relatório: ${error.message}`);
-            if (downloadId) {
-                updateDownload(downloadId, { status: 'error', error: error.message });
-            }
+            if (downloadId) updateDownload(downloadId, { status: 'error', error: error.message });
+        } finally {
+            resetCapture();
         }
     };
+
+    const handleGenerateReport = async (type: ReportType, selectedId?: string) => {
+        if (!activeInstallation) {
+            toast.error('Selecione uma instalação');
+            return;
+        }
+
+        // Specific data preparation for capture
+        let data: any = null;
+        if (type === 'intervention-plan' && selectedId) {
+            data = (plans || []).find(p => p.id === selectedId);
+        } else if (type === 'tree-individual' && selectedId) {
+            data = (trees || []).find(t => t.id === selectedId);
+        } else if (type === 'schedule') {
+            // Include all active and completed plans for the summary schedule, ignore only cancelled/drafts if we want to be clean
+            // Let's show everything that isn't explicitly cancelled.
+            data = (plans || []).filter(p => p.status !== 'CANCELLED');
+        } else if (type === 'risk-inventory') {
+            // For Risk Inventory, we need trees to render the map
+            data = trees;
+        }
+
+        // If not mobile, we might skip capture if we trust Puppeteer, 
+        // BUT Puppeteer might also miss dynamic JS maps if not waited properly.
+        // Let's use capture for consistency if possible, or just for Mobile.
+        // For this task (fix Android), we MUST use capture.
+
+        setGenerating(true);
+        setCaptureConfig({ type, id: selectedId, data });
+
+        // The useEffect below will trigger the actual capture once logic determines 'ready'
+    };
+
+    // Effect to trigger capture sequence
+    useEffect(() => {
+        if (!generating || !captureConfig.type) return;
+
+        let cancelled = false;
+
+        const runCapture = async () => {
+            console.log(`[Reports] Starting capture sequence for: ${captureConfig.type}`);
+
+            // 1. Wait for components to render
+            await new Promise(r => setTimeout(r, 1000));
+            if (cancelled) return;
+
+            const images: { mapImage?: string; ganttImage?: string } = {};
+
+            // 2. Wait for MapRef if needed
+            const needsMap = ['intervention-plan', 'tree-individual', 'risk-inventory'].includes(captureConfig.type!);
+            if (needsMap) {
+                console.log("[Reports] Waiting for map component to initialize...");
+                let attempts = 0;
+                while (!mapRef.current && attempts < 20) { // Wait up to 10s (20 * 500ms)
+                    await new Promise(r => setTimeout(r, 500));
+                    if (cancelled) return;
+                    attempts++;
+                }
+
+                if (!mapRef.current) {
+                    console.warn("[Reports] Map reference never populated. Capture might fail.");
+                } else {
+                    console.log("[Reports] Map reference found, proceeding to capture.");
+                }
+            }
+
+            // 3. Capture Map (if applicable)
+            if (needsMap && mapRef.current) {
+                try {
+                    const map = mapRef.current;
+                    if (!map.loaded()) {
+                        console.log("[Reports] Waiting for map idle/tiles...");
+                        // Wait up to 8s more for idle (satellite tiles are slow)
+                        await Promise.race([
+                            new Promise(resolve => map.once('idle', resolve)),
+                            new Promise(resolve => setTimeout(resolve, 8000))
+                        ]);
+                    }
+
+                    // Small delay to ensure WebGL buffer is ready after idle
+                    await new Promise(r => setTimeout(r, 200));
+
+                    images.mapImage = map.getCanvas().toDataURL('image/png');
+
+                    if (images.mapImage && images.mapImage.length > 1000) {
+                        console.log(`[Reports] Map captured successfully. Image size: ${Math.round(images.mapImage.length / 1024)} KB`);
+                    } else {
+                        console.warn("[Reports] Map capture returned empty or suspicious payload:", images.mapImage?.slice(0, 100));
+                        // Try one more time with a frame request
+                        await new Promise(r => requestAnimationFrame(r));
+                        images.mapImage = map.getCanvas().toDataURL('image/png');
+                        console.log(`[Reports] Retry capture size: ${images.mapImage?.length || 0} bytes`);
+                    }
+                } catch (e) {
+                    console.warn("Map capture failed", e);
+                }
+            }
+
+            // 4. Capture Gantt (if applicable)
+            try {
+                if (captureConfig.type === 'intervention-plan' && ganttRef.current) {
+                    const canvas = await html2canvas(ganttRef.current, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff', allowTaint: true });
+                    images.ganttImage = canvas.toDataURL('image/png');
+                } else if (captureConfig.type === 'schedule' && generalGanttRef.current) {
+                    const canvas = await html2canvas(generalGanttRef.current, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff', allowTaint: true });
+                    images.ganttImage = canvas.toDataURL('image/png');
+                }
+            } catch (e) {
+                console.warn("Gantt capture failed", e);
+            }
+
+            // Proceed to generation
+            if (!cancelled) {
+                await executeGeneration(images);
+            }
+        };
+
+        runCapture();
+
+        return () => { cancelled = true; };
+    }, [generating, captureConfig]);
+
 
     const handleAction = async (action: string) => {
         let downloadId = '';
@@ -207,7 +357,63 @@ export default function Reports() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 relative">
+            {/* Headless Capture Container - Off-screen but rendered */}
+            {generating && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: -2000,
+                    right: -2000,
+                    width: '1000px',
+                    opacity: 0.1, // Keep it slightly visible to prevent browser throttling WebGL
+                    pointerEvents: 'none',
+                    zIndex: -1
+                }}>
+
+                    {/* Map Capture */}
+                    {['intervention-plan', 'tree-individual', 'risk-inventory'].includes(captureConfig.type!) && (
+                        <div style={{ width: 800, height: 600 }}>
+                            <ReportMap
+                                trees={
+                                    captureConfig.type === 'tree-individual' && captureConfig.data ? [captureConfig.data] :
+                                        captureConfig.type === 'intervention-plan' && captureConfig.data?.tree ? [captureConfig.data.tree] :
+                                            (trees || [])
+                                }
+                                onLoad={(map) => { mapRef.current = map; }}
+                            />
+                        </div>
+                    )}
+
+                    {/* Gantt Capture (Individual) */}
+                    {captureConfig.type === 'intervention-plan' && captureConfig.data && (
+                        <div ref={ganttRef} style={{ width: 800, backgroundColor: 'white', padding: 20 }}>
+                            <ReportGantt plan={captureConfig.data} bufferDays={5} />
+                        </div>
+                    )}
+
+                    {/* Gantt Capture (General/Schedule) */}
+                    {captureConfig.type === 'schedule' && (
+                        <div ref={generalGanttRef} style={{ width: 800, backgroundColor: 'white', padding: 20 }}>
+                            <ReportGeneralGantt plans={captureConfig.data || plans || []} bufferDays={5} />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Status Overlay */}
+            {generating && (
+                <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-background p-6 rounded-lg shadow-xl flex flex-col items-center gap-4">
+                        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                        <div className="text-center">
+                            <h3 className="font-bold text-lg">Gerando Relatório</h3>
+                            <p className="text-muted-foreground text-sm">Capturando gráficos e mapas...</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold tracking-tight font-display">

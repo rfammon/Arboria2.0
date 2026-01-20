@@ -118,8 +118,7 @@ export default function DashboardLayout() {
                         {!isSidebarCollapsed && (
                             <div className="flex flex-col flex-1 min-w-0 ml-2 animate-in fade-in duration-300">
                                 <span className="text-xl font-bold leading-none">
-                                    <span className="text-blue-600 dark:text-blue-500">Arbor</span>
-                                    <span className="text-green-600 dark:text-green-500">IA</span>
+                                    <span className="text-blue-600 dark:text-blue-500">Arbor</span><span className="text-green-600 dark:text-green-500">IA</span>
                                 </span>
                                 {activeInstallation && (
                                     <button

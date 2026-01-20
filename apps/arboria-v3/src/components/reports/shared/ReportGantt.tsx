@@ -4,9 +4,10 @@ import type { InterventionPlan } from '../../../types/plan';
 interface ReportGanttProps {
     plan: InterventionPlan;
     compact?: boolean;
+    bufferDays?: number;
 }
 
-export function ReportGantt({ plan, compact = false }: ReportGanttProps) {
+export function ReportGantt({ plan, compact = false, bufferDays = 2 }: ReportGanttProps) {
     // Extract dates
     const startStr = plan.schedule?.start || plan.schedule?.startDate;
     const endStr = plan.schedule?.end || plan.schedule?.endDate;
@@ -15,20 +16,26 @@ export function ReportGantt({ plan, compact = false }: ReportGanttProps) {
         return <div style={{ padding: '1rem', textAlign: 'center', color: '#999' }}>Cronograma não definido</div>;
     }
 
-    const startDate = new Date(startStr);
-    let endDate = new Date(startDate);
+    const baseStart = new Date(startStr);
+    const startDate = new Date(baseStart);
+    startDate.setDate(baseStart.getDate() - bufferDays);
+
+    let baseEnd = new Date(baseStart);
 
     // Calculate duration
     if (plan.durations) {
-        const totalDays = (plan.durations.mobilization || 0) +
+        const totalDurationDays = (plan.durations.mobilization || 0) +
             (plan.durations.execution || 0) +
             (plan.durations.demobilization || 0);
-        endDate.setDate(startDate.getDate() + Math.max(1, totalDays));
+        baseEnd.setDate(baseStart.getDate() + Math.max(1, totalDurationDays));
     } else if (endStr) {
-        endDate = new Date(endStr);
+        baseEnd = new Date(endStr);
     } else {
-        endDate.setDate(startDate.getDate() + 1);
+        baseEnd.setDate(baseStart.getDate() + 1);
     }
+
+    const endDate = new Date(baseEnd);
+    endDate.setDate(baseEnd.getDate() + bufferDays);
 
     // Calculate phase dates if durations exist
     let mobilizationEnd: Date | null = null;

@@ -3,9 +3,10 @@ import type { InterventionPlan } from '../../../types/plan';
 
 interface ReportGeneralGanttProps {
     plans: InterventionPlan[];
+    bufferDays?: number;
 }
 
-export function ReportGeneralGantt({ plans }: ReportGeneralGanttProps) {
+export function ReportGeneralGantt({ plans, bufferDays = 2 }: ReportGeneralGanttProps) {
     const { startDate, endDate, totalDays } = useMemo(() => {
         if (plans.length === 0) return { startDate: new Date(), endDate: new Date(), totalDays: 0, timeline: [] };
 
@@ -17,21 +18,21 @@ export function ReportGeneralGantt({ plans }: ReportGeneralGanttProps) {
         if (dates.length === 0) {
             const now = new Date();
             const start = new Date(now);
-            start.setDate(now.getDate() - 2);
+            start.setDate(now.getDate() - bufferDays);
             const end = new Date(now);
-            end.setDate(now.getDate() + 2);
-            return { startDate: start, endDate: end, totalDays: 4, timeline: Array.from({ length: 4 }) };
+            end.setDate(now.getDate() + bufferDays);
+            return { startDate: start, endDate: end, totalDays: bufferDays * 2, timeline: Array.from({ length: bufferDays * 2 }) };
         }
 
         const minTime = Math.min(...dates);
         const maxTime = Math.max(...dates);
 
-        // Add buffer (5 pre, 5 post)
+        // Add buffer
         const start = new Date(minTime);
-        start.setDate(start.getDate() - 2);
+        start.setDate(start.getDate() - bufferDays);
 
         const end = new Date(maxTime);
-        end.setDate(end.getDate() + 2);
+        end.setDate(end.getDate() + bufferDays);
 
         const diffTime = Math.abs(end.getTime() - start.getTime());
         const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -39,7 +40,7 @@ export function ReportGeneralGantt({ plans }: ReportGeneralGanttProps) {
         const timelineArr = Array.from({ length: days || 1 });
 
         return { startDate: start, endDate: end, totalDays: days || 1, timeline: timelineArr };
-    }, [plans]);
+    }, [plans, bufferDays]);
 
     const getPosition = (dateStr?: string) => {
         if (!dateStr) return 0;

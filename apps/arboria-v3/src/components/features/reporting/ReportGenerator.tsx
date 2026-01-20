@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { ReportService } from '../../../api/reportService';
 import { downloadFile } from '../../../utils/downloadUtils';
 import { sanitizeFilename } from '../../../utils/fileUtils';
+import html2canvas from 'html2canvas';
 import { useDownloads } from '../../../context/DownloadContext';
 
 // Type definitions
@@ -182,32 +183,62 @@ export function ReportGenerator() {
 
     const { addDownload, updateDownload } = useDownloads();
 
-    // 1. Prepare Map Snapshot
-    const getMapSnapshot = () => {
-        if (mapRef.current) {
-            try {
-                return mapRef.current.getCanvas().toDataURL('image/png');
-            } catch (err) {
-                console.warn("Failed to capture map snapshot:", err);
+    // Capture charts for PDF
+    const captureCharts = async () => {
+        try {
+            const riskChart = document.getElementById('risk-chart');
+            const speciesChart = document.getElementById('species-chart');
+
+            const images: any = {};
+
+            if (riskChart) {
+                const canvas = await html2canvas(riskChart, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' });
+                images.risk = canvas.toDataURL('image/png');
             }
+
+            if (speciesChart) {
+                const canvas = await html2canvas(speciesChart, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' });
+                images.species = canvas.toDataURL('image/png');
+            }
+
+            return images;
+        } catch (e) {
+            console.warn("Failed to capture charts:", e);
+            return {};
         }
-        return null;
     };
-
-
 
     const handleGenerateReport = async () => {
         setGenerating(true);
         let downloadId = '';
         try {
-            const mapImage = getMapSnapshot();
+            // 1. Capture Map
+            let mapImage = undefined;
+            if (mapRef.current) {
+                try {
+                    const map = mapRef.current;
+                    // Wait for map to be fully loaded/idle
+                    if (!map.loaded()) {
+                        await new Promise(resolve => map.once('idle', resolve));
+                    }
+                    mapImage = map.getCanvas().toDataURL('image/png');
+                } catch (e) {
+                    console.warn("Map capture failed:", e);
+                }
+            }
 
+            // 2. Capture Charts
+            const chartsImages = await captureCharts();
+
+            // 3. Prepare Payload
             const payload = {
                 installation: activeInstallation,
                 stats: stats,
                 trees: trees,
-                mapImage: mapImage
+                mapImage: mapImage,
+                chartsImages
             };
+
             console.log('[ReportGenerator] Sending payload with keys:', Object.keys(payload));
             console.log('[ReportGenerator] Installation:', activeInstallation);
             console.log('[ReportGenerator] Trees count:', trees?.length);
@@ -222,10 +253,10 @@ export function ReportGenerator() {
 
             navigate('/downloads');
 
-            toast.info("Gerando PDF no servidor...");
+            toast.info("Gerando PDF...");
             updateDownload(downloadId, { progress: 30 });
 
-            const pdfBlob = await ReportService.generateReport(payload);
+            const pdfBlob = await ReportService.generateRiskInventoryReport(payload);
 
             updateDownload(downloadId, { progress: 70 });
             const result = await downloadFile(pdfBlob, filename);
@@ -244,7 +275,6 @@ export function ReportGenerator() {
             if (downloadId) {
                 updateDownload(downloadId, { status: 'error', error: e.message });
             }
-            toast.warning("Tente o modo Offline se o servidor falhar.");
         } finally {
             setGenerating(false);
         }

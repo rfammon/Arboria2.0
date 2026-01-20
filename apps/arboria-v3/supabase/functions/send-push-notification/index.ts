@@ -57,17 +57,21 @@ serve(async (req) => {
         }
 
         // 3. Get FCM Access Token
-        const serviceAccountStr = Deno.env.get("FCM_SERVICE_ACCOUNT");
-        const projectId = Deno.env.get("FIREBASE_PROJECT_ID");
+        const serviceAccountStr = Deno.env.get("FIREBASE_SERVICE_ACCOUNT");
 
-        if (!projectId || !serviceAccountStr) {
-            throw new Error("FCM config missing in env");
+        if (!serviceAccountStr) {
+            throw new Error("FIREBASE_SERVICE_ACCOUNT config missing in env");
         }
 
         // Fix potential escaping issues with private key if passed as env var
         let serviceAccount = JSON.parse(serviceAccountStr);
         if (typeof serviceAccount === "string") {
             serviceAccount = JSON.parse(serviceAccount); // Handle double stringify if happened
+        }
+
+        const projectId = serviceAccount.project_id;
+        if (!projectId) {
+            throw new Error("project_id missing in service account JSON");
         }
 
         const accessToken = await getAccessToken({

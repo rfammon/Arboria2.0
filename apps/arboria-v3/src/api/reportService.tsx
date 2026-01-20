@@ -1,10 +1,19 @@
-// Re-trigger build
+
+import { pdf } from '@react-pdf/renderer';
+import { PDFReport } from '../components/features/reporting/PDFReport';
+import { Capacitor } from '@capacitor/core';
+
+// ... existing imports ...
 import { supabase } from '../lib/supabase';
 import { renderToStaticMarkup } from 'react-dom/server';
+
 import { InterventionPlanReport } from '../components/reports/templates/InterventionPlanReport';
 import { TreeReport } from '../components/reports/templates/TreeReport';
 import { ScheduleReport } from '../components/reports/templates/ScheduleReport';
 import { RiskInventoryReport } from '../components/reports/templates/RiskInventoryReport';
+import { InterventionPlanPDF } from '../components/features/reporting/InterventionPlanPDF';
+import { TreePDF } from '../components/features/reporting/TreePDF';
+import { SchedulePDF } from '../components/features/reporting/SchedulePDF';
 
 const getBaseUrl = () => {
     // Priority 1: Environment variable
@@ -32,8 +41,10 @@ const getBaseUrl = () => {
     }
 
     // On Capacitor, we must NOT use relative URLs as they fetch index.html
-    const isCapacitor = window.location.protocol === 'capacitor:';
+    const isCapacitor = Capacitor.isNativePlatform();
     if (isCapacitor) {
+        // For Android Emulator (10.0.2.2) or real device (needs actual IP or deployed server)
+        // If you are testing on real device, you MUST use the Render URL or your PC's IP
         return '';
     }
 
@@ -94,10 +105,24 @@ export const ReportService = {
             throw new Error("O arquivo recebido não é um PDF válido.");
         }
     },
-    async generateReport(data: any) {
+
+    async generatePdfLocal(element: React.ReactElement): Promise<Blob> {
+        try {
+            return await pdf(element as any).toBlob();
+        } catch (error) {
+            console.error("Local PDF Generation Error:", error);
+            throw new Error("Erro ao gerar PDF localmente.");
+        }
+    },
+
+    async generateReport(data: any): Promise<Blob> {
         try {
             const baseUrl = getBaseUrl();
-            if (!baseUrl && window.location.protocol === 'capacitor:') {
+            if (!baseUrl && Capacitor.isNativePlatform()) {
+                // For generic report generation on mobile, we might need a fallback or ensure all paths use specific methods
+                // But this method seems to be a generic entry point.
+                // Ideally we should route to specific local generators if possible.
+                // For now, let's keep the existing logic but check for config.
                 throw new Error("Configuração ausente: A URL do servidor de relatórios não foi definida. Verifique o arquivo .env.");
             }
             const endpoint = `${baseUrl}/api/reports/generate-report`;
@@ -126,61 +151,145 @@ export const ReportService = {
         }
     },
 
-    async generateInterventionPlanReport(planId: string, mapImage?: string) {
+    async generatePdfFromHtml(data: { html: string, mapData?: any, mapImage?: string }): Promise<Blob> {
         try {
+            const baseUrl = getBaseUrl();
+            if (!baseUrl && Capacitor.isNativePlatform()) {
+                // On mobile, if this is called directly, we might be in trouble if we don't have a local alternative for this specific HTML.
+                // But generateRiskInventoryReport calls this.
+                throw new Error("Configuração ausente: A URL do servidor de relatórios não foi definida.");
+            }
+            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
+
+            // Wrap in full HTML document to ensure styles are applied
+            const fullHtml = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#15803d',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                visibility: visible !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white p-8">
+    ${data.html}
+</body>
+</html>
+            `;
+
+            // Use fullHtml instead of fragment
+            const payload = { ...data, html: fullHtml };
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                await this.handleResponseError(response, 'Failed to generate PDF from HTML');
+            }
+
+            const blob = await response.blob();
+            await this.validatePdf(blob);
+            return blob;
+        } catch (error: any) {
+            console.error("PDF from HTML Error:", error);
+            throw error;
+        }
+    },
+
+
+
+    async generateInterventionPlanReport(planId: string, extraImages: { mapImage?: string, ganttImage?: string } = {}): Promise<Blob> {
+        try {
+            console.log(`[ReportService] Generating Intervention Plan Report: ${planId}`);
+
             // 1. Fetch Plan Details
-            const { data: plan, error: planError } = await supabase
+            const { data: plan, error } = await supabase
                 .from('intervention_plans')
                 .select(`
                     *,
-                    instalacao:instalacoes(nome)
+                    instalacao:instalacoes(nome),
+                    tree:arvores(*)
                 `)
                 .eq('id', planId)
                 .single();
 
-            if (planError) throw new Error(`Erro ao buscar plano: ${planError.message}`);
+            if (error) throw new Error(`Falha ao buscar plano: ${error.message}`);
+            if (!plan) throw new Error('Plano não encontrado.');
 
-            // 2. Fetch Tree Data (if associated)
-            let tree = null;
+            const tree = plan.tree;
 
-            if (plan.tree_id) {
-                const { data: treeData, error: treeError } = await supabase
-                    .from('arvores')
+            // 2. Fetch and Sign Photos for the Tree
+            if (tree?.id) {
+                const { data: photosData } = await supabase
+                    .from('tree_photos')
                     .select('*')
-                    .eq('id', plan.tree_id)
-                    .single();
+                    .eq('tree_id', tree.id)
+                    .order('created_at', { ascending: false });
 
-                if (treeError) {
-                    console.warn('Erro ao buscar árvore:', treeError);
-                } else {
-                    tree = treeData;
-
-                    // Fetch photos separately and generate URLs
-                    const { data: photosData } = await supabase
-                        .from('tree_photos')
-                        .select('*')
-                        .eq('tree_id', plan.tree_id)
-                        .order('created_at', { ascending: false });
-
-                    if (photosData && photosData.length > 0) {
-                        // Generate signed URLs
-                        const photosWithUrls = await Promise.all(
-                            photosData.map(async (photo) => {
-                                const { data } = await supabase.storage
-                                    .from('tree-photos') // Correct bucket name
-                                    .createSignedUrl(photo.storage_path, 3600); // 1 hour expiry
-
-                                return {
-                                    url: data?.signedUrl,
-                                    data_foto: photo.created_at,
-                                    is_cover: false // Add logic if needed
-                                };
-                            })
-                        );
-
-                        tree.arvore_fotos = photosWithUrls;
-                    }
+                if (photosData && photosData.length > 0) {
+                    const signedPhotos = await Promise.all(
+                        photosData.map(async (photo) => {
+                            const { data } = await supabase.storage
+                                .from('tree-photos') // Correct bucket
+                                .createSignedUrl(photo.storage_path, 3600);
+                            return {
+                                ...photo,
+                                url: data?.signedUrl
+                            };
+                        })
+                    );
+                    // Attach to tree object as expected by InterventionPlanPDF and InterventionPlanReport 
+                    tree.arvore_fotos = signedPhotos;
                 }
+            }
+
+            const { mapImage, ganttImage } = extraImages;
+
+            // MOBILE STRATEGY (React-PDF)
+            if (Capacitor.isNativePlatform()) {
+                console.log('[ReportService] Generating Mobile Intervention Plan PDF locally...');
+                return await this.generatePdfLocal(
+                    <InterventionPlanPDF
+                        plan={plan}
+                        tree={tree}
+                        installationName={plan.instalacao?.nome}
+                        mapImage={mapImage}
+                        ganttImage={ganttImage}
+                    />
+                );
             }
 
             // 3. Render Template to HTML
@@ -194,45 +303,16 @@ export const ReportService = {
                 />
             );
 
-            // 4. Prepare Map Data
-            let mapData = null;
-            if (tree && tree.latitude && tree.longitude) {
-                mapData = {
-                    containerId: 'report-minimap',
-                    lat: tree.latitude,
-                    lng: tree.longitude
-                };
-            }
+            // 4. Generate PDF
+            return this.generatePdfFromHtml({ html, mapImage });
 
-            // 5. Send to Server for PDF Generation
-            const baseUrl = getBaseUrl();
-            if (!baseUrl && window.location.protocol === 'capacitor:') {
-                throw new Error("Configuração ausente: A URL do servidor de relatórios não foi definida. Verifique o arquivo .env.");
-            }
-            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
-            console.log("Fetching PDF from:", endpoint);
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ html, mapData, mapImage }),
-            });
-
-            if (!response.ok) {
-                await this.handleResponseError(response, 'Failed to generate intervention plan report');
-            }
-
-            const blob = await response.blob();
-            await this.validatePdf(blob);
-            return blob;
         } catch (error) {
-            console.error("Intervention Plan Report Error:", error);
+            console.error('Error generating Intervention Plan report:', error);
             throw error;
         }
     },
 
-    async generateTreeReport(treeId: string, mapImage?: string) {
+    async generateTreeReport(treeId: string, extraImages: { mapImage?: string } = {}) {
         try {
             // 1. Fetch Tree Data
             const { data: tree, error: treeError } = await supabase
@@ -258,14 +338,29 @@ export const ReportService = {
                 photos = await Promise.all(
                     photosData.map(async (photo) => {
                         const { data } = await supabase.storage
-                            .from('tree-photos')
-                            .createSignedUrl(photo.storage_path, 3600);
+                            .from('tree-photos') // Correct bucket name
+                            .createSignedUrl(photo.storage_path, 3600); // 1 hour expiry
 
                         return {
                             ...photo,
                             url: data?.signedUrl
                         };
                     })
+                );
+            }
+
+            const { mapImage } = extraImages;
+
+            // MOBILE STRATEGY (React-PDF)
+            if (Capacitor.isNativePlatform()) {
+                console.log('[ReportService] Generating Mobile Tree PDF locally...');
+                return await this.generatePdfLocal(
+                    <TreePDF
+                        tree={tree}
+                        photos={photos}
+                        installationName={tree.instalacao?.nome || 'Instalação não identificada'}
+                        mapImage={mapImage}
+                    />
                 );
             }
 
@@ -290,30 +385,18 @@ export const ReportService = {
             }
 
             // 5. Generate PDF
-            const baseUrl = getBaseUrl();
-            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
-            console.log("Fetching PDF from:", endpoint);
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ html, mapData, mapImage }),
-            });
+            return this.generatePdfFromHtml({ html, mapData, mapImage });
 
-            if (!response.ok) {
-                await this.handleResponseError(response, 'Failed to generate tree report');
-            }
-
-            const blob = await response.blob();
-            await this.validatePdf(blob);
-            return blob;
         } catch (error) {
             console.error("Tree Report Error:", error);
             throw error;
         }
     },
 
-    async generateScheduleReport() {
+    async generateScheduleReport(extraImages: { ganttImage?: string } = {}): Promise<Blob> {
         try {
+            console.log('[ReportService] Generating Schedule Report...');
+
             // 1. Fetch Plans
             const { data: plans, error: plansError } = await supabase
                 .from('intervention_plans')
@@ -322,13 +405,26 @@ export const ReportService = {
                     instalacao:instalacoes(nome),
                     tree:arvores(especie, codigo)
                 `)
-                .neq('status', 'concluido') // Active plans
+                .neq('status', 'CANCELLED') // Hide only cancelled
                 .order('created_at', { ascending: true }); // By date
 
             if (plansError) throw new Error(`Erro ao buscar cronograma: ${plansError.message}`);
 
             // 2. Fetch Installation Name (from first plan or context)
             const installationName = plans[0]?.instalacao?.nome || 'Instalação';
+            const { ganttImage } = extraImages;
+
+            // MOBILE STRATEGY (React-PDF)
+            if (Capacitor.isNativePlatform()) {
+                console.log('[ReportService] Generating Mobile Schedule PDF locally...');
+                return await this.generatePdfLocal(
+                    <SchedulePDF
+                        plans={plans}
+                        installationName={installationName}
+                        ganttImage={ganttImage}
+                    />
+                );
+            }
 
             // 3. Render HTML
             const html = renderToStaticMarkup(
@@ -339,22 +435,7 @@ export const ReportService = {
             );
 
             // 4. Generate PDF (No map for schedule usually)
-            const baseUrl = getBaseUrl();
-            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
-            console.log("Fetching PDF from:", endpoint);
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ html, mapData: null }),
-            });
-
-            if (!response.ok) {
-                await this.handleResponseError(response, 'Failed to generate schedule report');
-            }
-
-            const blob = await response.blob();
-            await this.validatePdf(blob);
-            return blob;
+            return this.generatePdfFromHtml({ html, mapData: null });
         } catch (error) {
             console.error("Schedule Report Error:", error);
             throw error;
@@ -363,7 +444,7 @@ export const ReportService = {
 
     async generateRiskInventoryReport(payload: any) {
         try {
-            const { installation, trees: payloadTrees, stats, mapImage } = payload;
+            const { installation, trees: payloadTrees, stats, mapImage, chartsImages } = payload;
             const installationName = installation.nome || 'Instalação';
 
             // 1. Enrich Trees with Photos (Optimized)
@@ -386,14 +467,12 @@ export const ReportService = {
                     }
 
                     // For large inventories (e.g. > 50 trees), we MUST use small thumbnails
-                    // to prevent Puppeteer timeouts and massive PDF sizes.
-
                     await Promise.all(trees.map(async (tree: any) => {
                         const photo = photoMap.get(tree.id);
                         if (photo) {
                             // Use transform if possible for 100x100 thumbnails
                             const { data } = await supabase.storage
-                                .from('tree-photos')
+                                .from('tree-photos') // Correct bucket
                                 .createSignedUrl(photo.storage_path, 3600, {
                                     transform: {
                                         width: 100,
@@ -411,6 +490,21 @@ export const ReportService = {
                 }
             }
 
+            // MOBILE STRATEGY (React-PDF)
+            if (Capacitor.isNativePlatform()) {
+                console.log('[ReportService] Generating Mobile PDF locally...');
+                return await this.generatePdfLocal(
+                    <PDFReport
+                        installationName={installationName}
+                        trees={trees}
+                        stats={stats}
+                        mapImage={mapImage}
+                        chartsImages={chartsImages}
+                    />
+                );
+            }
+
+            // DESKTOP/WEB STRATEGY (Puppeteer Service)
             // 2. Render HTML
             const html = renderToStaticMarkup(
                 <RiskInventoryReport
@@ -436,23 +530,10 @@ export const ReportService = {
                 };
             }
 
-            // 4. Generate PDF with extended timeout for large reports
-            const baseUrl = getBaseUrl();
-            const endpoint = `${baseUrl}/api/reports/generate-pdf-from-html`;
-            console.log(`Generating Risk Inventory for ${trees.length} trees...`);
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ html, mapData, mapImage }),
-            });
+            // 4. Generate PDF
+            console.log(`Generating Risk Inventory for ${trees.length} trees (Server-side)...`);
+            return this.generatePdfFromHtml({ html, mapData, mapImage });
 
-            if (!response.ok) {
-                await this.handleResponseError(response, 'Failed to generate risk inventory report');
-            }
-
-            const blob = await response.blob();
-            await this.validatePdf(blob);
-            return blob;
         } catch (error) {
             console.error("Risk Inventory Report Error:", error);
             throw error;

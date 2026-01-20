@@ -6,7 +6,11 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function broadcastReleaseNotification() {
-    console.log('🚀 Iniciando broadcast de notificação para v1.1.21...');
+    // Get version and info from package.json
+    const packageJson = JSON.parse(await import('fs').then(fs => fs.readFileSync('./package.json', 'utf8')));
+    const version = packageJson.version;
+
+    console.log(`🚀 Iniciando broadcast de notificação para v${version}...`);
 
     const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
     if (usersError) {
@@ -14,8 +18,8 @@ async function broadcastReleaseNotification() {
         return;
     }
 
-    const releaseTitle = 'Atualização v1.1.21 - Correção TRAQ';
-    const releaseMessage = 'Agora os fatores agravantes (Q6, Q9, Q10, Q11, Q12, Q14, Q15) não exigem probabilidade de falha e aparecem corretamente no resumo.';
+    const releaseTitle = `ArborIA v${version} - Cabeçalho Refinado`;
+    const releaseMessage = 'Cabeçalho mobile otimizado: Marca ArborIA em destaque, sem sobreposições e com visual mais limpo e profissional.';
     const actionLink = '/settings';
 
     for (const user of users) {
@@ -27,13 +31,13 @@ async function broadcastReleaseNotification() {
                 title: releaseTitle,
                 message: releaseMessage,
                 action_link: actionLink,
-                metadata: { version: '1.1.21', is_release: true }
+                metadata: { version: version, is_release: true, type: 'app_update' }
             });
 
         if (notifyError) console.error(`❌ Falha para ${user.email}:`, notifyError);
         else console.log(`✅ Notificado: ${user.email}`);
     }
-    console.log('✨ Broadcast v1.1.21 concluído!');
+    console.log(`✨ Broadcast v${version} concluído!`);
 }
 
 broadcastReleaseNotification();

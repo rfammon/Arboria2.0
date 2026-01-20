@@ -1,7 +1,9 @@
 # ArborIA OTA Update - Version 1.0.17
 # This script creates and uploads an OTA bundle to Capawesome Cloud
 
-$VERSION = "1.0.17"
+# Get version from package.json
+$PACKAGE_JSON = Get-Content -Raw -Path ".\package.json" | ConvertFrom-Json
+$VERSION = $PACKAGE_JSON.version
 $APP_ID = "216e18cb-b177-44ed-803c-92acf67ed27f"
 $BUNDLE_DIR = ".\dist"
 

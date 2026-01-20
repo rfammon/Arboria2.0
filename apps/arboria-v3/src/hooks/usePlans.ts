@@ -27,7 +27,7 @@ export function usePlans(): UsePlansReturn {
 
             const { data, error } = await supabase
                 .from('intervention_plans')
-                .select('*, tree:arvores(id, especie, local, risklevel), work_orders(id, status, tasks(progress_percent))')
+                .select('*, tree:arvores(id, especie, local, risklevel, latitude, longitude), work_orders(id, status, tasks(progress_percent))')
                 .eq('instalacao_id', activeInstallation.id)
                 .order('created_at', { ascending: false });
 
@@ -63,7 +63,7 @@ export function usePlans(): UsePlansReturn {
             const { data, error } = await supabase
                 .from('intervention_plans')
                 .insert(newPlan)
-                .select('*, tree:arvores(id, especie, codigo, local)')
+                .select('*, tree:arvores(id, especie, codigo, local, latitude, longitude)')
                 .single();
 
             if (error) throw error;
@@ -81,7 +81,7 @@ export function usePlans(): UsePlansReturn {
                 .from('intervention_plans')
                 .update(formData)
                 .eq('id', id)
-                .select('*, tree:arvores(id, especie, codigo, local)')
+                .select('*, tree:arvores(id, especie, codigo, local, latitude, longitude)')
                 .single();
 
             if (error) throw error;
@@ -113,7 +113,7 @@ export function usePlans(): UsePlansReturn {
         try {
             const { data, error } = await supabase
                 .from('intervention_plans')
-                .select('*, tree:arvores(id, especie, codigo, local)')
+                .select('*, tree:arvores(id, especie, codigo, local, latitude, longitude)')
                 .eq('id', id)
                 .single();
 
