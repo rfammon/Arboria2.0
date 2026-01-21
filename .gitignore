@@ -10,6 +10,13 @@ coverage/
 build/
 dist/
 
+# Binary files
+*.exe
+*.apk
+*.dll
+*.so
+*.dylib
+
 # Misc
 .DS_Store
 .env

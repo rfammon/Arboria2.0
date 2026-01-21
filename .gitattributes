@@ -1,0 +1,27 @@
+# Binary files
+*.exe binary
+*.apk binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.jar binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.rar binary
+*.7z binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mp3 binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.wmv binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
