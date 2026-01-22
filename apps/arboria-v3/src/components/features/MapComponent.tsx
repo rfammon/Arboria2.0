@@ -3,7 +3,7 @@
  * Migrated from legacy map.ui.js with GeoJSON performance pattern
  */
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import Map, { NavigationControl, Popup, Marker, type MapRef, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
@@ -18,6 +18,7 @@ import { createRiskFilter, type RiskFilter } from '../../lib/map/mapFilters';
 import { satelliteStyle } from '../../lib/map/mapStyles';
 import MapControls from './MapControls';
 import type { Tree } from '../../types/tree';
+import { logger } from '../../lib/logger';
 
 interface MapComponentProps {
     selectedTreeId?: string | null;
@@ -66,11 +67,18 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
         }
     }, [selectedTreeId, trees, isMapLoaded]);
 
-    // Create GeoJSON FeatureCollection from trees
-    const createGeoJSON = useCallback(() => {
+    // Create stable tree IDs for deep equality check (only recalculate when tree IDs or timestamps change)
+    const treeIds = useMemo(() => 
+        trees?.map(t => `${t.id}-${t.updated_at}`).sort().join(',') || '', 
+        [trees]
+    );
+
+    // Create GeoJSON FeatureCollection from trees (memoized to prevent unnecessary recalculations)
+    const geojsonData = useMemo(() => {
         if (!trees) return null;
 
-        console.log('[MapComponent] Creating GeoJSON from trees:', trees.length);
+        logger.debug({ module: 'MapComponent', action: 'createGeoJSON' }, 
+            `Creating GeoJSON from ${trees.length} trees`);
 
         const features = trees
             .filter(tree => tree.latitude && tree.longitude)
@@ -101,24 +109,21 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
             type: 'FeatureCollection' as const,
             features
         };
-    }, [trees]);
+    }, [treeIds]); // Only recalculates when tree IDs/timestamps change
 
     // Render or update markers on map
     const renderMarkers = useCallback(() => {
         const map = mapRef.current?.getMap();
-        if (!map || !isMapLoaded) return;
-
-        const geoJson = createGeoJSON();
-        if (!geoJson) return;
+        if (!map || !isMapLoaded || !geojsonData) return;
 
         // Update or create source
         const source = map.getSource('trees');
         if (source && source.type === 'geojson') {
-            (source as any).setData(geoJson);
+            (source as any).setData(geojsonData);
         } else {
             map.addSource('trees', {
                 type: 'geojson',
-                data: geoJson
+                data: geojsonData
             });
 
             // Add circle layer
@@ -171,7 +176,7 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
             map.on('zoom', resetAutoDisableTimer);
             map.on('click', resetAutoDisableTimer);
         }
-    }, [createGeoJSON, isMapLoaded]);
+    }, [geojsonData, isMapLoaded, resetAutoDisableTimer]);
 
     // Handle marker click
     const handleMarkerClick = useCallback((e: MapLayerMouseEvent) => {
@@ -221,7 +226,8 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
         const bounds = validTrees.reduce(
             (bounds, tree) => {
                 if (tree.latitude && tree.longitude) {
-                    console.log('[MapComponent] Extending bounds with:', { lat: tree.latitude, lng: tree.longitude });
+                    logger.debug({ module: 'MapComponent', action: 'fitBounds' }, 
+                        `Extending bounds with: lat=${tree.latitude}, lng=${tree.longitude}`);
                     bounds.extend([tree.longitude!, tree.latitude!]);
                 }
                 return bounds;
