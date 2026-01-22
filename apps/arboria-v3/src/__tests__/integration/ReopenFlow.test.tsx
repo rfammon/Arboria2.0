@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PlanDetail } from '../../components/planning/PlanDetail';
-import type { InterventionPlan } from '../../types/plan';
 import { executionService } from '../../services/executionService';
-
-// Fix import path - PlanDetail is actually in '../../components/planning/PlanDetail' based on previous context 
-// or I should check the path. 
-// Task summary says `src/components/planning/PlanDetail.tsx`.
 
 // Mock deps
 vi.mock('../../services/executionService', () => ({
@@ -62,17 +57,16 @@ vi.mock('../../lib/planUtils', () => ({
     getPlanDuration: vi.fn(() => 1)
 }));
 
-// @ts-ignore - Mocking incomplete InterventionPlan for testing purposes
+// @ts-ignore - Mocking incomplete object for testing purposes
 const mockPlan = {
     id: 'plan-1',
     status: 'COMPLETED',
     tasks: [],
-    // Adding minimal required fields to satisfy WorkOrder type
     instalacao_id: 'inst-1',
     title: 'Test Order',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-} as unknown as WorkOrder; // Force cast if needed or just provide fields
+} as any; 
 
 describe('Reopen Flow Integration', () => {
     beforeEach(() => {

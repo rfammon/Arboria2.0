@@ -379,7 +379,7 @@ export default function TaskExecutionForm({ taskId, open, onOpenChange }: TaskEx
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="bottom" className="h-[95vh] sm:h-full sm:max-w-md overflow-y-auto flex flex-col">
+            <SheetContent side="right" className="h-full sm:max-w-md overflow-y-auto flex flex-col">
                 <SheetHeader className="text-left mb-4">
                     <SheetTitle>Execução: {task.intervention_type}</SheetTitle>
                     <SheetDescription className="line-clamp-1">

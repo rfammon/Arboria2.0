@@ -1,0 +1,69 @@
+{
+  "google_auth": false,
+  "agents": {
+    "frontend-ui-ux-engineer": {
+      "model": "google/antigravity-gemini-3-pro"
+    },
+    "document-writer": {
+      "model": "google/antigravity-gemini-3-flash"
+    },
+    "multimodal-looker": {
+      "model": "google/antigravity-gemini-3-flash"
+    },
+    "Sisyphus": {
+      "model": "google/antigravity-claude-opus-4-5-thinking",
+      "system_prompt": "Especialista técnico Claude Opus 4.5 thinking. NÃO USE ferramentas de clipboard ou imagem. Use apenas ferramentas de leitura/escrita de arquivos, busca e execução. Ferramentas como clipboard, ask_image, ask_file estão DESABILITADAS para este modelo.",
+      "disabled_capabilities": ["clipboard", "ask_image", "ask_file", "read_clipboard", "write_clipboard", "image_input"],
+      "enabled_only": ["filesystem_read_file", "filesystem_write_file", "filesystem_edit_file", "filesystem_search_files", "grep", "glob", "bash", "task", "websearch", "webfetch", "codesearch"]
+    },
+    "Arboria-Mobile": {
+      "model": "google/antigravity-gemini-3-pro",
+      "system_prompt": "Especialista em Capacitor 6 e Android. Foco em permissões nativas, plugins Capacitor e performance mobile."
+    },
+    "Arboria-Desktop": {
+      "model": "google/antigravity-claude-3-7-sonnet",
+      "system_prompt": "Especialista em Tauri 2 e Rust. Foco em integrações de SO, segurança de backend Tauri e performance desktop."
+    },
+    "Arboria-Supabase": {
+      "model": "google/antigravity-gemini-3-flash",
+      "system_prompt": "Especialista em PostgreSQL e Supabase. Foco em RLS Policies, Migrations e Edge Functions."
+    },
+    "brainstormer": {
+      "model": "google/antigravity-gemini-1.5-pro"
+    },
+    "octto": {
+      "model": "google/antigravity-gemini-1.5-pro"
+    },
+    "commander": {
+      "model": "google/antigravity-gemini-1.5-pro"
+    },
+    "swarm-researcher": {
+      "model": "google/antigravity-gemini-1.5-pro"
+    }
+  },
+  "tool_limits": {
+    "max_active_tools": 15,
+    "auto_disable_inactive": true,
+    "idle_days_threshold": 7,
+    "min_usage_threshold": 10,
+    "error_rate_limit": 0.2
+  },
+  "model_capabilities": {
+    "google/antigravity-claude-opus-4-5-thinking": {
+      "image_input": false,
+      "clipboard": false,
+      "audio_input": false,
+      "text_input": true,
+      "file_operations": true,
+      "command_exec": true
+    },
+    "google/antigravity-gemini-3-flash": {
+      "image_input": true,
+      "clipboard": true,
+      "audio_input": false,
+      "text_input": true,
+      "file_operations": true,
+      "command_exec": true
+    }
+  }
+}

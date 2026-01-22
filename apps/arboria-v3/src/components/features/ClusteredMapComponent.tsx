@@ -8,7 +8,7 @@ import { useTrees } from '../../hooks/useTrees';
 import { useTreePhotos } from '../../hooks/useTreePhotos';
 import { useMapLayers } from '../../hooks/useMapLayers';
 import { useUserLocation } from '../../hooks/useUserLocation';
-import { getTreeSymbol } from '../../lib/map/mapSymbology';
+import { getTreeSymbol, MAP_RISK_COLORS } from '../../lib/map/mapSymbology';
 import { type RiskFilter } from '../../lib/map/mapFilters';
 import { satelliteStyle, osmStyle } from '../../lib/map/mapStyles';
 import MapControls from './MapControls';
@@ -28,9 +28,9 @@ const clusterLayer: any = {
     paint: {
         'circle-color': [
             'case',
-            ['>=', ['/', ['get', 'sumRiskScore'], ['get', 'count']], 9], '#d32f2f',
-            ['>=', ['/', ['get', 'sumRiskScore'], ['get', 'count']], 5], '#f57c00',
-            '#388e3c'
+            ['>=', ['/', ['get', 'sumRiskScore'], ['get', 'count']], 9], MAP_RISK_COLORS.HIGH,
+            ['>=', ['/', ['get', 'sumRiskScore'], ['get', 'count']], 5], MAP_RISK_COLORS.MEDIUM,
+            MAP_RISK_COLORS.LOW
         ],
         'circle-radius': [
             'step', ['get', 'point_count'],

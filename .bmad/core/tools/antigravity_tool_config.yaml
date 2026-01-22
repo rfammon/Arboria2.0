@@ -1,0 +1,89 @@
+# BMAD Antigravity Tool Configuration
+# Configuração específica para modelo Claude Opus 4.5 thinking
+# Este modelo NÃO suporta entrada de imagem/clipboard
+
+## Problema identificado:
+# ERROR: Cannot read "clipboard" (this model does not support image input)
+#
+# Solução: Desabilitar ferramentas que usam clipboard/imagem para este modelo
+
+# Ferramentas a desabilitar para antigravity-claude-opus-4-5-thinking:
+DISABLED_TOOLS_FOR_ANTIGRAVITY:
+  - clipboard
+  - ask_image
+  - ask_file
+  - read_image
+  - image_to_text
+  - extract_images
+  - filesystem_read_media_file
+
+# Ferramentas recomendadas (leitura/escrita segura):
+SAFE_TOOLS_FOR_ANTIGRAVITY:
+  - read (filesystem_read_file)
+  - write (filesystem_write_file)
+  - edit (filesystem_edit_file)
+  - glob (filesystem_search_files)
+  - grep (grep content search)
+  - bash (command execution)
+  - read_text_file
+
+# Prioridade de ferramentas por categoria:
+TOOL_PRIORITIES:
+  filesystem:
+    high:
+      - filesystem_read_file
+      - filesystem_write_file
+      - filesystem_search_files
+    medium:
+      - filesystem_edit_file
+      - filesystem_directory_tree
+    low:
+      - filesystem_list_directory
+      - filesystem_get_file_info
+  
+  search:
+    high:
+      - grep
+      - glob
+    medium:
+      - ast_grep_search
+    low:
+      - ast_grep_replace
+  
+  execution:
+    high:
+      - bash
+      - task
+    medium:
+      - background_task
+    low:
+      - pty_spawn
+
+# Limites de uso para fechamento automático:
+USAGE_THRESHOLDS:
+  max_active_tools: 15
+  min_uses_before_inactive: 10
+  idle_days_before_inactive: 7
+  error_rate_limit: 0.2  # 20% de erro = desabilitar
+
+# Categorias e limites:
+CATEGORIES:
+  core:
+    tools: [read, write, edit, glob, grep, bash]
+    min_active: 4
+    max_active: 6
+  
+  search:
+    tools: [ast_grep_search, ast_grep_replace]
+    min_active: 1
+    max_active: 2
+  
+  agent:
+    tools: [task, background_task]
+    min_active: 1
+    max_active: 2
+  
+  system:
+    tools: [bash, pty_spawn]
+    min_active: 1
+    max_active: 2

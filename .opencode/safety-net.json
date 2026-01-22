@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/schemas/safety-net.json",
+  "version": "1.0",
+  "rules": {
+    "block": [
+      {
+        "pattern": "rm -rf android/app/build",
+        "reason": "Protege o cache de build Android - use './gradlew clean' se necessário"
+      },
+      {
+        "pattern": "rm -rf dist",
+        "reason": "Protege artifacts de build - confirme manualmente"
+      },
+      {
+        "pattern": "rm -rf node_modules",
+        "reason": "Remoção de node_modules requer confirmação"
+      },
+      {
+        "pattern": "git push --force",
+        "reason": "Force push é destrutivo - use com cautela"
+      },
+      {
+        "pattern": "DROP DATABASE",
+        "reason": "Operação destrutiva de banco de dados bloqueada"
+      }
+    ],
+    "confirm": [
+      {
+        "pattern": "supabase db reset",
+        "message": "Isso vai apagar TODOS os dados do banco. Tem certeza?"
+      },
+      {
+        "pattern": "supabase db push",
+        "message": "Aplicar migrations em produção. Confirma?"
+      },
+      {
+        "pattern": "npx cap sync",
+        "message": "Sincronizar mudanças com plataformas nativas. Continuar?"
+      },
+      {
+        "pattern": "tauri build",
+        "message": "Build de produção Tauri. Isso pode demorar. Continuar?"
+      }
+    ]
+  },
+  "notifications": {
+    "onBlock": "⛔ Comando bloqueado por segurança",
+    "onConfirm": "⚠️ Requer confirmação"
+  }
+}

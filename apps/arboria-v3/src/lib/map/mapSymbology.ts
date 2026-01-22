@@ -6,6 +6,13 @@
 
 // import type { Tree } from '../../types/tree';
 
+export const MAP_RISK_COLORS = {
+    EXTREME: '#9333ea', // Roxo
+    HIGH: '#d32f2f',   // Vermelho
+    MEDIUM: '#f57c00', // Laranja
+    LOW: '#388e3c'     // Verde
+};
+
 export interface TreeSymbol {
     color: string;
     radius: number; // em pixels para MapLibre
@@ -28,24 +35,30 @@ export function getTreeSymbol(tree: any): TreeSymbol {
 
     const risk = risklevel?.toLowerCase() || '';
 
+    // Priority 0: Explicit Extreme Risk
+    if (risk.includes('extremo') || risk.includes('extreme')) {
+        color = MAP_RISK_COLORS.EXTREME;
+        defaultRadius = 12; // Um pouco maior para destaque
+        riskLevel = 'Risco Extremo';
+    }
     // Priority 1: Exact Score
-    if (pontuacao && pontuacao >= 9) {
-        color = '#d32f2f'; // Vermelho - Alto Risco
+    else if (pontuacao && pontuacao >= 9) {
+        color = MAP_RISK_COLORS.HIGH; // Vermelho - Alto Risco
         defaultRadius = 10;
         riskLevel = 'Alto Risco';
     }
     // Priority 2: Risk Level String matching (important for reports)
     else if (risk.includes('alto') || risk.includes('high')) {
-        color = '#d32f2f';
+        color = MAP_RISK_COLORS.HIGH;
         defaultRadius = 10;
         riskLevel = 'Alto Risco';
     }
     else if ((pontuacao && pontuacao >= 5) || risk.includes('médio') || risk.includes('medio') || risk.includes('medium')) {
-        color = '#f57c00'; // Laranja - Médio Risco
+        color = MAP_RISK_COLORS.MEDIUM; // Laranja - Médio Risco
         defaultRadius = 8;
         riskLevel = 'Médio Risco';
     } else {
-        color = '#388e3c'; // Verde - Baixo Risco
+        color = MAP_RISK_COLORS.LOW; // Verde - Baixo Risco
         defaultRadius = 6;
         riskLevel = 'Baixo Risco';
     }
@@ -68,7 +81,9 @@ export function normalizeRiskLevel(risk: string | undefined): string {
 
     const riskLower = risk.toLowerCase();
 
-    if (riskLower.includes('alto') || riskLower.includes('extremo') || riskLower === 'high') {
+    if (riskLower.includes('extremo') || riskLower.includes('extreme')) {
+        return 'Risco Extremo';
+    } else if (riskLower.includes('alto') || riskLower.includes('high')) {
         return 'Alto Risco';
     } else if (riskLower.includes('médio') || riskLower.includes('moderado') || riskLower === 'medium') {
         return 'Médio Risco';

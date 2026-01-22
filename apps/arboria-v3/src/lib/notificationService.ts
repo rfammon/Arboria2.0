@@ -1,4 +1,3 @@
-
 import { supabase } from './supabase';
 
 export interface Notification {
@@ -60,5 +59,28 @@ export const NotificationService = {
             .rpc('delete_notifications', { p_notification_ids: [id] });
 
         if (error) throw error;
+    },
+
+    async sendPushNotification(userIds: string[], title: string, body: string, data?: any) {
+        const results = await Promise.allSettled(
+            userIds.map(userId =>
+                supabase.functions.invoke('send-push-notification', {
+                    body: {
+                        userId,
+                        title,
+                        body,
+                        data
+                    }
+                })
+            )
+        );
+
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                console.error(`Failed to send push notification to ${userIds[index]}:`, result.reason);
+            } else if (result.value.error) {
+                console.error(`Error from push notification function for ${userIds[index]}:`, result.value.error);
+            }
+        });
     }
 };
