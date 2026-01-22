@@ -47,7 +47,9 @@ export function GlobalSearch() {
 
     const runCommand = React.useCallback((command: () => void) => {
         setOpen(false)
-        command()
+        setTimeout(() => {
+            command()
+        }, 0)
     }, [])
 
     // Filter education content based on the search query
