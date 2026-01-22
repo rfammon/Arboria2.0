@@ -1,0 +1,98 @@
+{
+  "complexity": {
+    "maxFileLines": 300,
+    "maxFunctionComplexity": 10,
+    "maxFunctionParams": 5,
+    "maxNestingDepth": 4,
+    "maxImports": 20
+  },
+  "patterns": {
+    "namingConventions": {
+      "components": "^[A-Z][a-zA-Z0-9]*$",
+      "hooks": "^use[A-Z][a-zA-Z0-9]*$",
+      "constants": "^[A-Z_]+$",
+      "functions": "^[a-z][a-zA-Z0-9]*$",
+      "variables": "^[a-z][a-zA-Z0-9]*$"
+    },
+    "importRules": [
+      "no-relative-imports-beyond-parent",
+      "group-external-before-internal",
+      "alphabetize-imports"
+    ],
+    "componentRules": [
+      "max-props-per-component: 8",
+      "require-prop-types",
+      "no-inline-styles"
+    ],
+    "fileStructure": [
+      "components-in-components-dir",
+      "hooks-in-hooks-dir",
+      "utils-in-utils-dir"
+    ]
+  },
+  "performance": {
+    "renderTimeThreshold": 16,
+    "memoryLeakThreshold": 52428800,
+    "bundleSizeThreshold": 1048576,
+    "networkTimeoutThreshold": 5000,
+    "enableProfiling": true
+  },
+  "errors": {
+    "trackConsoleErrors": true,
+    "trackUnhandledRejections": true,
+    "trackNetworkErrors": true,
+    "trackReactErrors": true,
+    "enableStackTraces": true
+  },
+  "watching": {
+    "enabled": true,
+    "paths": [
+      "src",
+      "pages",
+      "components",
+      "hooks",
+      "utils"
+    ],
+    "ignored": [
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      ".next",
+      "coverage",
+      "*.test.*",
+      "*.spec.*"
+    ],
+    "includeNodeModules": false,
+    "debounceMs": 300
+  },
+  "browser": {
+    "autoConnect": true,
+    "port": 9222,
+    "host": "localhost",
+    "timeout": 10000,
+    "retryAttempts": 3,
+    "retryDelay": 2000
+  },
+  "ai": {
+    "enabled": false,
+    "provider": "disabled",
+    "enableErrorCategorization": false,
+    "enablePatternDetection": false,
+    "enablePerformanceInsights": false
+  },
+  "streaming": {
+    "enabled": true,
+    "bufferSize": 1000,
+    "flushInterval": 1000,
+    "enableCompression": false
+  },
+  "breakpoints": {
+    "maxRecentHits": 100,
+    "enableAnalytics": true,
+    "persistBreakpoints": true,
+    "logpointTimeout": 5000,
+    "enableConditionalBreakpoints": true,
+    "enableLogpoints": true
+  }
+}

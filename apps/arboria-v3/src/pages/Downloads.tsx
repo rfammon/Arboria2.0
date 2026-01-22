@@ -6,56 +6,28 @@ import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileOpener } from '@capacitor-community/file-opener';
-import { Capacitor } from '@capacitor/core';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { platform } from '@/platform';
 
 export default function DownloadsPage() {
     const { downloads, removeDownload, clearHistory } = useDownloads();
 
-    const tauriOpen = async (path: string) => {
-        try {
-            if (window.__TAURI__) {
-                await window.__TAURI__.invoke('plugin:shell|open', { path });
-            }
-        } catch (err) {
-            console.error('Tauri open failed:', err);
-        }
-    };
-
     const handleOpenFile = async (item: DownloadItem) => {
         if (!item.path) return;
         try {
-            if (Capacitor.isNativePlatform()) {
-                await FileOpener.open({
-                    filePath: item.path,
-                    contentType: item.type === 'pdf' ? 'application/pdf' :
-                        item.type === 'csv' ? 'text/csv' : 'application/zip'
-                });
-            } else if (window.__TAURI__) {
-                await tauriOpen(item.path);
-            } else {
-                window.open(item.path, '_blank');
-            }
+            await platform.openFile(item.path);
         } catch (err) {
             console.error('Failed to open file:', err);
         }
     };
 
     const handleOpenFolder = async (item: DownloadItem) => {
-        if (!item.path) return;
-        if (window.__TAURI__) {
-            try {
-                const pathParts = item.path.split(/[\\/]/);
-                if (pathParts.length > 1) {
-                    pathParts.pop();
-                    const dir = pathParts.join('/');
-                    await tauriOpen(dir);
-                }
-            } catch (err) {
-                console.error('Failed to open folder:', err);
-            }
+        if (!item.path || !platform.showInFolder) return;
+        try {
+            await platform.showInFolder(item.path);
+        } catch (err) {
+            console.error('Failed to open folder:', err);
         }
     };
 
@@ -154,7 +126,7 @@ export default function DownloadsPage() {
                                                     <ExternalLink className="h-4 w-4 mr-2" />
                                                     Abrir Arquivo
                                                 </Button>
-                                                {window.__TAURI__ && (
+                                                {platform.platformName === 'tauri' && item.path && (
                                                     <Button
                                                         variant="outline"
                                                         onClick={() => handleOpenFolder(item)}

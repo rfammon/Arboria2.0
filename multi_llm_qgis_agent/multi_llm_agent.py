@@ -6,6 +6,7 @@ import os
 from .llm.openai_adapter import OpenAIAdapter
 from .llm.groq_adapter import GroqAdapter
 from .llm.qwen_adapter import QwenAdapter
+from .llm.openrouter_adapter import OpenRouterAdapter
 from .utils.config import Config
 from .prompts.system_prompts import QGIS_SYSTEM_PROMPT
 
@@ -35,16 +36,26 @@ class MultiLLMQGISAgent:
         adapters = {
             'openai': OpenAIAdapter,
             'groq': GroqAdapter,
-            'qwen': QwenAdapter
+            'qwen': QwenAdapter,
+            'openrouter_qwen': OpenRouterAdapter,
+            'openrouter_grok': OpenRouterAdapter,
+            'openrouter': OpenRouterAdapter
+        }
+        
+        models = {
+            'openrouter_qwen': 'qwen/qwen-2.5-coder-32b-instruct',
+            'openrouter_grok': 'x-ai/grok-2-1212' # Using newer version if available
         }
         
         if provider in adapters:
-            self.llm_adapter = adapters[provider](api_key, model)
+            target_model = model or models.get(provider)
+            self.llm_adapter = adapters[provider](api_key, target_model)
             result = self.llm_adapter.test_connection()
             if not result['success']:
                 self.log(f"Falha na conexão com {provider}: {result['error']}", Qgis.Critical)
             return result
         return {'success': False, 'error': f'Provedor {provider} não encontrado.'}
+
         
     def initialize_llm_from_ui(self):
         """Inicializa o adaptador baseado na UI"""
@@ -176,13 +187,23 @@ class MultiLLMQGISAgent:
             self.dockwidget.pushButtonSend.clicked.connect(self.on_send_command)
             self.dockwidget.pushButtonExecute.clicked.connect(self.on_execute_code)
             self.dockwidget.pushButtonTestConnection.clicked.connect(self.initialize_llm_from_ui)
+            self.dockwidget.comboBoxProvider.currentIndexChanged.connect(self.on_provider_changed)
             self.dockwidget.closingPlugin.connect(self.on_dockwidget_closed)
+
 
         # Mostra o dockwidget
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.dockwidget.show()
 
+    def on_provider_changed(self):
+        """Atualiza a chave API exibida quando o provedor muda"""
+        provider = self.dockwidget.comboBoxProvider.currentText()
+        saved_key = self.config.get_api_key(provider)
+        self.dockwidget.lineEditApiKey.setText(saved_key)
+        self.llm_adapter = None # Reset adapter when provider changes
+
     def on_dockwidget_closed(self):
+
         """Limpa quando o dockwidget é fechado"""
         pass
 

@@ -64,7 +64,7 @@ export function ScheduleReport({ plans, installationName, period }: ScheduleRepo
             {/* General Gantt Chart */}
             <div className="mb-8 avoid-break">
                 <h3 style={{ fontSize: '12pt', fontWeight: 'bold', marginBottom: '10px', color: '#2e7d32' }}>Visão Geral do Cronograma</h3>
-                <ReportGeneralGantt plans={sortedPlans} />
+                <ReportGeneralGantt plans={sortedPlans} variant="tauri" />
             </div>
 
             {/* Detailed Table */}

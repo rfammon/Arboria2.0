@@ -11,19 +11,13 @@ import { ScrollArea } from '../ui/scroll-area';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { invoke } from '@tauri-apps/api/core';
-import { Capacitor } from '@capacitor/core';
-import { FileOpener } from '@capacitor-community/file-opener';
 import { cn } from '@/lib/utils';
-
-declare global {
-    interface Window {
-        __TAURI__?: any;
-    }
-}
+import { Swipeable } from '../ui/Swipeable';
+import { Trash2, History } from 'lucide-react';
+import { platform } from '@/platform';
 
 export const DownloadHub: React.FC = () => {
-    const { downloads, removeDownload, clearHistory } = useDownloads();
+    const { downloads, removeDownload, deleteDownload, clearHistory } = useDownloads();
     const activeDownloads = downloads.filter(d => d.status === 'progress').length;
 
     useEffect(() => {
@@ -53,33 +47,12 @@ export const DownloadHub: React.FC = () => {
             // Clean up
             setTimeout(() => {
                 document.body.removeChild(link);
-                // Note: blob URL will be cleaned by DownloadContext when item is removed
             }, 100);
             return;
         }
 
         try {
-            if (Capacitor.isNativePlatform()) {
-                await FileOpener.open({
-                    filePath: item.path,
-                    contentType: item.type === 'pdf' ? 'application/pdf' :
-                        item.type === 'csv' ? 'text/csv' : 'application/zip'
-                });
-            } else if (window.__TAURI__) {
-                console.log('[DownloadHub] Using Custom Native Open for:', item.path);
-                try {
-                    await invoke('open_file_natively', { path: item.path });
-                } catch (e) {
-                    console.warn('[DownloadHub] Native open failed, trying plugins:', e);
-                    try {
-                        await invoke('plugin:opener|open_path', { path: item.path });
-                    } catch (openerErr) {
-                        await invoke('plugin:shell|open', { path: item.path });
-                    }
-                }
-            } else {
-                window.open(item.path, '_blank');
-            }
+            await platform.openFile(item.path);
         } catch (err) {
             console.error('[DownloadHub] Global error in handleOpenFile:', err);
             toast.error(`Erro ao abrir arquivo: ${err}`);
@@ -93,24 +66,9 @@ export const DownloadHub: React.FC = () => {
             return;
         }
 
-        if (window.__TAURI__) {
+        if (platform.platformName === 'tauri' && platform.showInFolder) {
             try {
-                console.log('[DownloadHub] Using Custom Reveal for:', item.path);
-                try {
-                    await invoke('show_in_folder', { path: item.path });
-                } catch (e) {
-                    console.warn('[DownloadHub] Custom reveal failed, trying plugins:', e);
-                    try {
-                        await invoke('plugin:opener|reveal_item_in_dir', { path: item.path });
-                    } catch (revealErr) {
-                        const pathParts = item.path.split(/[\\/]/);
-                        if (pathParts.length > 1) {
-                            pathParts.pop();
-                            const dir = pathParts.join('\\');
-                            await invoke('plugin:shell|open', { path: dir });
-                        }
-                    }
-                }
+                await platform.showInFolder(item.path);
             } catch (err) {
                 console.error('[DownloadHub] Error opening folder:', err);
                 toast.error(`Erro ao abrir pasta: ${err}`);
@@ -207,105 +165,115 @@ export const DownloadHub: React.FC = () => {
                             <p className="text-xs font-medium opacity-40">Nenhum download recente</p>
                         </div>
                     ) : (
-                        <div className="p-3 space-y-2.5">
+                        <div className="p-3 space-y-2.5 overflow-x-hidden">
                             <AnimatePresence mode="popLayout">
                                 {downloads.map((item) => (
-                                    <motion.div
+                                    <Swipeable
                                         key={item.id}
-                                        layout
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95, x: -20 }}
-                                        className="group relative overflow-hidden rounded-xl border bg-card/60 p-3 shadow-sm transition-all hover:bg-card hover:shadow-md hover:border-primary/20"
+                                        onSwipeLeft={() => deleteDownload(item.id, true)}
+                                        onSwipeRight={() => deleteDownload(item.id, false)}
+                                        leftActionLabel="Excluir Arquivo"
+                                        leftActionIcon={<Trash2 className="w-4 h-4" />}
+                                        rightActionLabel="Limpar"
+                                        rightActionIcon={<History className="w-4 h-4" />}
+                                        className="rounded-xl"
                                     >
-                                        <div className="flex items-start gap-3">
-                                            <div className={cn(
-                                                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border",
-                                                item.type === 'pdf' ? "bg-red-500/10 border-red-500/20 text-red-600" :
-                                                    item.type === 'zip' ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-600" :
-                                                        "bg-green-500/10 border-green-500/20 text-green-600"
-                                            )}>
-                                                {item.status === 'progress' ? (
-                                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                                ) : (
-                                                    <FileText className="h-5 w-5" />
-                                                )}
-                                            </div>
-
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <p className="text-sm font-semibold truncate leading-tight text-foreground" title={item.filename}>
-                                                        {item.filename}
-                                                    </p>
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        {item.status === 'success' && (
-                                                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                                        )}
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                removeDownload(item.id);
-                                                            }}
-                                                            className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-destructive/10 hover:text-destructive rounded-md"
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </button>
-                                                    </div>
+                                        <motion.div
+                                            layout
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95, x: -20 }}
+                                            className="group relative overflow-hidden rounded-xl border bg-card/60 p-3 shadow-sm transition-all hover:bg-card hover:shadow-md hover:border-primary/20"
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className={cn(
+                                                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border",
+                                                    item.type === 'pdf' ? "bg-red-500/10 border-red-500/20 text-red-600" :
+                                                        item.type === 'zip' ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-600" :
+                                                            "bg-green-500/10 border-green-500/20 text-green-600"
+                                                )}>
+                                                    {item.status === 'progress' ? (
+                                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                                    ) : (
+                                                        <FileText className="h-5 w-5" />
+                                                    )}
                                                 </div>
 
-                                                <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
-                                                    {format(item.timestamp, "d 'de' MMM, HH:mm", { locale: ptBR })}
-                                                </p>
-
-                                                {item.status === 'progress' && (
-                                                    <div className="mt-3 space-y-1.5">
-                                                        <div className="flex justify-between text-[9px] font-bold text-primary italic uppercase tracking-wider">
-                                                            <span>Processando</span>
-                                                            <span>{item.progress}%</span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <p className="text-sm font-semibold truncate leading-tight text-foreground" title={item.filename}>
+                                                            {item.filename}
+                                                        </p>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            {item.status === 'success' && (
+                                                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                                            )}
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    removeDownload(item.id);
+                                                                }}
+                                                                className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-destructive/10 hover:text-destructive rounded-md"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </button>
                                                         </div>
-                                                        <Progress value={item.progress} className="h-1.5 bg-muted/50" />
                                                     </div>
-                                                )}
 
-                                                {item.status !== 'progress' && (
-                                                    <div className="mt-3 flex items-center gap-1.5">
-                                                        <Button
-                                                            variant="secondary"
-                                                            size="sm"
-                                                            className="h-8 text-[11px] font-bold px-3 shadow-sm hover:bg-primary hover:text-primary-foreground transition-all flex-1"
-                                                            onClick={() => handleOpenFile(item)}
-                                                        >
-                                                            <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                                                            Abrir
-                                                        </Button>
+                                                    <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                                                        {format(item.timestamp, "d 'de' MMM, HH:mm", { locale: ptBR })}
+                                                    </p>
 
-                                                        {window.__TAURI__ && item.path && !item.path.startsWith('blob:') && (
-                                                            <>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="h-8 w-8 p-0 border-border/60 hover:border-primary/50 transition-all shrink-0"
-                                                                    onClick={() => handleOpenFolder(item)}
-                                                                    title="Mostrar na pasta"
-                                                                >
-                                                                    <FolderOpen className="h-3.5 w-3.5" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="h-8 w-8 p-0 border-border/60 hover:border-primary/50 transition-all shrink-0"
-                                                                    onClick={() => handleCopyPath(item.path!)}
-                                                                    title="Copiar caminho"
-                                                                >
-                                                                    <Copy className="h-3.5 w-3.5" />
-                                                                </Button>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                    {item.status === 'progress' && (
+                                                        <div className="mt-3 space-y-1.5">
+                                                            <div className="flex justify-between text-[9px] font-bold text-primary italic uppercase tracking-wider">
+                                                                <span>Processando</span>
+                                                                <span>{item.progress}%</span>
+                                                            </div>
+                                                            <Progress value={item.progress} className="h-1.5 bg-muted/50" />
+                                                        </div>
+                                                    )}
+
+                                                    {item.status !== 'progress' && (
+                                                        <div className="mt-3 flex items-center gap-1.5">
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="sm"
+                                                                className="h-8 text-[11px] font-bold px-3 shadow-sm hover:bg-primary hover:text-primary-foreground transition-all flex-1"
+                                                                onClick={() => handleOpenFile(item)}
+                                                            >
+                                                                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                                                                Abrir
+                                                            </Button>
+
+                                                            {platform.platformName === 'tauri' && item.path && !item.path.startsWith('blob:') && (
+                                                                <>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-8 w-8 p-0 border-border/60 hover:border-primary/50 transition-all shrink-0"
+                                                                        onClick={() => handleOpenFolder(item)}
+                                                                        title="Mostrar na pasta"
+                                                                    >
+                                                                        <FolderOpen className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-8 w-8 p-0 border-border/60 hover:border-primary/50 transition-all shrink-0"
+                                                                        onClick={() => handleCopyPath(item.path!)}
+                                                                        title="Copiar caminho"
+                                                                    >
+                                                                        <Copy className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </motion.div>
+                                        </motion.div>
+                                    </Swipeable>
                                 ))}
                             </AnimatePresence>
                         </div>

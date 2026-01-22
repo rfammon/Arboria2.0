@@ -92,6 +92,18 @@ export function useNotifications() {
         setUnreadCount(0);
     };
 
+    const deleteNotification = async (id: string) => {
+        try {
+            await NotificationService.deleteNotification(id);
+            setNotifications(prev => prev.filter(n => n.id !== id));
+            // Reload count to be sure
+            loadNotifications();
+        } catch (err) {
+            console.error('Error deleting notification:', err);
+            toast.error('Erro ao excluir notificação');
+        }
+    };
+
     return {
         notifications,
         unreadCount,
@@ -99,6 +111,7 @@ export function useNotifications() {
         markAsRead,
         markAllAsRead,
         clearAll,
+        deleteNotification,
         refresh: loadNotifications
     };
 }

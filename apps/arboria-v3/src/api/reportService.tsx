@@ -1,7 +1,7 @@
 
 import { pdf } from '@react-pdf/renderer';
 import { PDFReport } from '../components/features/reporting/PDFReport';
-import { Capacitor } from '@capacitor/core';
+import { platform } from '../platform';
 
 // ... existing imports ...
 import { supabase } from '../lib/supabase';
@@ -29,19 +29,12 @@ const getBaseUrl = () => {
     }
 
     // In Tauri v2 production, protocol is often 'http:' with hostname 'tauri.localhost'
-    const isTauri = window.location.origin.includes('tauri.localhost') ||
-        window.location.protocol === 'tauri:' ||
-        (!!window.__TAURI__);
-
-    // In production, there is usually no port or it's not a standard dev port
-    const isProd = !window.location.port || window.location.port === '';
-
-    if (isTauri && isProd) {
+    if (platform.platformName === 'tauri') {
         return 'http://127.0.0.1:3001';
     }
 
     // On Capacitor, we must NOT use relative URLs as they fetch index.html
-    const isCapacitor = Capacitor.isNativePlatform();
+    const isCapacitor = platform.isNative;
     if (isCapacitor) {
         // For Android Emulator (10.0.2.2) or real device (needs actual IP or deployed server)
         // If you are testing on real device, you MUST use the Render URL or your PC's IP
@@ -118,7 +111,7 @@ export const ReportService = {
     async generateReport(data: any): Promise<Blob> {
         try {
             const baseUrl = getBaseUrl();
-            if (!baseUrl && Capacitor.isNativePlatform()) {
+            if (!baseUrl && platform.isNative) {
                 // For generic report generation on mobile, we might need a fallback or ensure all paths use specific methods
                 // But this method seems to be a generic entry point.
                 // Ideally we should route to specific local generators if possible.
@@ -154,7 +147,7 @@ export const ReportService = {
     async generatePdfFromHtml(data: { html: string, mapData?: any, mapImage?: string }): Promise<Blob> {
         try {
             const baseUrl = getBaseUrl();
-            if (!baseUrl && Capacitor.isNativePlatform()) {
+            if (!baseUrl && platform.isNative) {
                 // On mobile, if this is called directly, we might be in trouble if we don't have a local alternative for this specific HTML.
                 // But generateRiskInventoryReport calls this.
                 throw new Error("Configuração ausente: A URL do servidor de relatórios não foi definida.");
@@ -278,8 +271,8 @@ export const ReportService = {
 
             const { mapImage, ganttImage } = extraImages;
 
-            // MOBILE STRATEGY (React-PDF)
-            if (Capacitor.isNativePlatform()) {
+            // MOBILE/OFFLINE STRATEGY (React-PDF)
+            if (platform.supportsOfflineCapture) {
                 console.log('[ReportService] Generating Mobile Intervention Plan PDF locally...');
                 return await this.generatePdfLocal(
                     <InterventionPlanPDF
@@ -293,7 +286,6 @@ export const ReportService = {
             }
 
             // 3. Render Template to HTML
-            // Note: We need to import these at top of file
             const html = renderToStaticMarkup(
                 <InterventionPlanReport
                     plan={plan}
@@ -303,8 +295,18 @@ export const ReportService = {
                 />
             );
 
-            // 4. Generate PDF
-            return this.generatePdfFromHtml({ html, mapImage });
+            // 4. Map Data for Server
+            let mapData = null;
+            if (!platform.supportsOfflineCapture && tree?.latitude && tree?.longitude) {
+                mapData = {
+                    containerId: 'report-minimap',
+                    lat: tree.latitude,
+                    lng: tree.longitude
+                };
+            }
+
+            // 5. Generate PDF
+            return this.generatePdfFromHtml({ html, mapData, mapImage });
 
         } catch (error) {
             console.error('Error generating Intervention Plan report:', error);
@@ -351,8 +353,8 @@ export const ReportService = {
 
             const { mapImage } = extraImages;
 
-            // MOBILE STRATEGY (React-PDF)
-            if (Capacitor.isNativePlatform()) {
+            // MOBILE/OFFLINE STRATEGY (React-PDF)
+            if (platform.supportsOfflineCapture) {
                 console.log('[ReportService] Generating Mobile Tree PDF locally...');
                 return await this.generatePdfLocal(
                     <TreePDF
@@ -364,7 +366,6 @@ export const ReportService = {
                 );
             }
 
-            // 3. Render HTML
             const html = renderToStaticMarkup(
                 <TreeReport
                     tree={tree}
@@ -376,7 +377,7 @@ export const ReportService = {
 
             // 4. Map Data
             let mapData = null;
-            if (tree.latitude && tree.longitude) {
+            if (!platform.supportsOfflineCapture && tree.latitude && tree.longitude) {
                 mapData = {
                     containerId: 'report-minimap',
                     lat: tree.latitude,
@@ -414,8 +415,8 @@ export const ReportService = {
             const installationName = plans[0]?.instalacao?.nome || 'Instalação';
             const { ganttImage } = extraImages;
 
-            // MOBILE STRATEGY (React-PDF)
-            if (Capacitor.isNativePlatform()) {
+            // MOBILE/OFFLINE STRATEGY (React-PDF)
+            if (platform.supportsOfflineCapture) {
                 console.log('[ReportService] Generating Mobile Schedule PDF locally...');
                 return await this.generatePdfLocal(
                     <SchedulePDF
@@ -490,8 +491,8 @@ export const ReportService = {
                 }
             }
 
-            // MOBILE STRATEGY (React-PDF)
-            if (Capacitor.isNativePlatform()) {
+            // MOBILE/OFFLINE STRATEGY (React-PDF)
+            if (platform.supportsOfflineCapture) {
                 console.log('[ReportService] Generating Mobile PDF locally...');
                 return await this.generatePdfLocal(
                     <PDFReport
@@ -505,6 +506,19 @@ export const ReportService = {
             }
 
             // DESKTOP/WEB STRATEGY (Puppeteer Service)
+            // Specialized endpoint for Risk Inventory
+            if (platform.platformName === 'tauri' || platform.platformName === 'web') {
+                try {
+                    console.log(`Generating Risk Inventory for ${trees.length} trees (Specialized Server endpoint)...`);
+                    return await this.generateReport({
+                        installation,
+                        stats,
+                        trees
+                    });
+                } catch (e) {
+                    console.warn("Specialized report failed, falling back to HTML-to-PDF:", e);
+                }
+            }
             // 2. Render HTML
             const html = renderToStaticMarkup(
                 <RiskInventoryReport

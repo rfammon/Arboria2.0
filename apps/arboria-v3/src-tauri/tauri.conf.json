@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Arboria",
-  "version": "1.1.44",
+  "version": "1.1.63",
   "identifier": "com.arboria.app",
   "build": {
     "frontendDist": "../dist",

@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { set, get } from 'idb-keyval';
 import { v4 as uuidv4 } from 'uuid';
 import { type DownloadItem } from '@/types/downloads';
+import { platform } from '@/platform';
+import { toast } from 'sonner';
 
 // Global types moved to src/types/tauri.d.ts
 
@@ -10,6 +12,7 @@ interface DownloadContextType {
     addDownload: (item: Omit<DownloadItem, 'id' | 'timestamp' | 'progress' | 'status'>) => string;
     updateDownload: (id: string, updates: Partial<DownloadItem>) => void;
     removeDownload: (id: string) => void;
+    deleteDownload: (id: string, deleteFile: boolean) => Promise<void>;
     clearHistory: () => void;
     downloadDirectory: string | null;
     setDownloadDirectory: (path: string | null) => void;
@@ -64,23 +67,19 @@ export const DownloadProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const selectDownloadDirectory = async () => {
-        if (!window.__TAURI__) {
-            console.warn("Folder selection is only available in Tauri desktop app.");
+        if (!platform.selectDirectory) {
+            console.warn("Folder selection is not available on this platform.");
             return;
         }
 
         try {
-            const selected = await window.__TAURI__.dialog.open({
-                directory: true,
-                multiple: false,
-                defaultPath: downloadDirectory || await window.__TAURI__.path.downloadDir()
-            });
-
-            if (selected && typeof selected === 'string') {
+            const selected = await platform.selectDirectory();
+            if (selected) {
                 setDownloadDirectory(selected);
             }
         } catch (error) {
             console.error("Failed to select directory:", error);
+            toast.error("Erro ao selecionar pasta.");
         }
     };
 
@@ -107,6 +106,24 @@ export const DownloadProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setDownloads(prev => prev.filter(item => item.id !== id));
     }, []);
 
+    const deleteDownload = useCallback(async (id: string, deleteFile: boolean) => {
+        const item = downloads.find(d => d.id === id);
+        if (!item) return;
+
+        if (deleteFile && item.path && platform.deleteFile) {
+            try {
+                await platform.deleteFile(item.path);
+                toast.success('Arquivo excluído com sucesso.');
+            } catch (err) {
+                console.error('Failed to delete physical file:', err);
+                toast.error(`Falha ao excluir arquivo físico: ${err}`);
+                // We still remove it from the list anyway to allow UI cleanup
+            }
+        }
+
+        removeDownload(id);
+    }, [downloads, removeDownload]);
+
     const clearHistory = useCallback(() => {
         setDownloads([]);
     }, []);
@@ -117,6 +134,7 @@ export const DownloadProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             addDownload,
             updateDownload,
             removeDownload,
+            deleteDownload,
             clearHistory,
             downloadDirectory,
             setDownloadDirectory,

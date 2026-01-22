@@ -19,7 +19,10 @@ export const downloadFile = async (blob: Blob, filename: string): Promise<Downlo
             (error.message?.includes('missing required key') || error.message?.includes('permission'))) {
             toast.error('Erro de permissão no Tauri. Verifique as configurações de ACL.');
         } else {
-            toast.error(`Erro ao baixar arquivo: ${error.message || 'Erro desconhecido'}`);
+            console.error('[Download] Detailed error:', error);
+            // Show the raw error message for better debugging
+            const errorMessage = typeof error === 'string' ? error : error.message || JSON.stringify(error);
+            toast.error(`Erro ao baixar arquivo: ${errorMessage}`);
         }
 
         // Final fallback to web download if the platform-specific method fails

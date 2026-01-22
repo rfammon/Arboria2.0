@@ -17,5 +17,6 @@ declare global {
                 open: (path: string) => Promise<void>;
             };
         };
+        __TAURI_INTERNALS__?: any;
     }
 }

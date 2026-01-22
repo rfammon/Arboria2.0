@@ -65,7 +65,22 @@ async fn open_file_natively(path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn save_download_file(app_handle: tauri::AppHandle, filename: String, base64_data: String) -> Result<String, String> {
+async fn delete_file(path: String) -> Result<(), String> {
+    if std::path::Path::new(&path).exists() {
+        std::fs::remove_file(path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+// The following block is a placeholder for a permission definition,
+// which would typically be in `tauri.conf.json` or `Cargo.toml`
+// under a `[[tauri.permission]]` section, not directly in Rust code.
+// [[permission]]
+// identifier = "app-save-download-file"
+// description = "Enables the save_download_file command to save downloaded files to disk."
+// commands.allow = ["save_download_file"]
+#[tauri::command]
+async fn save_download_file(app_handle: tauri::AppHandle, filename: String, payload: String) -> Result<String, String> {
     use base64::{Engine as _, engine::general_purpose};
     
     let downloads_dir = app_handle.path().download_dir()
@@ -82,7 +97,7 @@ async fn save_download_file(app_handle: tauri::AppHandle, filename: String, base
         .map_err(|e| format!("Could not resolve downloads directory: {}", e))?;
     
     let file_path = downloads_dir.join(&filename);
-    let data = general_purpose::STANDARD.decode(base64_data)
+    let data = general_purpose::STANDARD.decode(payload)
         .map_err(|e| format!("Failed to decode base64: {}", e))?;
     
     std::fs::write(&file_path, data)
@@ -133,7 +148,8 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
         save_download_file,
         show_in_folder,
-        open_file_natively
+        open_file_natively,
+        delete_file
     ])
     .manage(ServerState { child: Mutex::new(None) })
     .setup(|app| {

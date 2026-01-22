@@ -16,9 +16,10 @@ export const TauriAdapter: PlatformAdapter = {
             reader.readAsDataURL(blob);
         });
 
+        console.log('[TauriAdapter] Calling save_download_file with:', { filename, base64Length: base64Data?.length });
         const filePath = await invoke<string>('save_download_file', {
             filename,
-            base64Data
+            payload: base64Data
         });
 
         return { path: filePath, platform: 'tauri' };
@@ -41,6 +42,26 @@ export const TauriAdapter: PlatformAdapter = {
         await invoke('show_in_folder', { path });
     },
 
+    async selectDirectory(): Promise<string | null> {
+        if (!(window as any).__TAURI__) return null;
+
+        try {
+            const selected = await (window as any).__TAURI__.dialog.open({
+                directory: true,
+                multiple: false,
+                defaultPath: await (window as any).__TAURI__.path.downloadDir()
+            });
+            return selected as string | null;
+        } catch (e) {
+            console.error('[TauriAdapter] Error in selectDirectory:', e);
+            return null;
+        }
+    },
+
+    async deleteFile(path: string): Promise<void> {
+        await invoke('delete_file', { path });
+    },
+
     async getAppVersion(): Promise<string> {
         const { getVersion } = await import('@tauri-apps/api/app');
         return await getVersion();
@@ -48,5 +69,6 @@ export const TauriAdapter: PlatformAdapter = {
 
     async installUpdate(localPath: string): Promise<void> {
         await this.openFile(localPath);
-    }
+    },
+    supportsOfflineCapture: false // Use server-side capture for maps on Tauri (using local Node server)
 };

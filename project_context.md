@@ -26,3 +26,8 @@
 ## Architecture
 - **Hybrid Education Model:** Core (Safety) -> Gate (Exam) -> Specialization.
 - **Legacy Assets:** Must be wrapped in modern containers with overlays.
+
+## Platform Isolation
+- **Rule:** Windows (Tauri) and Android (Capacitor) versions MUST be treated as isolated forks and codebases.
+- **Isolation by Default:** Unless a change is specifically requested for both platforms, it should be implemented in isolation for the target platform.
+- **Implementation:** Maintain platform-specific logic and interfaces (e.g., `PlatformAdapter`) to prevent cross-platform feature leakage or bugs.

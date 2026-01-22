@@ -107,5 +107,14 @@ export const AndroidAdapter: PlatformAdapter = {
             filePath: localPath,
             contentType: 'application/vnd.android.package-archive',
         });
-    }
+    },
+
+    async deleteFile(path: string): Promise<void> {
+        const { Filesystem } = await import('@capacitor/filesystem');
+        await Filesystem.deleteFile({
+            path: path
+        });
+    },
+
+    supportsOfflineCapture: true
 };

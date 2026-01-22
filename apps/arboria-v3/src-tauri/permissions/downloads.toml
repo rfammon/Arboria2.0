@@ -1,7 +1,7 @@
 # Tauri custom command permissions for download functionality
 
 [[permission]]
-identifier = "allow-save-download-file"
+identifier = "app-save-download-file"
 description = "Enables the save_download_file command to save downloaded files to disk."
 commands.allow = ["save_download_file"]
 
@@ -31,6 +31,16 @@ description = "Denies the open_file_natively command."
 commands.deny = ["open_file_natively"]
 
 [[permission]]
+identifier = "allow-delete-file"
+description = "Enables the delete_file command to physically remove files from disk."
+commands.allow = ["delete_file"]
+
+[[permission]]
+identifier = "deny-delete-file"
+description = "Denies the delete_file command."
+commands.deny = ["delete_file"]
+
+[[permission]]
 identifier = "default"
 description = "Default permissions for custom download commands."
-commands.allow = ["save_download_file", "show_in_folder", "open_file_natively"]
+commands.allow = ["save_download_file", "show_in_folder", "open_file_natively", "delete_file"]

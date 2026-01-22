@@ -1,5 +1,4 @@
-
-import { Menu } from 'lucide-react';
+import { Menu, PanelLeft, PanelLeftClose } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { NotificationBell } from '../features/notifications/NotificationBell';
 import { UpdateIndicator } from '../ui/UpdateIndicator';
@@ -28,25 +27,34 @@ export function TopHeader({ onMenuClick, onToggleSidebar, isSidebarCollapsed }: 
     return (
         <header className="sticky top-0 z-[50] flex h-16 w-full items-center justify-between border-b border-white/10 bg-card/95 backdrop-blur-xl px-4 md:px-6 transition-all duration-200 shadow-[var(--shadow-soft)]">
             <div className="flex items-center gap-2 md:gap-4">
-                <button
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={onMenuClick}
-                    className="p-2 text-muted-foreground hover:bg-muted rounded-md lg:hidden"
+                    className="lg:hidden text-muted-foreground hover:text-primary transition-colors"
+                    title="Menu"
                 >
                     <Menu className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
+                </Button>
 
-                <button
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={onToggleSidebar}
-                    className="hidden lg:flex p-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
+                    className="hidden lg:flex text-muted-foreground hover:text-primary transition-colors"
                     title={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
                 >
-                    <Menu className="w-5 h-5" />
-                </button>
+                    {isSidebarCollapsed ? (
+                        <PanelLeft className="w-5 h-5 translate-x-[1px]" />
+                    ) : (
+                        <PanelLeftClose className="w-5 h-5" />
+                    )}
+                </Button>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex lg:hidden items-center gap-2 shrink-0">
                     <img src="/logo.png" alt="Logo" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
-                    <span className="text-xl md:text-2xl font-black lg:hidden tracking-tighter flex items-center">
-                        <span className="text-blue-600 dark:text-blue-500">Arbor</span><span className="text-green-600 dark:text-green-500">IA</span>
+                    <span className="text-lg font-bold tracking-tight text-foreground/90">
+                        Arbor<span className="text-primary italic">IA</span>
                     </span>
                 </div>
             </div>

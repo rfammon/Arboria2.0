@@ -83,22 +83,27 @@ function AppContent() {
 import { DefinitionProvider } from './context/DefinitionContext';
 import { DefinitionModal } from './components/education/DefinitionModal';
 import { DownloadProvider } from './context/DownloadContext';
+import { ReportProvider } from './context/ReportContext';
+import { GlobalBackgroundCapture } from './components/layout/GlobalBackgroundCapture';
 
 function App() {
   return (
     <HashRouter>
       <UpdateProvider>
         <DownloadProvider>
-          <OfflineSyncProvider>
-            <TooltipProvider>
-              <DefinitionProvider>
-                <FilterProvider>
-                  <AppContent />
-                  <DefinitionModal />
-                </FilterProvider>
-              </DefinitionProvider>
-            </TooltipProvider>
-          </OfflineSyncProvider>
+          <ReportProvider>
+            <OfflineSyncProvider>
+              <TooltipProvider>
+                <DefinitionProvider>
+                  <FilterProvider>
+                    <AppContent />
+                    <DefinitionModal />
+                    <GlobalBackgroundCapture />
+                  </FilterProvider>
+                </DefinitionProvider>
+              </TooltipProvider>
+            </OfflineSyncProvider>
+          </ReportProvider>
         </DownloadProvider>
       </UpdateProvider>
     </HashRouter>

@@ -1,68 +1,125 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const GITHUB_REPO = "rfammon/Arboria2.0";
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
-serve(async (req) => {
+// Configure your GitHub repository here
+const GITHUB_OWNER = "rfammon";
+const GITHUB_REPO = "Arboria2.0";
+
+interface GitHubRelease {
+    tag_name: string;
+    name: string;
+    body: string;
+    assets: Array<{
+        name: string;
+        browser_download_url: string;
+    }>;
+}
+
+serve(async (req: Request) => {
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+        return new Response("ok", { headers: corsHeaders });
+    }
+
     try {
-        const { currentVersion, platform = 'android' } = await req.json();
+        const { currentVersion, platform = 'android' } = await req.json().catch(() => ({}));
 
         if (!currentVersion) {
-            return new Response(JSON.stringify({ error: "Missing currentVersion" }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" },
-            });
+            return new Response(
+                JSON.stringify({ error: "Versão atual não fornecida." }),
+                {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    status: 400,
+                }
+            );
         }
 
-        console.log(`Checking update for version: ${currentVersion} on platform: ${platform}`);
-
-        // Fetch releases from GitHub
-        const githubUrl = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
-        const response = await fetch(githubUrl, {
-            headers: {
-                "Accept": "application/vnd.github.v3+json",
-                "User-Agent": "ArborIA-Update-Checker"
+        // Fetch latest release from GitHub API
+        const response = await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`,
+            {
+                headers: {
+                    "Accept": "application/vnd.github.v3+json",
+                    "User-Agent": "Arboria-App",
+                },
             }
-        });
+        );
 
         if (!response.ok) {
-            throw new Error(`GitHub API error: ${response.statusText}`);
+            throw new Error(`GitHub API error: ${response.status}`);
         }
 
-        const release = await response.json();
-        const latestTag = release.tag_name; // e.g., "v1.1.13" or "1.1.13"
+        const release: GitHubRelease = await response.json();
 
-        // Normalize versions for comparison (remove 'v' prefix)
-        const normalizedLatest = latestTag.startsWith('v') ? latestTag.substring(1) : latestTag;
-        const normalizedCurrent = currentVersion.startsWith('v') ? currentVersion.substring(1) : currentVersion;
+        // Determine target asset extensions based on platform
+        const isTauri = platform === 'tauri' || platform === 'windows';
+        const targetExtensions = isTauri ? [".exe", ".msi"] : [".apk"];
 
-        console.log(`Latest: ${normalizedLatest}, Current: ${normalizedCurrent}`);
+        // Find relevant asset in release
+        const targetAsset = release.assets.find(
+            (asset) => targetExtensions.some(ext => asset.name.toLowerCase().endsWith(ext))
+        );
 
-        // Simple semantic comparison (can be improved but sufficient for incrementing tags)
-        const hasUpdate = normalizedLatest !== normalizedCurrent;
+        if (!targetAsset) {
+            return new Response(
+                JSON.stringify({
+                    latestVersion: release.tag_name.replace(/^v/, ""),
+                    updateUrl: null,
+                    releaseNotes: release.body || "Nova versão disponível.",
+                    hasUpdate: false,
+                    error: `Asset ${isTauri ? "Windows" : "Android"} não encontrado na release.`,
+                }),
+                {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    status: 200,
+                }
+            );
+        }
 
-        // Find the appropriate asset based on platform
-        const extension = (platform === 'tauri' || platform === 'windows') ? ".exe" : ".apk";
-        const asset = release.assets.find((asset: any) => asset.name.toLowerCase().endsWith(extension));
-        const updateUrl = asset ? asset.browser_download_url : null;
+        const latestVersion = release.tag_name.replace(/^v/, "");
+        const hasUpdate = currentVersion && currentVersion !== latestVersion
+            ? compareVersions(latestVersion, currentVersion) > 0
+            : false;
 
         return new Response(
             JSON.stringify({
+                latestVersion,
+                updateUrl: targetAsset.browser_download_url,
+                releaseNotes: release.body || "Nova versão disponível.",
+                releaseName: release.name,
                 hasUpdate,
-                latestVersion: normalizedLatest,
-                releaseNotes: release.body,
-                updateUrl: updateUrl,
-                // Add legacy field for backward compatibility with older app versions if any exist
-                apkUrl: platform === 'android' ? updateUrl : null,
+                // Legacy field for older app versions
+                apkUrl: platform === 'android' ? targetAsset.browser_download_url : null,
             }),
             {
-                headers: { "Content-Type": "application/json" },
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
             }
         );
-    } catch (err) {
-        console.error("Error in get-latest-version:", err);
-        return new Response(JSON.stringify({ error: err.message }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-        });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return new Response(
+            JSON.stringify({ error: message }),
+            {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 500,
+            }
+        );
     }
 });
+
+function compareVersions(v1: string, v2: string): number {
+    const s1 = v1.replace(/^v/, "").split(".").map(Number);
+    const s2 = v2.replace(/^v/, "").split(".").map(Number);
+    for (let i = 0; i < Math.max(s1.length, s2.length); i++) {
+        const n1 = s1[i] || 0;
+        const n2 = s2[i] || 0;
+        if (n1 > n2) return 1;
+        if (n1 < n2) return -1;
+    }
+    return 0;
+}

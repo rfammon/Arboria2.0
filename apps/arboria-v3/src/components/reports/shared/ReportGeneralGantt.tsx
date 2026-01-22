@@ -4,9 +4,10 @@ import type { InterventionPlan } from '../../../types/plan';
 interface ReportGeneralGanttProps {
     plans: InterventionPlan[];
     bufferDays?: number;
+    variant?: 'default' | 'tauri';
 }
 
-export function ReportGeneralGantt({ plans, bufferDays = 2 }: ReportGeneralGanttProps) {
+export function ReportGeneralGantt({ plans, bufferDays = 2, variant = 'default' }: ReportGeneralGanttProps) {
     const { startDate, endDate, totalDays } = useMemo(() => {
         if (plans.length === 0) return { startDate: new Date(), endDate: new Date(), totalDays: 0, timeline: [] };
 
@@ -60,29 +61,34 @@ export function ReportGeneralGantt({ plans, bufferDays = 2 }: ReportGeneralGantt
     return (
         <div style={{
             width: '100%',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
+            border: '1px solid #eee',
+            borderRadius: '8px',
             background: 'white',
             marginBottom: '20px',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: variant === 'tauri' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none'
         }}>
             {/* Timeline Header */}
             <div style={{
                 display: 'flex',
                 borderBottom: '1px solid #eee',
-                background: '#f9f9f9',
+                background: variant === 'tauri' ? '#fcfcfc' : '#f9f9f9',
                 fontSize: '8pt',
-                color: '#666'
+                color: '#666',
+                fontWeight: 600
             }}>
-                <div style={{ width: '150px', padding: '10px', flexShrink: 0, borderRight: '1px solid #eee' }}>
+                <div style={{ width: '180px', padding: '12px', flexShrink: 0, borderRight: '1px solid #eee' }}>
                     Intervenção / ID
                 </div>
-                <div style={{ flex: 1, position: 'relative', height: '30px' }}>
+                <div style={{ flex: 1, position: 'relative', height: '35px' }}>
                     {/* Render Month/Day markers roughly */}
-                    <div style={{ position: 'absolute', left: 0, top: '8px' }}>
+                    <div style={{ position: 'absolute', left: '10px', top: '10px' }}>
                         {startDate.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })}
                     </div>
-                    <div style={{ position: 'absolute', right: 0, top: '8px' }}>
+                    <div style={{ position: 'absolute', left: '50%', top: '10px', transform: 'translateX(-50%)', opacity: 0.5 }}>
+                        MEIO
+                    </div>
+                    <div style={{ position: 'absolute', right: '10px', top: '10px' }}>
                         {endDate.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })}
                     </div>
                 </div>
@@ -93,12 +99,12 @@ export function ReportGeneralGantt({ plans, bufferDays = 2 }: ReportGeneralGantt
                 {/* Grid Lines */}
                 <div style={{
                     position: 'absolute',
-                    top: 0, bottom: 0, left: '150px', right: 0,
+                    top: 0, bottom: 0, left: '180px', right: 0,
                     display: 'flex',
                     zIndex: 0
                 }}>
-                    {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} style={{ flex: 1, borderRight: '1px dashed #f0f0f0' }}></div>
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <div key={i} style={{ flex: 1, borderRight: '1px solid #f8f8f8' }}></div>
                     ))}
                 </div>
 
@@ -110,57 +116,77 @@ export function ReportGeneralGantt({ plans, bufferDays = 2 }: ReportGeneralGantt
                         plan.schedule?.end || plan.schedule?.endDate
                     );
 
-                    const colors: Record<string, string> = {
-                        'poda': '#4caf50',
-                        'supressao': '#d32f2f',
-                        'transplante': '#ff9800',
-                        'tratamento': '#2196f3',
-                        'monitoramento': '#9c27b0'
-                    };
-                    const color = colors[plan.intervention_type] || '#666';
+                    let color = '#4caf50'; // Default green
+                    if (variant === 'tauri') {
+                        const status = plan.status?.toLowerCase();
+                        if (['concluido', 'completed', 'approved'].includes(status)) {
+                            color = '#22c55e'; // Vibrant Green
+                        } else if (status === 'atrasado' || status === 'late') {
+                            color = '#ef4444'; // Red
+                        } else if (status === 'in_progress' || status === 'em_andamento') {
+                            color = '#f59e0b'; // Amber/Orange
+                        } else {
+                            color = '#10b981'; // Primary Green fallback
+                        }
+                    } else {
+                        const colors: Record<string, string> = {
+                            'poda': '#4caf50',
+                            'supressao': '#d32f2f',
+                            'transplante': '#ff9800',
+                            'tratamento': '#2196f3',
+                            'monitoramento': '#9c27b0'
+                        };
+                        color = colors[plan.intervention_type] || '#666';
+                    }
 
                     return (
                         <div key={plan.id} style={{
                             display: 'flex',
-                            height: '36px',
-                            borderBottom: '1px solid #f5f5f5',
+                            height: '42px',
+                            borderBottom: '1px solid #f9f9f9',
                             position: 'relative',
                             zIndex: 1,
                             alignItems: 'center'
                         }}>
                             <div style={{
-                                width: '150px',
-                                padding: '0 10px',
+                                width: '180px',
+                                padding: '0 12px',
                                 flexShrink: 0,
-                                fontSize: '8pt',
+                                fontSize: '8.5pt',
                                 borderRight: '1px solid #eee',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                background: 'white' // Cover grid lines
+                                background: 'white',
+                                color: variant === 'tauri' ? '#334155' : '#111'
                             }}>
+                                <span style={{ color: color, marginRight: '4px' }}>●</span>
                                 <strong>#{index + 1}</strong> {plan.intervention_type}
+                                <div style={{ fontSize: '7pt', color: '#94a3b8', marginTop: '-2px' }}>
+                                    ID {plan.plan_id || plan.id.substring(0, 8)}
+                                </div>
                             </div>
                             <div style={{ flex: 1, position: 'relative', height: '100%' }}>
                                 <div style={{
                                     position: 'absolute',
                                     left: `${startP}%`,
-                                    width: `${Math.max(widthP, 1)}%`,
-                                    top: '8px',
-                                    height: '20px',
+                                    width: `${Math.max(widthP, 12)}%`, // Minimum width for visibility
+                                    top: '10px',
+                                    height: '22px',
                                     background: color,
-                                    borderRadius: '3px',
-                                    opacity: 0.9,
+                                    borderRadius: '6px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                     fontSize: '7pt',
+                                    fontWeight: 700,
                                     color: 'white',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
-                                    padding: '0 4px'
+                                    padding: '0 8px'
                                 }}>
-                                    ID {plan.plan_id || plan.id.substring(0, 6)}
+                                    ID {plan.plan_id || plan.id.substring(0, 8)}
                                 </div>
                             </div>
                         </div>

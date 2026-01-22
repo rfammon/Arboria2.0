@@ -86,9 +86,20 @@
        <widget class="QComboBox" name="comboBoxProvider">
         <item>
          <property name="text">
+          <string>openrouter_qwen</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>openrouter_grok</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>groq</string>
          </property>
         </item>
+
         <item>
          <property name="text">
           <string>qwen</string>

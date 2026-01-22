@@ -11,8 +11,9 @@
     "opener:default",
     "shell:default",
     "dialog:default",
-    "allow-save-download-file",
+    "app-save-download-file",
     "allow-show-in-folder",
-    "allow-open-file-natively"
+    "allow-open-file-natively",
+    "allow-delete-file"
   ]
 }

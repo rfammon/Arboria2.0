@@ -31,5 +31,6 @@ export const WebAdapter: PlatformAdapter = {
 
     async installUpdate(localPath: string): Promise<void> {
         window.open(localPath, '_blank');
-    }
+    },
+    supportsOfflineCapture: true
 };

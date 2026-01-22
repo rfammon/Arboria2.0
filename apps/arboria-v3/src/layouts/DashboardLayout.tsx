@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen, Download } from 'lucide-react';
+import { TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen, Download, PanelLeftClose } from 'lucide-react';
 import { cn } from '../lib/utils';
 // import { ModeToggle } from '../components/mode-toggle';
 import { useAuth } from '../context/AuthContext';
 import { OfflineSyncIndicator } from '../components/features/OfflineSyncIndicator';
 import { InstallationSwitchDialog } from '../components/features/InstallationSwitchDialog';
 import { TopHeader } from '../components/layout/TopHeader';
+import { Button } from '../components/ui/button';
 
 
 export default function DashboardLayout() {
@@ -116,21 +117,31 @@ export default function DashboardLayout() {
                     )}>
                         <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
                         {!isSidebarCollapsed && (
-                            <div className="flex flex-col flex-1 min-w-0 ml-2 animate-in fade-in duration-300">
-                                <span className="text-xl font-bold leading-none">
-                                    <span className="text-blue-600 dark:text-blue-500">Arbor</span><span className="text-green-600 dark:text-green-500">IA</span>
+                            <div className="flex flex-col flex-1 min-w-0 ml-3 animate-in fade-in duration-300">
+                                <span className="text-xl font-bold tracking-tight text-foreground/90">
+                                    Arbor<span className="text-primary italic">IA</span>
                                 </span>
                                 {activeInstallation && (
                                     <button
                                         onClick={() => setIsSwitchDialogOpen(true)}
-                                        className="text-xs text-muted-foreground truncate text-left hover:text-primary transition-colors flex items-center gap-2 mt-1 px-2 py-1 -ml-2 rounded-md hover:bg-accent/50"
+                                        className="text-[10px] text-muted-foreground truncate text-left hover:text-primary transition-colors flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 -ml-1.5 rounded-md hover:bg-accent/50"
                                         title="Trocar instalação"
                                     >
-                                        <span className="truncate max-w-[120px] font-medium">{activeInstallation.nome}</span>
-                                        <Settings className="w-3.5 h-3.5 text-muted-foreground/70" />
+                                        <span className="truncate max-w-[140px] font-medium">{activeInstallation.nome}</span>
+                                        <Settings className="w-3 h-3 text-muted-foreground/70" />
                                     </button>
                                 )}
                             </div>
+                        )}
+                        {!isSidebarCollapsed && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsSidebarOpen(false)}
+                                className="lg:hidden ml-auto text-muted-foreground"
+                            >
+                                <PanelLeftClose className="w-5 h-5" />
+                            </Button>
                         )}
                     </div>
 

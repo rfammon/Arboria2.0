@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUpdate } from '../../hooks/useUpdate';
+import { platform } from '@/platform';
 import { Button } from './button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './dialog';
 import { RefreshCw, Loader2, ArrowDownCircle, Download } from 'lucide-react';
@@ -46,7 +47,7 @@ export function UpdateIndicator() {
         handleClose();
     };
 
-    const isWindows = !!(window as any).__TAURI__;
+    const isWindows = platform.platformName === 'tauri';
     const updateFileType = isWindows ? 'Instalador' : 'APK';
 
     return (

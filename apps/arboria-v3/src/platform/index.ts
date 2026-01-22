@@ -5,12 +5,13 @@ import { AndroidAdapter } from './android/adapter';
 import { WebAdapter } from './web/adapter';
 
 const getAdapter = (): PlatformAdapter => {
-    if (window.__TAURI__) {
-        return TauriAdapter;
+    if (typeof window !== 'undefined') {
+        const isTauri = !!((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__);
+        if (isTauri) return TauriAdapter;
     }
 
-    const platform = Capacitor.getPlatform();
-    if (platform === 'android' || platform === 'ios') {
+    const platformName = Capacitor.getPlatform();
+    if (platformName === 'android' || platformName === 'ios') {
         return AndroidAdapter;
     }
 

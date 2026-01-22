@@ -80,8 +80,8 @@ export const SchedulePDF = ({ plans, installationName, ganttImage }: any) => {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Visão Geral do Cronograma</Text>
                     {ganttImage ? (
-                        <View style={{ width: '100%', height: 180, borderWidth: 0.5, borderColor: '#eee', borderRadius: 4, padding: 5 }}>
-                            <Image src={ganttImage} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        <View style={{ width: '100%', height: 240, borderBottomWidth: 0.5, borderBottomColor: '#eee', paddingBottom: 5 }}>
+                            <Image src={ganttImage} style={{ width: '100%', height: '100%' }} />
                         </View>
                     ) : (
                         <View style={{ height: 100, backgroundColor: '#f9f9f9', justifyContent: 'center', alignItems: 'center', borderRadius: 4 }}>

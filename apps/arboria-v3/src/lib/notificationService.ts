@@ -53,5 +53,12 @@ export const NotificationService = {
             .rpc('delete_notifications', { p_notification_ids: null });
 
         if (error) throw error;
+    },
+
+    async deleteNotification(id: string) {
+        const { error } = await supabase
+            .rpc('delete_notifications', { p_notification_ids: [id] });
+
+        if (error) throw error;
     }
 };

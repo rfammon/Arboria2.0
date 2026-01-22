@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { Button } from '../../ui/button';
@@ -7,11 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Loader2, FileText, Download } from 'lucide-react';
 import { ReportMap } from './ReportMap';
 import { toast } from 'sonner';
-import { ReportService } from '../../../api/reportService';
-import { downloadFile } from '../../../utils/downloadUtils';
-import { sanitizeFilename } from '../../../utils/fileUtils';
-import html2canvas from 'html2canvas';
-import { useDownloads } from '../../../context/DownloadContext';
+import { useReports } from '../../../context/ReportContext';
 
 // Type definitions
 interface TreeData {
@@ -26,25 +21,17 @@ interface TreeData {
     photoUrl?: string;
 }
 
-interface Stats {
-    totalTrees: number;
-    totalSpecies: number;
-    avgDap: number;
-    avgHeight: number;
-    highRiskCount: number;
-}
-
 export function ReportGenerator() {
-    const navigate = useNavigate();
     const { activeInstallation } = useAuth();
     const [loading, setLoading] = useState(false);
-    const [generating, setGenerating] = useState(false);
-    const [stats, setStats] = useState<Stats | null>(null);
     const [trees, setTrees] = useState<TreeData[]>([]);
 
     // State
     const [mapReady, setMapReady] = useState(false);
     const mapRef = useRef<any>(null);
+    const { requestCapture, queue } = useReports();
+
+    const isGenerating = queue.some(q => q.type === 'risk-inventory');
 
     // Load initial data
     useEffect(() => {
@@ -66,60 +53,8 @@ export function ReportGenerator() {
 
             if (error) throw error;
 
-            console.log("Trees data fetched:", treesData?.length);
-
-            // Fetch Photos for these trees
-            const treeIds = (treesData || []).map((t: any) => t.id);
-            const photoMap: Record<string, string> = {};
-
-            if (treeIds.length > 0) {
-                // Fetch latest photo for each tree
-                const { data: photosData } = await supabase
-                    .from('tree_photos')
-                    .select('tree_id, storage_path')
-                    .in('tree_id', treeIds)
-                    .order('created_at', { ascending: false });
-
-                if (photosData) {
-                    // Group by tree_id to get only the first one (latest) per tree
-                    const latestPhotos: Record<string, string> = {};
-                    photosData.forEach((p: any) => {
-                        if (!latestPhotos[p.tree_id]) {
-                            latestPhotos[p.tree_id] = p.storage_path;
-                        }
-                    });
-
-                    // Generate signed URLs
-                    const paths = Object.values(latestPhotos);
-                    if (paths.length > 0) {
-                        const { data: signedData } = await supabase.storage
-                            .from('tree-photos')
-                            .createSignedUrls(paths, 3600);
-
-                        if (signedData) {
-                            // Map path to URL
-                            const urlMap: Record<string, string> = {};
-                            signedData.forEach((item) => {
-                                if (item.path && item.signedUrl) {
-                                    urlMap[item.path] = item.signedUrl;
-                                }
-                            });
-
-                            // Map tree_id to URL
-                            Object.keys(latestPhotos).forEach(tid => {
-                                const path = latestPhotos[tid];
-                                if (urlMap[path]) {
-                                    photoMap[tid] = urlMap[path];
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-
             // Process trees
             const safeTrees: TreeData[] = (treesData || []).map((t: any) => {
-                // Parse risk factors
                 let parsedFactors: string[] = [];
                 if (Array.isArray(t.fatores_risco)) {
                     parsedFactors = t.fatores_risco;
@@ -140,8 +75,7 @@ export function ReportGenerator() {
                     risco: t.risco,
                     fatores_risco: parsedFactors,
                     latitude: t.latitude,
-                    longitude: t.longitude,
-                    photoUrl: photoMap[t.id]
+                    longitude: t.longitude
                 };
             });
 
@@ -155,129 +89,13 @@ export function ReportGenerator() {
         }
     };
 
-    const calculateStats = (treesList: TreeData[]) => {
-        const totalTrees = treesList.length;
-        const distinctSpecies = new Set(treesList.map(t => t.especie)).size;
-
-        const validDap = treesList.filter(t => t.dap).map(t => Number(t.dap));
-        const avgDap = validDap.length ? validDap.reduce((a, b) => a + b, 0) / validDap.length : 0;
-
-        const validHeight = treesList.filter(t => t.altura).map(t => Number(t.altura));
-        const avgHeight = validHeight.length ? validHeight.reduce((a, b) => a + b, 0) / validHeight.length : 0;
-
-        const riskCounts: Record<string, number> = { Alto: 0, Médio: 0, Baixo: 0 };
-        treesList.forEach(t => {
-            if (t.risco && riskCounts[t.risco] !== undefined) riskCounts[t.risco]++;
-        });
-
-        const highRiskCount = riskCounts['Alto'];
-
-        setStats({
-            totalTrees,
-            totalSpecies: distinctSpecies,
-            avgDap,
-            avgHeight,
-            highRiskCount
-        });
-    };
-
-    const { addDownload, updateDownload } = useDownloads();
-
-    // Capture charts for PDF
-    const captureCharts = async () => {
-        try {
-            const riskChart = document.getElementById('risk-chart');
-            const speciesChart = document.getElementById('species-chart');
-
-            const images: any = {};
-
-            if (riskChart) {
-                const canvas = await html2canvas(riskChart, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' });
-                images.risk = canvas.toDataURL('image/png');
-            }
-
-            if (speciesChart) {
-                const canvas = await html2canvas(speciesChart, { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' });
-                images.species = canvas.toDataURL('image/png');
-            }
-
-            return images;
-        } catch (e) {
-            console.warn("Failed to capture charts:", e);
-            return {};
-        }
+    const calculateStats = (_treesList: TreeData[]) => {
+        // Stats calculations removed as they are not used in the UI anymore but processed in background
     };
 
     const handleGenerateReport = async () => {
-        setGenerating(true);
-        let downloadId = '';
-        try {
-            // 1. Capture Map
-            let mapImage = undefined;
-            if (mapRef.current) {
-                try {
-                    const map = mapRef.current;
-                    // Wait for map to be fully loaded/idle
-                    if (!map.loaded()) {
-                        await new Promise(resolve => map.once('idle', resolve));
-                    }
-                    mapImage = map.getCanvas().toDataURL('image/png');
-                } catch (e) {
-                    console.warn("Map capture failed:", e);
-                }
-            }
-
-            // 2. Capture Charts
-            const chartsImages = await captureCharts();
-
-            // 3. Prepare Payload
-            const payload = {
-                installation: activeInstallation,
-                stats: stats,
-                trees: trees,
-                mapImage: mapImage,
-                chartsImages
-            };
-
-            console.log('[ReportGenerator] Sending payload with keys:', Object.keys(payload));
-            console.log('[ReportGenerator] Installation:', activeInstallation);
-            console.log('[ReportGenerator] Trees count:', trees?.length);
-
-            const baseFilename = `Relatorio_${activeInstallation?.nome || 'Inventario'}.pdf`;
-            const filename = sanitizeFilename(baseFilename);
-
-            downloadId = addDownload({
-                filename,
-                type: 'pdf'
-            });
-
-            navigate('/downloads');
-
-            toast.info("Gerando PDF...");
-            updateDownload(downloadId, { progress: 30 });
-
-            const pdfBlob = await ReportService.generateRiskInventoryReport(payload);
-
-            updateDownload(downloadId, { progress: 70 });
-            const result = await downloadFile(pdfBlob, filename);
-
-            updateDownload(downloadId, {
-                status: 'success',
-                progress: 100,
-                path: result.path
-            });
-
-            toast.success("Relatório gerado com sucesso!");
-
-        } catch (e: any) {
-            console.error(e);
-            toast.error(`Erro ao gerar PDF: ${e.message} `);
-            if (downloadId) {
-                updateDownload(downloadId, { status: 'error', error: e.message });
-            }
-        } finally {
-            setGenerating(false);
-        }
+        toast.info("Iniciando geração do inventário em segundo plano...");
+        requestCapture('risk-inventory', undefined, trees);
     };
 
     if (loading) {
@@ -303,7 +121,6 @@ export function ReportGenerator() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Action Card */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -317,7 +134,6 @@ export function ReportGenerator() {
                     <CardContent className="space-y-4">
                         <div className="rounded-md border p-4 bg-muted/50">
                             <h4 className="font-medium mb-2 text-sm">Conteúdo do Relatório:</h4>
-
                             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                                 <li>Estatísticas Gerais</li>
                                 <li>Mapa de Localização</li>
@@ -330,13 +146,13 @@ export function ReportGenerator() {
 
                         <Button
                             onClick={handleGenerateReport}
-                            disabled={generating || !mapReady}
+                            disabled={isGenerating || !mapReady}
                             className="w-full"
                         >
-                            {generating ? (
+                            {isGenerating ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Gerando PDF...
+                                    Gerando em segundo plano...
                                 </>
                             ) : (
                                 <>
@@ -354,9 +170,7 @@ export function ReportGenerator() {
                     </CardContent>
                 </Card>
 
-                {/* Preview Section */}
                 <div className="relative space-y-6">
-                    {/* Map Preview (Only for visual feedback, not capture) */}
                     <div>
                         <div className="text-sm text-muted-foreground mb-2">Pré-visualização do Mapa:</div>
                         <div className="border rounded-lg overflow-hidden bg-white h-[400px] w-full relative">
@@ -371,10 +185,6 @@ export function ReportGenerator() {
                     </div>
                 </div>
             </div>
-
-
         </div>
     );
 }
-
-

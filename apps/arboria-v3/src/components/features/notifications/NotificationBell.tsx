@@ -8,7 +8,8 @@ import { useNotifications } from '../../../hooks/useNotifications';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '../../../lib/utils';
-// import { Badge } from '../../ui/badge';
+import { Swipeable } from '../../ui/Swipeable';
+import { Trash2, CheckCircle2 } from 'lucide-react';
 
 export function NotificationBell() {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ export function NotificationBell() {
         markAsRead,
         markAllAsRead,
         clearAll,
+        deleteNotification,
         refresh
     } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
@@ -74,33 +76,43 @@ export function NotificationBell() {
                             Nenhuma notificação.
                         </div>
                     ) : (
-                        <div className="divide-y">
+                        <div className="divide-y overflow-x-hidden">
                             {notifications.map((notif) => (
-                                <div
+                                <Swipeable
                                     key={notif.id}
-                                    className={cn(
-                                        "p-4 hover:bg-muted/50 transition-colors cursor-pointer",
-                                        !notif.is_read && "bg-blue-50/50"
-                                    )}
-                                    onClick={() => handleMarkRead(notif.id, notif.action_link)}
+                                    onSwipeLeft={() => deleteNotification(notif.id)}
+                                    onSwipeRight={!notif.is_read ? () => markAsRead(notif.id) : undefined}
+                                    leftActionLabel="Excluir"
+                                    leftActionIcon={<Trash2 className="w-4 h-4" />}
+                                    rightActionLabel="Lida"
+                                    rightActionIcon={<CheckCircle2 className="w-4 h-4" />}
+                                    rightActionClassName="bg-blue-500"
                                 >
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-1 space-y-1">
-                                            <p className={cn("text-sm font-medium leading-none", !notif.is_read && "text-primary")}>
-                                                {notif.title}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground line-clamp-2">
-                                                {notif.message}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground">
-                                                {format(new Date(notif.created_at), "dd MMM, HH:mm", { locale: ptBR })}
-                                            </p>
-                                        </div>
-                                        {!notif.is_read && (
-                                            <div className="h-2 w-2 rounded-full bg-primary mt-1" />
+                                    <div
+                                        className={cn(
+                                            "p-4 hover:bg-muted/50 transition-colors cursor-pointer",
+                                            !notif.is_read && "bg-blue-50/50"
                                         )}
+                                        onClick={() => handleMarkRead(notif.id, notif.action_link)}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex-1 space-y-1">
+                                                <p className={cn("text-sm font-medium leading-none", !notif.is_read && "text-primary")}>
+                                                    {notif.title}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                                    {notif.message}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {format(new Date(notif.created_at), "dd MMM, HH:mm", { locale: ptBR })}
+                                                </p>
+                                            </div>
+                                            {!notif.is_read && (
+                                                <div className="h-2 w-2 rounded-full bg-primary mt-1" />
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                </Swipeable>
                             ))}
                         </div>
                     )}
