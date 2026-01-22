@@ -1,5 +1,7 @@
 // Intervention Planning Module - Type Definitions
 
+import type { WorkOrder } from './execution';
+
 /**
  * Type of intervention that can be performed on trees
  */
@@ -103,13 +105,7 @@ export interface InterventionPlan {
     dependencies?: string[];              // Array of plan_ids this plan depends on
 
     // Execution Data (Joined)
-    work_orders?: {
-        id: string;
-        status: string; // 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
-        tasks?: {
-            progress_percent: number;
-        }[];
-    }[];
+    work_orders?: WorkOrder[];
 
     // Computed Progress (Optional)
     progress?: number;

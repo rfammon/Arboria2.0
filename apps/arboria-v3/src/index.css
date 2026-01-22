@@ -353,36 +353,36 @@ body,
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
   .madeira {
-    /* Gruvbox Material Hard/Retro inspired for 'Madeira' */
-    --background: 28 16% 18%; /* #32302F */
-    --foreground: 41 22% 85%; /* #DDC7A1 */
+    /* Soft Oak - Light wood theme, less dark and smoother */
+    --background: 35 40% 94%;
+    --foreground: 25 30% 20%;
 
-    --card: 28 14% 20%;
-    --card-foreground: 41 22% 85%;
+    --card: 35 35% 91%;
+    --card-foreground: 25 30% 20%;
 
-    --popover: 28 14% 20%;
-    --popover-foreground: 41 22% 85%;
+    --popover: 35 35% 91%;
+    --popover-foreground: 25 30% 20%;
 
-    /* Gruvbox Orange for Primary */
-    --primary: 26 85% 55%;   /* #E78A4E */
-    --primary-foreground: 28 16% 18%;
+    /* Rich Oak Primary */
+    --primary: 32 65% 38%;
+    --primary-foreground: 35 40% 98%;
 
-    --secondary: 41 15% 26%; /* #504945 */
-    --secondary-foreground: 41 22% 85%;
+    --secondary: 35 25% 86%;
+    --secondary-foreground: 25 30% 20%;
 
-    --muted: 41 15% 26%;
-    --muted-foreground: 41 10% 65%;
+    --muted: 35 25% 86%;
+    --muted-foreground: 25 15% 45%;
 
-    --accent: 41 15% 30%;    /* #665C54 */
-    --accent-foreground: 41 22% 85%;
+    --accent: 35 30% 82%;
+    --accent-foreground: 25 30% 20%;
 
-    --destructive: 0 80% 55%; /* #EA6962 */
-    --destructive-foreground: 41 22% 85%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 35 40% 98%;
 
-    --border: 41 15% 26%;
-    --input: 41 15% 18%;
-    --ring: 26 85% 55%;
+    --border: 35 20% 80%;
+    --input: 35 20% 85%;
+    --ring: 32 65% 38%;
 
-    --radius: 0.75rem;
-    --shadow-color: rgba(20, 15, 10, 0.4);
+    --radius: 1rem;
+    --shadow-color: rgba(66, 53, 43, 0.1);
   }

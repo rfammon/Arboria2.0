@@ -65,7 +65,7 @@ function GeneralSettings() {
         { id: "dark", name: "Dark", icon: Moon, color: "bg-slate-950 text-white" },
         { id: "forest", name: "Forest", icon: CheckCircle2, color: "bg-emerald-50 text-emerald-900" },
         { id: "dark-forest", name: "Dark Forest", icon: CheckCircle2, color: "bg-emerald-950 text-emerald-50" },
-        { id: "madeira", name: "Madeira", icon: TreeDeciduous, color: "bg-[#32302F] text-[#DDC7A1]" },
+        { id: "madeira", name: "Madeira", icon: TreeDeciduous, color: "bg-[#F5EFE6] text-[#42352B]" },
         { id: "system", name: "System", icon: Monitor, color: "bg-slate-200 text-slate-900" },
     ];
 
