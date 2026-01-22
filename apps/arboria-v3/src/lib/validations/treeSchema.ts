@@ -31,4 +31,31 @@ export const treeSchema = z.object({
     mitigation: z.string().optional().nullable(),
 });
 
+// Schema for updates (excludes auto-managed fields)
+export const treeUpdateSchema = treeSchema.omit({
+    id: true
+});
+
 export type TreeFormData = z.infer<typeof treeSchema>;
+
+/**
+ * Sanitizes tree update data by removing read-only fields and keeping only schema-defined fields
+ * 
+ * @param data - Raw update data that may contain extra fields
+ * @returns Sanitized object with only allowed update fields
+ */
+export function sanitizeTreeUpdate(data: any): Partial<TreeFormData> {
+    // Remove read-only fields
+    const { id: _, created_at, updated_at, user_id, instalacao_id, ...rest } = data;
+    
+    // Get allowed field names from schema
+    const allowedFields = Object.keys(treeUpdateSchema.shape);
+    
+    // Filter to only allowed fields
+    return Object.keys(rest)
+        .filter(key => allowedFields.includes(key))
+        .reduce((obj: any, key) => {
+            obj[key] = rest[key];
+            return obj;
+        }, {});
+}

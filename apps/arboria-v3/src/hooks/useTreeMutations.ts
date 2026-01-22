@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../lib/logger';
 import { useErrorDialog } from './useErrorDialog';
 import { getConnectivityStatus, recheckConnectivity } from '../lib/connectivity/heartbeat';
+import { sanitizeTreeUpdate } from '../lib/validations/treeSchema';
 
 // Helper to check connectivity with better reliability
 const isOnline = () => {
@@ -116,22 +117,8 @@ export const useTreeMutations = () => {
 
     const updateTree = useMutation({
         mutationFn: async ({ id, data }: { id: string; data: any }) => {
-            // Sanitize payload: only keep fields defined in the schema and allow updates
-            const { id: _, created_at, updated_at, ...updateLoad } = data;
-
-            // Further filter to strictly what matches the arvores table expected update fields
-            const allowedFields = [
-                'especie', 'data', 'dap', 'altura', 'pontuacao', 'risco', 'observacoes',
-                'latitude', 'longitude', 'easting', 'northing', 'utmzonenum', 'utmzoneletter',
-                'failure_prob', 'impact_prob', 'target_category', 'residual_risk', 'risk_factors', 'mitigation'
-            ];
-
-            const sanitizedData = Object.keys(updateLoad)
-                .filter(key => allowedFields.includes(key))
-                .reduce((obj: any, key) => {
-                    obj[key] = updateLoad[key];
-                    return obj;
-                }, {});
+            // Sanitize payload using schema-based helper (auto-removes read-only fields)
+            const sanitizedData = sanitizeTreeUpdate(data);
 
             logger.debug(
                 { module: 'useTreeMutations', action: 'updateTree' },
