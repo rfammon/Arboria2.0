@@ -1,4 +1,3 @@
-import { Feature, FeatureCollection, Point, Polygon, Position } from 'geojson';
 import { getPlatform, isMobile } from './platform';
 
 export type NavigationApp = 'google' | 'waze' | 'apple';
