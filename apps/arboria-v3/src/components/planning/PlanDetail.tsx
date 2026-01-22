@@ -37,9 +37,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
         setShowAssignDialog,
         showReopenDialog,
         setShowReopenDialog,
-        isDeleting,
-        isGenerating,
-        isReopening,
+        isPending,
         members,
         selectedAssignee,
         setSelectedAssignee,
@@ -47,6 +45,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
         setReopenReason,
         reopenDate,
         setReopenDate,
+        optimisticWorkOrders,
         handleOpenGenerateDialog,
         handleConfirmGeneration,
         handleOpenReopenDialog,
@@ -70,7 +69,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                 onEdit={onEdit}
                 onDelete={() => setShowDeleteDialog(true)}
                 onGenerateOS={handleOpenGenerateDialog}
-                isGenerating={isGenerating}
+                isGenerating={isPending}
                 daysUntil={daysUntil}
                 urgencyConfig={urgencyConfig}
                 icon={icon}
@@ -82,7 +81,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
             />
 
             <PlanWorkOrders 
-                workOrders={plan.work_orders || []}
+                workOrders={optimisticWorkOrders}
                 isManager={isManager}
                 onDeleteWorkOrder={handleDeleteWorkOrder}
                 onOpenReopenDialog={handleOpenReopenDialog}
@@ -113,7 +112,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                 open={showAssignDialog}
                 onOpenChange={setShowAssignDialog}
                 onConfirm={handleConfirmGeneration}
-                isGenerating={isGenerating}
+                isGenerating={isPending}
                 members={members}
                 selectedAssignee={selectedAssignee}
                 onAssigneeChange={setSelectedAssignee}
@@ -123,7 +122,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                 open={showReopenDialog}
                 onOpenChange={setShowReopenDialog}
                 onConfirm={handleConfirmReopen}
-                isReopening={isReopening}
+                isReopening={isPending}
                 reason={reopenReason}
                 onReasonChange={setReopenReason}
                 date={reopenDate}
@@ -134,7 +133,7 @@ export function PlanDetail({ plan, onBack, onEdit, onUpdate }: PlanDetailProps) 
                 open={showDeleteDialog}
                 onOpenChange={setShowDeleteDialog}
                 onConfirm={handleDeletePlan}
-                isDeleting={isDeleting}
+                isDeleting={isPending}
                 planId={plan.plan_id}
             />
         </div>

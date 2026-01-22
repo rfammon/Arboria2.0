@@ -6,6 +6,10 @@
     "scripts": {
         "dev": "node scripts/dev.mjs",
         "build": "node scripts/update-version.mjs && tsc -b && vite build",
+        "build:android": "npm run build && npx cap sync android && cd android && ./gradlew assembleRelease",
+        "build:windows": "npm run build && npm run tauri build",
+        "bg-build:android": "opencode delegate 'npm run build:android' --agent background-agents && opencode notify 'Build Android do Arboria concluído!'",
+        "bg-build:windows": "opencode delegate 'npm run build:windows' --agent background-agents && opencode notify 'Build Windows do Arboria concluído!'",
         "lint": "eslint .",
         "preview": "vite preview",
         "test": "vitest",
