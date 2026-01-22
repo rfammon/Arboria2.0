@@ -16,6 +16,7 @@ export interface QueuedAction {
     payload: any; // Flexible payload to store arguments for service calls
     timestamp: number;
     retryCount: number;
+    lastAttempt?: Date;  // NEW: For backoff calculation
 }
 
 const STORE_KEY_PREFIX = 'offline_action_';
