@@ -62,30 +62,17 @@ vi.mock('../../lib/planUtils', () => ({
     getPlanDuration: vi.fn(() => 1)
 }));
 
-const mockPlan: InterventionPlan = {
+// @ts-ignore - Mocking incomplete InterventionPlan for testing purposes
+const mockPlan = {
     id: 'plan-1',
-    plan_id: 'PL-001',
+    status: 'COMPLETED',
+    tasks: [],
+    // Adding minimal required fields to satisfy WorkOrder type
     instalacao_id: 'inst-1',
-    user_id: 'user-1',
-    intervention_type: 'poda',
-    status: 'COMPLETED', // Plan is usually IN_PROGRESS or completed, but we care about WO status
-    // priority: 'HIGH', // Not in type
-    schedule: { startDate: '2025-01-01' },
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    work_orders: [
-        {
-            id: 'wo-1',
-            status: 'COMPLETED', // Completed WO can be reopened
-            tasks: []
-        }
-    ],
-    tree: {
-        id: 'tree-1',
-        especie: 'Ipê',
-        local: 'Praça'
-    }
-};
+    title: 'Test Order',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+} as unknown as WorkOrder; // Force cast if needed or just provide fields
 
 describe('Reopen Flow Integration', () => {
     beforeEach(() => {

@@ -10,15 +10,13 @@ import {
     Scissors,
     Truck,
     Ruler,
-    ClipboardList,
-    AlertTriangle
+    ClipboardList
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Badge } from '../../ui/badge';
 import {
     formatDate,
     extractScheduleDate,
-    extractScheduleEndDate,
     getPlanDuration
 } from '../../../lib/planUtils';
 import type { InterventionPlan } from '../../../types/plan';
@@ -68,8 +66,6 @@ function RequirementBadge({ label }: { label: string }) {
 export function PlanRequirements({ plan, color }: PlanRequirementsProps) {
     const totalDuration = getPlanDuration(plan.durations);
     const startDate = extractScheduleDate(plan.schedule);
-    const endDate = extractScheduleEndDate(plan.schedule);
-    const daysUntil = startDate ? Math.ceil((new Date(startDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
     return (
         <div className="space-y-6">
@@ -173,7 +169,7 @@ export function PlanRequirements({ plan, color }: PlanRequirementsProps) {
                         </p>
                     </CardContent>
                 </Card>
-            </CardContent>
+            )}
         </div>
     );
 }

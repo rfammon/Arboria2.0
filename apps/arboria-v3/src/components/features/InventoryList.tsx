@@ -249,12 +249,12 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
                                             <MoreHorizontal className="w-4 h-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => navigate(`/inventory/${tree.id}`}>
+                                        <DropdownMenuItem onClick={() => navigate(`/inventory/${tree.id}`)}>
                                             <Edit className="w-4 h-4 mr-2" /> Editar
                                         </DropdownMenuItem>
                                         {hasPermission('manage_installation') && (
