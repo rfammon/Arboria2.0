@@ -66,17 +66,17 @@ export const DiagnosticQuiz: React.FC<DiagnosticQuizProps> = ({ questions, onCom
     if (!currentQuestion) return null;
 
     return (
-        <div className="max-w-md mx-auto p-4 bg-white dark:bg-zinc-900 rounded-lg shadow-lg">
+        <div className="max-w-md mx-auto p-4 bg-background rounded-lg shadow-lg border border-border">
             <div className="mb-4 flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-muted-foreground">
                     Question {currentIndex + 1} of {questions.length}
                 </span>
-                <span className="text-xs font-bold px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                <span className="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded">
                     Diagnostic Mode
                 </span>
             </div>
 
-            <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-white">
+            <h3 className="text-lg font-bold mb-6 text-foreground">
                 {currentQuestion.text}
             </h3>
 
@@ -86,8 +86,8 @@ export const DiagnosticQuiz: React.FC<DiagnosticQuizProps> = ({ questions, onCom
                         key={option.id}
                         onClick={() => handleOptionClick(option.id)}
                         className={`w-full p-4 text-left border rounded-lg transition-all ${selectedOptionId === option.id
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500/50'
-                            : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                            ? 'border-primary bg-primary/5 dark:bg-primary/20 ring-2 ring-primary/50'
+                            : 'border-border hover:border-primary/50 dark:border-border'
                             }`}
                     >
                         {option.text}
@@ -99,7 +99,7 @@ export const DiagnosticQuiz: React.FC<DiagnosticQuizProps> = ({ questions, onCom
                 <button
                     onClick={handleConfirm}
                     disabled={!selectedOptionId}
-                    className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     {isLastQuestion ? 'Finish' : 'Next'}
                     {!isLastQuestion && <ArrowRight className="w-4 h-4" />}

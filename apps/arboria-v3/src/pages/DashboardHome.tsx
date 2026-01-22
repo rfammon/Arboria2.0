@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { Map, BarChart3, GraduationCap, LayoutDashboard, Play, AlertTriangle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { Surface } from '../components/ui/surface';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -75,10 +75,10 @@ export default function DashboardHome() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="text-center space-y-4 py-12">
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground transition-all">
+                <h1 className="text-foreground transition-all">
                     Bem-vindo ao <span className="text-blue-600 dark:text-blue-400">Arbor</span><span className="text-green-600 dark:text-green-400">IA</span>
                 </h1>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
+                <p className="text-muted-foreground max-w-2xl mx-auto">
                     Sua Plataforma de Manejo Integrado de Árvores
                 </p>
             </div>
@@ -92,18 +92,25 @@ export default function DashboardHome() {
                     // Alerts and Education are visible to all (or add specific checks if needed)
                     return true;
                 }).map((feature) => (
-                    <Card key={feature.id} className="hover:shadow-[var(--shadow-deep)] hover:-translate-y-1 transition-all duration-300 border-none group flex flex-col h-full bg-card/50 backdrop-blur-sm shadow-sm ring-1 ring-white/10">
+                    <Surface
+                        key={feature.id}
+                        onClick={feature.action}
+                        variant="glass-default"
+                        elevation="sm"
+                        interactive
+                        className="group flex flex-col h-full ring-1 ring-white/10"
+                    >
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-20" style={{ color: 'currentColor' }} />
-                        <CardHeader className="space-y-1">
+                        <div className="p-6 space-y-1">
                             <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 shadow-inner ring-1 ring-current/20`}>
                                 <feature.icon className={`w-6 h-6 ${feature.color}`} />
                             </div>
-                            <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6 flex-1 flex flex-col justify-between">
-                            <CardDescription className="text-base leading-relaxed h-full">
+                            <h3 className="text-xl font-bold">{feature.title}</h3>
+                        </div>
+                        <div className="p-6 pt-0 space-y-6 flex-1 flex flex-col justify-between">
+                            <p className="text-muted-foreground leading-relaxed h-full">
                                 {feature.description}
-                            </CardDescription>
+                            </p>
                             <Button
                                 onClick={feature.action}
                                 className="w-full shadow-sm hover:shadow-md transition-all active:scale-[0.97] mt-4 font-semibold h-11"
@@ -111,8 +118,8 @@ export default function DashboardHome() {
                             >
                                 {feature.btnText}
                             </Button>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </Surface>
                 ))}
             </div>
 

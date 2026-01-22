@@ -88,8 +88,8 @@ export default function Education() {
         <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight font-display">Educação & <span className="text-primary italic">Treinamento</span></h1>
-                    <p className="text-muted-foreground font-medium mt-1">Recursos e conteúdos para sua formação técnica em manejo florestal</p>
+                    <h1 className="tracking-tight font-display">Educação & <span className="text-primary italic">Treinamento</span></h1>
+                    <p className="text-muted-foreground mt-1">Recursos e conteúdos para sua formação técnica em manejo florestal</p>
                 </div>
                 <div className="flex flex-col md:flex-row items-end gap-3 w-full md:w-auto">
                     <Button variant="outline" onClick={() => navigate('/')}>
@@ -116,10 +116,10 @@ export default function Education() {
                                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-transform group-hover:scale-110", topic.bgColor)}>
                                     <topic.icon className={cn("w-6 h-6", topic.color)} />
                                 </div>
-                                <CardTitle className="text-lg font-bold tracking-tight">{topic.title}</CardTitle>
+                                <CardTitle className="tracking-tight">{topic.title}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <CardDescription className="text-sm font-medium opacity-80 leading-relaxed">
+                                <CardDescription className="opacity-80 leading-relaxed">
                                     {topic.description}
                                 </CardDescription>
                                 <div className="mt-6 flex items-center text-xs font-bold text-primary gap-1 group-hover:gap-2 transition-all">

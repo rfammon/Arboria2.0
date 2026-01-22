@@ -79,9 +79,9 @@ export function RiskAuditMap({ imageSrc, zones, onComplete }: RiskAuditMapProps)
                                 key={zone.id}
                                 aria-label={zone.description}
                                 onClick={(e) => handleZoneClick(zone.id, e)}
-                                className={`absolute rounded - full transform - translate - x - 1 / 2 - translate - y - 1 / 2 transition - all duration - 500 border - 2 ${isFound
+                                className={`absolute rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 border-2 ${isFound
                                     ? 'bg-red-500/40 border-red-500 animate-pulse'
-                                    : 'bg-transparent border-transparent hover:bg-white/10' // Debug hint on hover? Maybe explicit debug mode only
+                                    : 'bg-transparent border-transparent hover:bg-white/10'
                                     } `}
                                 style={getZoneStyle(zone)}
                             />

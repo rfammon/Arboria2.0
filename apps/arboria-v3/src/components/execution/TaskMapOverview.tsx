@@ -59,7 +59,7 @@ export default function TaskMapOverview({ tasks, className }: TaskMapOverviewPro
                             longitude={task.tree_lng}
                             latitude={task.tree_lat}
                             color={color}
-                            className="cursor-pointer"
+                            className="interactive-hover"
                             onClick={(e) => {
                                 e.originalEvent.stopPropagation();
                                 // Could open a popup here

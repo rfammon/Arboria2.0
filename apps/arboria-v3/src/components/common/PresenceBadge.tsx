@@ -14,8 +14,8 @@ export function PresenceBadge({ users, className }: PresenceBadgeProps) {
     return (
         <div className={cn("flex items-center gap-2", className)}>
             <div className="relative flex items-center h-6">
-                <div className="absolute -left-1 -top-1 w-2 h-2 rounded-full bg-green-500 animate-pulse border border-white dark:border-gray-950 z-10" />
-                <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-tighter mr-1 ml-2">
+                <div className="absolute -left-1 -top-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-background z-10" />
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter mr-1 ml-2">
                     LIVE
                 </span>
 

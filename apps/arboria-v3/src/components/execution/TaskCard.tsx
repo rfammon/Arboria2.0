@@ -24,7 +24,10 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
 
 export default function TaskCard({ task, onAction }: TaskCardProps) {
     return (
-        <Card className="mb-4 shadow-sm border-l-4 border-l-green-600">
+        <Card 
+            className="mb-4 shadow-sm border-l-4 border-l-green-600 interactive-hover"
+            onClick={() => onAction(task)}
+        >
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <div>

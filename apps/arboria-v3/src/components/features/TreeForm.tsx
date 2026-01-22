@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { treeSchema, type TreeFormData } from '../../lib/validations/treeSchema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 import { Save, X, TreeDeciduous } from 'lucide-react';
 import { useTRAQCriteria } from '../../hooks/useTRAQCriteria';
 import { toast } from 'sonner';
@@ -207,7 +208,7 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                 console.error('[TreeForm] Validation errors:', errors);
                 toast.error('Verifique os campos obrigatórios');
             })} className="flex-1 overflow-y-auto overscroll-contain touch-pan-y">
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 pb-40">
                     {/* Basic Information */}
                     <div className="space-y-5">
                         {/* Espécie */}
@@ -272,10 +273,10 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                             <label className="text-sm font-semibold text-foreground">
                                 Observações
                             </label>
-                            <textarea
+                            <Textarea
                                 {...register('observacoes')}
                                 placeholder="Estado fitossanitário, interferências, características especiais..."
-                                className="flex w-full rounded-xl border border-input bg-background px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[100px] resize-none"
+                                className="min-h-[100px] resize-none"
                             />
                             <p className="text-xs text-muted-foreground">
                                 Campo opcional para informações adicionais
@@ -285,20 +286,20 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="shrink-0 px-6 py-4 border-t border-border/50 bg-muted/20 flex justify-end gap-3">
+                <div className="shrink-0 p-4 border-t border-border/50 bg-muted/20 flex justify-end gap-3">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={onClose}
                         disabled={isLoadingTree || isSubmitting}
-                        className="min-w-[100px]"
+                        className="min-w-[100px] h-14"
                     >
                         Cancelar
                     </Button>
                     <Button
                         type="submit"
                         disabled={isSubmitting || isLoadingTree}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[140px]"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[140px] h-14 flex-1"
                     >
                         <Save className="w-4 h-4 mr-2" />
                         {isLoadingTree ? 'Carregando...' : isSubmitting ? 'Salvando...' : treeId ? 'Atualizar' : 'Salvar Árvore'}

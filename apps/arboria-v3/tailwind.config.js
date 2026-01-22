@@ -62,6 +62,12 @@ export default {
             fontSize: {
                 'field': '1.125rem',  // 18px - Mobile minimum
                 'office': '1rem',      // 16px - Desktop minimum
+                h1: ['var(--text-h1)', { lineHeight: '1.2', letterSpacing: '-0.025em', fontWeight: '700' }],
+                h2: ['var(--text-h2)', { lineHeight: '1.3', letterSpacing: '-0.025em', fontWeight: '600' }],
+                h3: ['var(--text-h3)', { lineHeight: '1.4', letterSpacing: '-0.025em', fontWeight: '600' }],
+                h4: ['var(--text-h4)', { lineHeight: '1.5', letterSpacing: '-0.025em', fontWeight: '500' }],
+                body: ['var(--text-body)', { lineHeight: '1.6' }],
+                caption: ['var(--text-caption)', { lineHeight: '1.4' }],
             },
             keyframes: {
                 "accordion-down": {

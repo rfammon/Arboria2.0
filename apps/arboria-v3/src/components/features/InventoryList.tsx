@@ -36,7 +36,10 @@ import {
     AlertDialogTitle,
 } from '../ui/alert-dialog';
 import { useDensity } from '../../hooks/useDensity';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Skeleton } from '../ui/skeleton';
+import { EmptyState } from '../ui/empty-state';
+import { Surface } from '../ui/surface';
 
 interface InventoryListProps {
     onCreate?: () => void;
@@ -175,24 +178,31 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
         },
     });
 
-    if (isLoading) return <div className="p-8 text-center animate-pulse text-muted-foreground">Carregando inventário...</div>;
+    if (isLoading) return (
+        <div className="space-y-4 p-4">
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+        </div>
+    );
     if (error) return <div className="p-8 text-destructive text-center">Erro ao carregar dados.</div>;
 
     if (!trees?.length) return (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <TreesIcon className="w-16 h-16 mb-4 opacity-20" />
-            <p className="text-lg font-medium">Nenhuma árvore encontrada</p>
-            {hasPermission('create_trees') && (
-                <div className="mt-6">
+        <EmptyState
+            icon={TreesIcon}
+            title="Nenhuma árvore encontrada"
+            description="Comece adicionando uma nova árvore ao inventário."
+            action={
+                hasPermission('create_trees') ? (
                     <FieldAction
                         isPrimary
                         onClick={() => onCreate && onCreate()}
                     >
                         Adicionar Árvore
                     </FieldAction>
-                </div>
-            )}
-        </div>
+                ) : undefined
+            }
+        />
     );
 
     // Mobile View: Cards
@@ -200,10 +210,13 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
         return (
             <div className="space-y-3 p-3">
                 {trees.map((tree) => (
-                    <Card
+                    <Surface
                         key={tree.id}
+                        variant="glass-default"
+                        interactive={true}
+                        elevation="sm"
                         onClick={() => handleSelectRow(tree.id)}
-                        className="active:scale-[0.98] transition-all duration-300 hover:shadow-[var(--shadow-deep)] border-none shadow-[var(--shadow-soft)] bg-card/60 backdrop-blur-sm"
+                        className="interactive-hover border-none"
                     >
                         <CardHeader className="p-3 pb-0 flex flex-row items-start justify-between space-y-0">
                             <div>
@@ -241,7 +254,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => navigate(`/inventory/${tree.id}`)}>
+                                        <DropdownMenuItem onClick={() => navigate(`/inventory/${tree.id}`}>
                                             <Edit className="w-4 h-4 mr-2" /> Editar
                                         </DropdownMenuItem>
                                         {hasPermission('manage_installation') && (
@@ -256,7 +269,7 @@ export default function InventoryList({ onCreate }: InventoryListProps) {
                                 </DropdownMenu>
                             </div>
                         </CardContent>
-                    </Card>
+                    </Surface>
                 ))}
 
                 {/* Mobile Deletion Dialog */}
