@@ -1,0 +1,41 @@
+{
+  "model": "google/antigravity-claude-opus-4-5-thinking",
+  "disabled_tools": [
+    "clipboard",
+    "ask_image",
+    "ask_file",
+    "read_clipboard",
+    "filesystem_read_media_file"
+  ],
+  "safe_alternatives": {
+    "clipboard": [
+      "read_text_file",
+      "bash"
+    ],
+    "ask_image": [
+      "ask_text"
+    ],
+    "ask_file": [
+      "glob",
+      "filesystem_search_files"
+    ]
+  },
+  "capabilities": {
+    "image_input": false,
+    "clipboard": false,
+    "text_input": true,
+    "file_read": true,
+    "file_write": true,
+    "command_exec": true,
+    "web_search": true
+  },
+  "recommended_tools": [
+    "filesystem_read_file",
+    "filesystem_write_file",
+    "filesystem_edit_file",
+    "filesystem_search_files",
+    "grep",
+    "bash",
+    "task"
+  ]
+}

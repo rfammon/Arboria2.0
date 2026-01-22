@@ -12,7 +12,7 @@ import {
   DialogTrigger,
   DialogFooter
 } from '@/components/ui/dialog';
-import type { AlertType } from '@/types/execution';
+import type { AlertType, GeolocationPosition as AppGeolocationPosition } from '@/types/execution';
 import { useTaskMutations } from '@/hooks/useExecution';
 import { SafetyConfigDialog } from '../safety/SafetyConfigDialog';
 import { FirstAidWizard } from '../safety/FirstAidWizard';
@@ -46,28 +46,37 @@ export function SOSButton({ userId, className, taskId = null }: SOSButtonProps) 
     let location: { lat: number; lng: number } | undefined = undefined;
 
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        });
+      const position = await new Promise<AppGeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: pos.timestamp
+          }),
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
       });
       location = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
+        lat: position.latitude,
+        lng: position.longitude
       };
     } catch (e) {
       console.warn('Could not get geolocation for SOS:', e);
     }
 
     try {
-      const alert = await createAlert.mutateAsync({
+      await createAlert.mutateAsync({
         taskId,
         userId,
         type,
         message,
-        location
+        location: location as any // Use any if the hook expects the DOM GeolocationPosition type but we need our custom one
       });
 
       // Send push notifications to other members

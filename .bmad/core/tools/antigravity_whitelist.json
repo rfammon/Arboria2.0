@@ -1,0 +1,60 @@
+{
+  "version": "1.0",
+  "model": "claude-opus-4-5-thinking",
+  "allowed_tools": {
+    "filesystem": [
+      "filesystem_read_file",
+      "filesystem_write_file",
+      "filesystem_edit_file",
+      "filesystem_search_files",
+      "filesystem_list_directory",
+      "filesystem_directory_tree",
+      "filesystem_get_file_info"
+    ],
+    "search": [
+      "grep",
+      "glob",
+      "ast_grep_search",
+      "ast_grep_replace"
+    ],
+    "execution": [
+      "bash",
+      "task",
+      "background_task"
+    ],
+    "web": [
+      "websearch",
+      "webfetch",
+      "codesearch"
+    ],
+    "agents": [
+      "delegate",
+      "delegation_read",
+      "delegation_list"
+    ],
+    "session": [
+      "read_session",
+      "handoff_session"
+    ],
+    "system": [
+      "look_at",
+      "todowrite",
+      "todoread"
+    ]
+  },
+  "forbidden_tools": [
+    "clipboard",
+    "ask_image",
+    "ask_file",
+    "read_clipboard",
+    "write_clipboard",
+    "filesystem_read_media_file",
+    "filesystem_read_image",
+    "take_screenshot"
+  ],
+  "tool_limits": {
+    "max_concurrent": 5,
+    "max_per_minute": 30,
+    "max_per_hour": 200
+  }
+}

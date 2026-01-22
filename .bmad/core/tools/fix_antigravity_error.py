@@ -19,7 +19,7 @@ def fix_clipboard_error():
     """
     Corrige o erro de clipboard para o modelo antigravity
     """
-    print("🔧 BMAD Antigravity Error Fixer")
+    print("BMAD Antigravity Error Fixer")
     print("=" * 50)
     print()
 
@@ -32,12 +32,12 @@ def fix_clipboard_error():
         "filesystem_read_media_file",
     ]
 
-    print("📋 Ferramentas problemáticas identificadas:")
+    print("Ferramentas problematicas identificadas:")
     for tool in problematic_tools:
-        print(f"  ❌ {tool}")
+        print(f"  - {tool}")
     print()
 
-    # Cria configuração específica para antigravity
+    # Cria configuracao especifica para antigravity
     antigravity_config = {
         "model": "google/antigravity-claude-opus-4-5-thinking",
         "disabled_tools": problematic_tools,
@@ -66,27 +66,27 @@ def fix_clipboard_error():
         ],
     }
 
-    # Salva configuração específica
+    # Salva configuracao especifica
     config_path = Path(__file__).parent / "antigravity_config.json"
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(antigravity_config, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Configuração salva em: {config_path}")
+    print(f"[OK] Configuracao salva em: {config_path}")
     print()
 
-    # Atualiza configuração do OpenCode se possível
+    # Atualiza configuracao do OpenCode se possivel
     if OPENCODE_CONFIG.exists():
         try:
             with open(OPENCODE_CONFIG, "r", encoding="utf-8") as f:
                 config = json.load(f)
 
-            # Adiciona configuração específica para Sisyphus
+            # Adiciona configuracao especifica para Sisyphus
             if "agents" not in config:
                 config["agents"] = {}
 
             config["agents"]["Sisyphus"] = {
                 "model": "google/antigravity-claude-opus-4-5-thinking",
-                "system_prompt": "Especialista técnico Claude Opus 4.5 thinking. NÃO USE ferramentas de clipboard ou imagem. Use apenas ferramentas de leitura/escrita de arquivos e busca.",
+                "system_prompt": "Especialista tecnico Claude Opus 4.5 thinking. NAO USE ferramentas de clipboard ou imagem. Use apenas ferramentas de leitura/escrita de arquivos e busca.",
                 "disabled_capabilities": [
                     "image_input",
                     "clipboard",
@@ -98,17 +98,17 @@ def fix_clipboard_error():
             with open(OPENCODE_CONFIG, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
 
-            print(f"✅ Configuração do OpenCode atualizada: {OPENCODE_CONFIG}")
+            print(f"[OK] Configuracao do OpenCode atualizada: {OPENCODE_CONFIG}")
         except Exception as e:
-            print(f"⚠️  Erro ao atualizar OpenCode: {e}")
+            print(f"[WARN] Erro ao atualizar OpenCode: {e}")
 
     print()
-    print("📝 Resumo das correções:")
-    print("  • Ferramentas de clipboard desabilitadas")
-    print("  • Alternativas seguras configuradas")
-    print("  • Prompts atualizados para evitar uso de imagem")
+    print("RESUMO DAS CORRECOES:")
+    print("  * Ferramentas de clipboard desabilitadas")
+    print("  * Alternativas seguras configuradas")
+    print("  * Prompts atualizados para evitar uso de imagem")
     print()
-    print("🔄 Recomendação: Reinicie o agente para aplicar as mudanças")
+    print("RECOMENDACAO: Reinicie o agente para aplicar as mudancas")
 
     return antigravity_config
 
@@ -154,7 +154,7 @@ def create_tool_whitelist():
     with open(whitelist_path, "w", encoding="utf-8") as f:
         json.dump(whitelist, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Lista de ferramentas permitida criada: {whitelist_path}")
+    print(f"[OK] Lista de ferramentas permitida criada: {whitelist_path}")
     return whitelist
 
 
