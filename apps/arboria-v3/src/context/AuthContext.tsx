@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { InstallationService } from '../lib/installationService';
@@ -44,36 +44,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [installations, setInstallations] = useState<Installation[]>([]);
     const [activeInstallation, setActiveInstallation] = useState<Installation | null>(null);
     const [userTheme, setUserTheme] = useState<string | null>(null);
-
-    useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session) {
-                refreshInstallations();
-            } else {
-                setLoading(false);
-            }
-        });
-
-        // Listen for changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            if (session) {
-                refreshInstallations();
-                fetchUserTheme(session.user.id);
-            } else {
-                setInstallations([]);
-                setActiveInstallation(null);
-                setUserTheme(null);
-                setLoading(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
+    const [profileMap, setProfileMap] = useState<Record<string, { nome: string, permissoes: string[] }>>({});
+    const [profilesLoaded, setProfilesLoaded] = useState(false);
 
     const refreshInstallations = async () => {
         try {
@@ -89,22 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         } catch (error) {
             console.error('Error fetching installations:', error);
-        } finally {
-            setLoading(false);
         }
-    };
-
-    const handleSetActiveInstallation = (installation: Installation) => {
-        setActiveInstallation(installation);
-        localStorage.setItem('arboria_active_installation', installation.id);
-    };
-
-    const signOut = async () => {
-        await supabase.auth.signOut();
-        setInstallations([]);
-        setActiveInstallation(null);
-        setUserTheme(null);
-        localStorage.removeItem('arboria_active_installation');
     };
 
     const fetchUserTheme = async (userId: string) => {
@@ -121,6 +78,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
             console.error('Error fetching user theme:', error);
         }
+    };
+
+    const handleSetActiveInstallation = (installation: Installation) => {
+        setActiveInstallation(installation);
+        localStorage.setItem('arboria_active_installation', installation.id);
+    };
+
+    const signOut = async () => {
+        await supabase.auth.signOut();
+        setInstallations([]);
+        setActiveInstallation(null);
+        setUserTheme(null);
+        localStorage.removeItem('arboria_active_installation');
     };
 
     const updateUserTheme = async (theme: string) => {
@@ -142,54 +112,97 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const [profileMap, setProfileMap] = useState<Record<string, { nome: string, permissoes: string[] }>>({});
-
     useEffect(() => {
-        // Load profiles ref table
-        InstallationService.getProfiles().then(profiles => {
-            console.log('[AuthContext] Loaded Profiles:', profiles);
-            const map: Record<string, { nome: string, permissoes: string[] }> = {};
-            profiles.forEach(p => map[p.id] = { nome: p.nome, permissoes: p.permissoes });
-            console.log('[AuthContext] Profile Map:', map);
-            setProfileMap(map);
-        }).catch(err => console.error('[AuthContext] Failed to load profiles:', err));
+        let isMounted = true;
+
+        const initializeAuth = async () => {
+            try {
+                // 1. Carrega perfis PRIMEIRO (dado estático, não depende de sessão)
+                const profiles = await InstallationService.getProfiles();
+
+                if (!isMounted) return;
+
+                const map: Record<string, { nome: string, permissoes: string[] }> = {};
+                profiles.forEach(p => map[p.id] = { nome: p.nome, permissoes: p.permissoes });
+
+                console.log('[AuthContext] Profiles loaded:', Object.keys(map).length);
+                setProfileMap(map);
+                setProfilesLoaded(true);
+
+                // 2. Carrega sessão
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (!isMounted) return;
+
+                setSession(session);
+
+                // 3. Se autenticado, carrega instalações
+                if (session) {
+                    await refreshInstallations();
+                    await fetchUserTheme(session.user.id);
+                }
+
+            } catch (error) {
+                console.error('[AuthContext] Initialization error:', error);
+            } finally {
+                // 4. Só seta loading=false quando TUDO estiver pronto
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        initializeAuth();
+
+        // Listener para mudanças de auth
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (_event, session) => {
+                if (!isMounted) return;
+
+                setSession(session);
+
+                if (session) {
+                    await refreshInstallations();
+                    await fetchUserTheme(session.user.id);
+                } else {
+                    setInstallations([]);
+                    setActiveInstallation(null);
+                    setUserTheme(null);
+                }
+            }
+        );
+
+        return () => {
+            isMounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
-    const userDisplayName = session?.user?.email || 'Usuário';
+    // Derived values
+    const userDisplayName = useMemo(() => {
+        if (!session?.user) return '';
+        return session.user.user_metadata?.full_name || session.user.email || 'Usuário';
+    }, [session]);
 
-    const activeMember = activeInstallation?.membership;
+    const activeProfileNames = useMemo(() => {
+        if (!activeInstallation || !profilesLoaded || !activeInstallation.membership) return '';
+        return activeInstallation.membership.perfis
+            .map((pid: string) => profileMap[pid]?.nome)
+            .filter(Boolean)
+            .join(', ');
+    }, [activeInstallation, profileMap, profilesLoaded]);
 
-    // Calculate effective permissions
-    const permissions = activeMember?.perfis?.reduce((acc: string[], pid: string) => {
-        const profile = profileMap[pid];
-        if (!profile) {
-            console.warn(`[AuthContext] Profile ID ${pid} not found in profileMap`);
-        }
-        return profile ? [...acc, ...profile.permissoes] : acc;
-    }, []) || [];
-
-    console.log('[AuthContext] Active Member Profiles:', activeMember?.perfis);
-    console.log('[AuthContext] Derived Permissions:', permissions);
-
-    const activeProfileNames = activeMember?.perfis
-        ?.map((pid: string) => {
-            const name = profileMap[pid]?.nome;
-            if (!name) console.warn(`[AuthContext] No name found for Profile ID: ${pid}`);
-            return name;
-        })
-        .filter(Boolean)
-        .join(', ') || 'Membro';
-
-    console.log('[AuthContext] Final Active Profile Names:', activeProfileNames);
+    const permissions = useMemo(() => {
+        if (!activeInstallation || !profilesLoaded || !activeInstallation.membership) return [];
+        const perms = new Set<string>();
+        activeInstallation.membership.perfis.forEach((pid: string) => {
+            profileMap[pid]?.permissoes.forEach(p => perms.add(p));
+        });
+        return Array.from(perms);
+    }, [activeInstallation, profileMap, profilesLoaded]);
 
     const hasPermission = (permission: string) => {
-        if (!permissions) {
-            // console.debug('[AuthContext] Permissions not loaded yet');
-            return false;
-        }
-
-        const has = permissions.includes(permission) || permissions.includes('global_access');
-        return has;
+        return permissions.includes(permission);
     };
 
     const value = {
@@ -219,4 +232,3 @@ export const useAuth = () => {
     }
     return context;
 };
-

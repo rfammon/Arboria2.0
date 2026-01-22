@@ -1,4 +1,5 @@
 import { Routes, Route, HashRouter } from 'react-router-dom';
+import { useEffect } from 'react';
 import { OfflineSyncProvider } from './context/OfflineSyncContext';
 import { UpdateProvider } from './context/UpdateContext';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -34,12 +35,26 @@ import { useDeepLinking } from './hooks/useDeepLinking';
 
 import { useKeepAlive } from './hooks/useKeepAlive';
 
+// Import new features
+import { ErrorDialog } from './components/common/ErrorDialog';
+import { useErrorDialog } from './hooks/useErrorDialog';
+import { startHeartbeat, stopHeartbeat } from './lib/connectivity/heartbeat';
+
 function AppContent() {
   useKeepAlive();
   usePushNotifications();
   useDeepLinking();
   useBackButton();
   useDensity();
+  
+  // Initialize heartbeat for connectivity monitoring
+  useEffect(() => {
+    startHeartbeat(30000); // Check every 30s
+    return () => stopHeartbeat();
+  }, []);
+
+  // Error Dialog state
+  const { isOpen, error, title, closeError } = useErrorDialog();
 
   return (
     <>
@@ -76,6 +91,14 @@ function AppContent() {
         <Route path="/terms" element={<TermsOfUse />} />
       </Routes>
       <Toaster />
+      
+      {/* Global Error Dialog */}
+      <ErrorDialog
+        isOpen={isOpen}
+        onClose={closeError}
+        error={error || { message: '' }}
+        title={title}
+      />
     </>
   );
 }

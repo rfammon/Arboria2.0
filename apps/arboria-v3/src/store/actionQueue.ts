@@ -21,12 +21,13 @@ export type OfflineAction = {
     payload: any;
     timestamp: number;
     retryCount: number;
+    lastAttempt?: Date;  // NEW: timestamp of last attempt for backoff calculation
 };
 
 type ActionQueueState = {
     queue: OfflineAction[];
     isProcessing: boolean;
-    addAction: (action: Omit<OfflineAction, 'id' | 'timestamp' | 'retryCount'>) => void;
+    addAction: (action: Omit<OfflineAction, 'id' | 'timestamp' | 'retryCount' | 'lastAttempt'>) => void;
     removeAction: (id: string) => void;
     updateAction: (id: string, updates: Partial<OfflineAction>) => void;
     setProcessing: (isProcessing: boolean) => void;
@@ -47,6 +48,7 @@ export const useActionQueue = create<ActionQueueState>()(
                             id: crypto.randomUUID(),
                             timestamp: Date.now(),
                             retryCount: 0,
+                            lastAttempt: undefined,  // NEW: Initialize as undefined
                         },
                     ],
                 })),
