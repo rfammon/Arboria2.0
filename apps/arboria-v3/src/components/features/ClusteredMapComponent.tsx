@@ -3,21 +3,25 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import Map, { NavigationControl, Popup, Marker, type MapRef, Source, Layer, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useNavigate } from 'react-router-dom';
 import { useTrees } from '../../hooks/useTrees';
 import { useTreePhotos } from '../../hooks/useTreePhotos';
 import { useMapLayers } from '../../hooks/useMapLayers';
 import { useUserLocation } from '../../hooks/useUserLocation';
 import { getTreeSymbol, MAP_RISK_COLORS } from '../../lib/map/mapSymbology';
-import { type RiskFilter } from '../../lib/map/mapFilters';
 import { satelliteStyle, osmStyle } from '../../lib/map/mapStyles';
 import MapControls from './MapControls';
 import type { Tree } from '../../types/tree';
 import { usePresence } from '../../hooks/usePresence';
+import { Badge } from '../ui/badge';
+import { ArrowRight, X } from 'lucide-react';
+import { Button } from '../ui/button';
+import { cn } from '../../lib/utils';
 
 interface ClusteredMapComponentProps {
     selectedTreeId?: string | null;
     onSelectTree?: (id: string | null) => void;
+    activeFilters?: string[];
+    onToggleFilter?: (risk: string) => void;
 }
 
 // Layer Definitions (Static)
@@ -86,12 +90,25 @@ const unclusteredLabelLayer: any = {
     }
 };
 
-export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: ClusteredMapComponentProps) {
+export default function ClusteredMapComponent({ 
+    selectedTreeId, 
+    onSelectTree, 
+    activeFilters: externalActiveFilters,
+    onToggleFilter 
+}: ClusteredMapComponentProps) {
     const mapRef = useRef<MapRef>(null);
-    const navigate = useNavigate();
+    const hasInitialZoomed = useRef(false);
     const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
     const [highlightedTree, setHighlightedTree] = useState<Tree | null>(null);
-    const [riskFilter, setRiskFilter] = useState<RiskFilter>('Todos');
+    
+    // Default to all risks if empty or undefined
+    const activeFilters = useMemo(() => {
+        if (!externalActiveFilters || externalActiveFilters.length === 0) {
+            return ['Alto', 'Médio', 'Baixo'];
+        }
+        return externalActiveFilters;
+    }, [externalActiveFilters]);
+
     const [isMapLoaded, setIsMapLoaded] = useState(false);
     const { presences } = usePresence(null);
     const occupiedTreeIds = useMemo(() => Object.keys(presences), [presences]);
@@ -100,7 +117,7 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
     const { location: userLocation, state: locationState } = useUserLocation();
 
     const { data: trees } = useTrees();
-    const { data: photos = [] } = useTreePhotos(selectedTree?.id || '', { limit: 1, enabled: !!selectedTree });
+    const { data: photos = [], isLoading: isPhotosLoading } = useTreePhotos(selectedTree?.id || '', { limit: 1, enabled: !!selectedTree });
 
     const { currentLayer, toggleLayer } = useMapLayers();
 
@@ -112,11 +129,42 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
             if (!tree.latitude || !tree.longitude) return acc;
 
             const symbol = getTreeSymbol(tree);
+            const treeRiskRaw = tree.risklevel?.toLowerCase() || '';
 
-            // Apply risk filter
-            if (riskFilter !== 'Todos' && symbol.riskLevel !== riskFilter) {
-                return acc;
-            }
+            // Map the string "Alto" to the actual data values (Alto, High, Crítico)
+            const isMatch = activeFilters.some(filter => {
+                const f = filter.toLowerCase();
+                const symbolRisk = symbol.riskLevel.toLowerCase();
+                
+                // Direct match on normalized symbol
+                if (symbolRisk.includes(f)) return true;
+                
+                // Explicit mapping for "Alto"
+                if (f === 'alto') {
+                    return treeRiskRaw.includes('alto') || 
+                           treeRiskRaw.includes('high') || 
+                           treeRiskRaw.includes('crítico') ||
+                           treeRiskRaw.includes('critico');
+                }
+                
+                // Mapping for "Médio"
+                if (f === 'médio' || f === 'medio') {
+                    return treeRiskRaw.includes('médio') || 
+                           treeRiskRaw.includes('medio') || 
+                           treeRiskRaw.includes('medium') ||
+                           treeRiskRaw.includes('moderado');
+                }
+
+                // Mapping for "Baixo"
+                if (f === 'baixo') {
+                    return treeRiskRaw.includes('baixo') || 
+                           treeRiskRaw.includes('low');
+                }
+                
+                return false;
+            });
+
+            if (!isMatch) return acc;
 
             acc.push({
                 type: 'Feature',
@@ -141,7 +189,7 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
 
             return acc;
         }, []);
-    }, [trees, riskFilter, occupiedTreeIds]);
+    }, [trees, activeFilters, occupiedTreeIds]);
 
     // Prepare GeoJSON data
     const geoJsonData = useMemo(() => ({
@@ -175,9 +223,13 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
             const treeId = feature.properties?.id;
             if (treeId && trees) {
                 const tree = trees.find(t => t.id === treeId);
-                if (tree) {
+                if (tree && tree.longitude && tree.latitude) {
                     setSelectedTree(tree);
-                    if (onSelectTree) onSelectTree(tree.id);
+                    map.flyTo({
+                        center: [tree.longitude, tree.latitude],
+                        offset: [0, -150],
+                        duration: 1000
+                    });
                 }
             }
         }
@@ -239,14 +291,15 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
 
     // Added: Auto-zoom to trees on initial load
     useEffect(() => {
-        if (isMapLoaded && trees && trees.length > 0 && !selectedTreeId) {
+        if (isMapLoaded && trees && trees.length > 0 && !selectedTreeId && !hasInitialZoomed.current) {
             handleZoomAll();
+            hasInitialZoomed.current = true;
         }
     }, [isMapLoaded, trees, selectedTreeId, handleZoomAll]);
 
     return (
-        <div className="flex flex-col md:grid md:grid-cols-[1fr_300px] gap-4 w-full h-auto md:h-[600px]">
-            <div className="relative w-full h-[450px] md:h-full rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col md:grid md:grid-cols-[1fr_320px] gap-3 w-full h-auto md:h-[calc(100vh-230px)] min-h-[600px]">
+            <div className="relative w-full h-[550px] md:h-full rounded-xl overflow-hidden border border-border shadow-inner">
                 <Map
                     ref={mapRef}
                     initialViewState={{
@@ -338,36 +391,90 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
                         <Popup
                             longitude={selectedTree.longitude}
                             latitude={selectedTree.latitude}
-                            anchor="top"
                             onClose={() => {
                                 setSelectedTree(null);
-                                if (onSelectTree) onSelectTree(null);
                             }}
-                            closeButton={true}
+                            closeButton={false}
                             closeOnClick={false}
+                            maxWidth="300px"
+                            focusAfterOpen={false}
+                            className="p-0 bg-transparent border-none shadow-none"
                         >
-                            <div className="p-2 min-w-[200px] max-w-[280px]">
-                                {photos.length > 0 && (
-                                    <button
-                                        onClick={() => navigate(`/inventory/${selectedTree.id}`)}
-                                        className="w-full mb-3 rounded overflow-hidden hover:opacity-80 transition-opacity border-2 border-transparent hover:border-green-500"
+                            <div className="bg-card/90 backdrop-blur-xl text-card-foreground rounded-2xl overflow-hidden shadow-xl border border-border min-w-[260px] group animate-in fade-in zoom-in duration-300">
+                                <div className="relative h-32 w-full overflow-hidden">
+                                    {isPhotosLoading ? (
+                                        <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                        </div>
+                                    ) : photos.length > 0 ? (
+                                        <img 
+                                            src={photos[0].signedUrl} 
+                                            alt="Tree" 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                        />
+                                    ) : (
+                                        <div className={cn(
+                                            "w-full h-full bg-gradient-to-br transition-all duration-500",
+                                            selectedTree.pontuacao && selectedTree.pontuacao >= 9 ? "from-red-600/40 to-red-900/60" :
+                                            selectedTree.pontuacao && selectedTree.pontuacao >= 5 ? "from-orange-600/40 to-orange-900/60" :
+                                            "from-green-600/40 to-green-900/60"
+                                        )} />
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent" />
+                                    
+                                    <Badge 
+                                        className={cn(
+                                            "absolute top-3 left-3 font-bold backdrop-blur-md border-0 shadow-lg",
+                                            selectedTree.pontuacao && selectedTree.pontuacao >= 9 ? "bg-red-500/80 text-white" :
+                                            selectedTree.pontuacao && selectedTree.pontuacao >= 5 ? "bg-orange-500/80 text-white" :
+                                            "bg-green-500/80 text-white"
+                                        )}
                                     >
-                                        <img src={photos[0].signedUrl} alt="Tree photo" className="w-full h-20 object-cover" />
+                                        {selectedTree.pontuacao && selectedTree.pontuacao >= 9 ? 'Alto' : 
+                                         selectedTree.pontuacao && selectedTree.pontuacao >= 5 ? 'Médio' : 'Baixo'}
+                                    </Badge>
+
+                                    <button 
+                                        onClick={() => {
+                                            setSelectedTree(null);
+                                        }}
+                                        className="absolute top-3 right-3 p-1 rounded-full bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-colors backdrop-blur-sm z-10"
+                                    >
+                                        <X className="w-4 h-4" />
                                     </button>
-                                )}
-                                <div className="font-semibold text-sm text-gray-900 mb-1">{selectedTree.especie || 'Espécie Desconhecida'}</div>
-                                <div className="text-xs text-gray-600 space-y-1">
-                                    <div><strong>ID:</strong> {selectedTree.id.slice(0, 8)}...</div>
-                                    {selectedTree.altura && <div><strong>Altura:</strong> {selectedTree.altura}m</div>}
-                                    {selectedTree.dap && <div><strong>DAP:</strong> {selectedTree.dap}cm</div>}
-                                    {selectedTree.pontuacao !== undefined && <div><strong>Pontuação TRAQ:</strong> {selectedTree.pontuacao}</div>}
                                 </div>
-                                <button
-                                    onClick={() => navigate(`/inventory/${selectedTree.id}`)}
-                                    className="mt-3 w-full text-xs bg-green-600 hover:bg-green-700 text-white py-1.5 px-3 rounded transition-colors"
-                                >
-                                    Ver Detalhes →
-                                </button>
+                                
+                                <div className="p-4 space-y-3">
+                                    <div>
+                                        <h3 className="font-bold text-lg leading-tight tracking-tight">
+                                            {selectedTree.especie || 'Espécie Desconhecida'}
+                                        </h3>
+                                        <p className="text-[10px] text-muted-foreground font-mono mt-1 flex items-center gap-1">
+                                            <span className="opacity-50">ID:</span> {selectedTree.id.slice(0, 8)}
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 py-2 border-y border-border/50">
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">Altura</p>
+                                            <p className="text-sm font-semibold">{selectedTree.altura ? `${selectedTree.altura}m` : 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">DAP</p>
+                                            <p className="text-sm font-semibold">{selectedTree.dap ? `${selectedTree.dap}cm` : 'N/A'}</p>
+                                        </div>
+                                    </div>
+
+                                    <Button 
+                                        onClick={() => {
+                                            if (onSelectTree) onSelectTree(selectedTree.id);
+                                        }}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border-0 transition-all rounded-xl h-10 group/btn shadow-md"
+                                    >
+                                        <span className="font-bold">Ver Detalhes</span>
+                                        <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover/btn:translate-x-1" />
+                                    </Button>
+                                </div>
                             </div>
                         </Popup>
                     )}
@@ -378,8 +485,8 @@ export default function ClusteredMapComponent({ selectedTreeId, onSelectTree }: 
                 <MapControls
                     currentLayer={currentLayer}
                     onToggleLayer={() => toggleLayer(mapRef.current)}
-                    riskFilter={riskFilter}
-                    onFilterChange={setRiskFilter}
+                    activeFilters={activeFilters}
+                    onToggleFilter={onToggleFilter || (() => {})}
                     onZoomAll={handleZoomAll}
                     className="w-full h-auto md:h-full"
                 />

@@ -1,4 +1,4 @@
-import { type OfflineAction } from '../store/actionQueue';
+import { type OfflineAction } from '../stores/useActionQueue';
 import { supabase } from '../lib/supabase';
 
 // Helper to upload blob evidence

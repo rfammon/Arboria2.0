@@ -54,6 +54,11 @@ export function ThemeProvider({
             return
         }
 
+        const isDarkVariant = ["dark", "dark-forest", "neon-dark", "gruvbox-soft-dark"].includes(theme);
+        if (isDarkVariant) {
+            root.classList.add("dark");
+        }
+
         root.classList.add(theme)
     }, [theme])
 

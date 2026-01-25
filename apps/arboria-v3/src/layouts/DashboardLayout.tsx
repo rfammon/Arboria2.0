@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { TreeDeciduous, LayoutDashboard, ClipboardList, Settings, LogOut, History, FileText, Play, AlertTriangle, BookOpen, Download, PanelLeftClose } from 'lucide-react';
+import { LayoutGrid, Trees, FileStack, Clock3, Zap, BellRing, GraduationCap, BarChart3, FileDown, Settings2, LogOut, PanelLeftClose } from 'lucide-react';
 import { cn } from '../lib/utils';
 // import { ModeToggle } from '../components/mode-toggle';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +8,7 @@ import { OfflineSyncIndicator } from '../components/features/OfflineSyncIndicato
 import { InstallationSwitchDialog } from '../components/features/InstallationSwitchDialog';
 import { TopHeader } from '../components/layout/TopHeader';
 import { Button } from '../components/ui/button';
+import { toast } from 'sonner';
 
 
 export default function DashboardLayout() {
@@ -51,39 +52,39 @@ export default function DashboardLayout() {
     }
 
     const navigation = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+        { name: 'Dashboard', href: '/', icon: LayoutGrid },
         // Inventory: Requires view_inventory or manage_installation
         ...((hasPermission('view_inventory') || hasPermission('manage_installation'))
-            ? [{ name: 'Inventário', href: '/inventory', icon: TreeDeciduous }] : []),
+            ? [{ name: 'Inventário', href: '/inventory', icon: Trees }] : []),
 
         // Plans Manager: Requires creating/editing plans or approval rights
         ...((hasPermission('create_plans') || hasPermission('edit_plans') || hasPermission('approve_plans'))
-            ? [{ name: 'Gestor de Planos', href: '/plans', icon: ClipboardList }] : []),
+            ? [{ name: 'Gestor de Planos', href: '/plans', icon: FileStack }] : []),
 
         // History: Managers only
         ...(hasPermission('manage_installation')
-            ? [{ name: 'Histórico', href: '/activity-history', icon: History }] : []),
+            ? [{ name: 'Histórico', href: '/activity-history', icon: Clock3 }] : []),
 
         // Execution: Requires view_plans or manage_installation
         ...(hasPermission('view_plans') || hasPermission('manage_installation')
-            ? [{ name: 'Execução', href: '/execution', icon: Play }] : []),
+            ? [{ name: 'Execução', href: '/execution', icon: Zap }] : []),
 
         // Alerts: Everyone for now, or refine? Assuming public for members.
-        { name: 'Alertas', href: '/alerts', icon: AlertTriangle },
+        { name: 'Alertas', href: '/alerts', icon: BellRing },
 
         // Education: Access to training materials
-        { name: 'Educação', href: '/education', icon: BookOpen },
+        { name: 'Educação', href: '/education', icon: GraduationCap },
 
         // Reports: Managers only
         ...(hasPermission('manage_installation')
             ? [
-                { name: 'Relatórios', href: '/reports', icon: FileText },
-                { name: 'Downloads', href: '/downloads', icon: Download }
+                { name: 'Relatórios', href: '/reports', icon: BarChart3 },
+                { name: 'Downloads', href: '/downloads', icon: FileDown }
             ] : []),
 
         // Settings: Managers only
         ...(activeInstallation && hasPermission('manage_installation')
-            ? [{ name: 'Configurações', href: '/settings', icon: Settings }] : []),
+            ? [{ name: 'Configurações', href: '/settings', icon: Settings2 }] : []),
     ];
 
     return (
@@ -128,7 +129,7 @@ export default function DashboardLayout() {
                                         title="Trocar instalação"
                                     >
                                         <span className="truncate max-w-[140px] font-medium">{activeInstallation.nome}</span>
-                                        <Settings className="w-3 h-3 text-muted-foreground/70" />
+                                        <Settings2 className="w-3 h-3 stroke-[1.5] text-muted-foreground/70" />
                                     </button>
                                 )}
                             </div>
@@ -140,7 +141,7 @@ export default function DashboardLayout() {
                                 onClick={() => setIsSidebarOpen(false)}
                                 className="lg:hidden ml-auto text-muted-foreground"
                             >
-                                <PanelLeftClose className="w-5 h-5" />
+                                <PanelLeftClose className="w-5 h-5 stroke-[1.5]" />
                             </Button>
                         )}
                     </div>
@@ -157,14 +158,22 @@ export default function DashboardLayout() {
                                     onClick={() => setIsSidebarOpen(false)}
                                     title={isSidebarCollapsed ? item.name : undefined}
                                     className={cn(
-                                        "flex items-center text-sm font-medium rounded-xl transition-all active:scale-95",
+                                        "group flex items-center text-sm font-medium rounded-xl transition-all active:scale-95",
                                         isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3",
                                         isActive
-                                            ? "bg-primary/10 text-primary shadow-inner"
+                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-inner"
                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:shadow-sm"
                                     )}
                                 >
-                                    <item.icon className={cn("w-5 h-5", isSidebarCollapsed ? "" : "mr-3")} />
+                                    <item.icon 
+                                        className={cn(
+                                            "w-5 h-5 stroke-[1.5] transition-all duration-300",
+                                            isSidebarCollapsed ? "" : "mr-3",
+                                            isActive 
+                                                ? "stroke-[2.25] text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] fill-emerald-500/10" 
+                                                : "text-muted-foreground group-hover:text-foreground"
+                                        )} 
+                                    />
                                     {!isSidebarCollapsed && <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
                                 </Link>
                             );
@@ -174,14 +183,23 @@ export default function DashboardLayout() {
                     {/* Footer */}
                     <div className="p-4 border-t border-border">
                         <button
-                            onClick={() => signOut()}
+                            onClick={async () => {
+                                const toastId = toast.loading('Saindo...');
+                                try {
+                                    await signOut();
+                                    toast.success('Até logo!', { id: toastId });
+                                } catch (error) {
+                                    console.error('Logout error:', error);
+                                    toast.error('Erro ao sair, mas limpando sessão...', { id: toastId });
+                                }
+                            }}
                             title={isSidebarCollapsed ? "Sair" : undefined}
                             className={cn(
                                 "flex items-center w-full text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors",
                                 isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3"
                             )}
                         >
-                            <LogOut className={cn("w-5 h-5", isSidebarCollapsed ? "" : "mr-3")} />
+                            <LogOut className={cn("w-5 h-5 stroke-[1.5]", isSidebarCollapsed ? "" : "mr-3")} />
                             {!isSidebarCollapsed && <span>Sair</span>}
                         </button>
                     </div>
@@ -211,7 +229,7 @@ export default function DashboardLayout() {
                     className="flex-1 p-4 lg:p-8 overflow-y-auto"
                     style={{ paddingBottom: 'calc(1rem + var(--safe-area-bottom))' }}
                 >
-                    <div className="max-w-7xl mx-auto">
+                    <div className="max-w-[1920px] mx-auto w-full">
                         <Outlet />
                     </div>
                 </main>

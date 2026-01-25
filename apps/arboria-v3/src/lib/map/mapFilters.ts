@@ -3,7 +3,7 @@
  * Based on legacy map.ui.js native MapLibre filtering
  */
 
-export type RiskFilter = 'Todos' | 'Alto Risco' | 'Médio Risco' | 'Baixo Risco';
+export type RiskFilter = 'Todos' | 'Alto' | 'Médio' | 'Baixo';
 
 /**
  * Cria expressão de filtro para MapLibre baseada no nível de risco selecionado
@@ -26,7 +26,7 @@ export function createRiskFilter(riskLevel: RiskFilter): any[] | null {
  */
 export const RISK_LEVELS: RiskFilter[] = [
     'Todos',
-    'Alto Risco',
-    'Médio Risco',
-    'Baixo Risco'
+    'Alto',
+    'Médio',
+    'Baixo'
 ];

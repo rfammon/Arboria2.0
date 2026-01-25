@@ -86,11 +86,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const signOut = async () => {
-        await supabase.auth.signOut();
-        setInstallations([]);
-        setActiveInstallation(null);
-        setUserTheme(null);
-        localStorage.removeItem('arboria_active_installation');
+        try {
+            
+            // Timeout de 2 segundos para o signOut do Supabase
+            // Em ambientes Capacitor/Windows, às vezes o signOut pendura se houver problemas de rede/armazenamento
+            const signOutPromise = supabase.auth.signOut();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Sign out timeout')), 2000)
+            );
+
+            await Promise.race([signOutPromise, timeoutPromise]).catch(err => {
+                console.warn('[AuthContext] Supabase signOut timed out or failed, proceeding with local cleanup:', err);
+            });
+
+        } catch (error) {
+            console.error('[AuthContext] Error during signOut logic:', error);
+        } finally {
+            // Limpa estado local INDEPENDENTE do resultado do Supabase
+            setSession(null);
+            setInstallations([]);
+            setActiveInstallation(null);
+            setUserTheme(null);
+            localStorage.removeItem('arboria_active_installation');
+            
+            // Força redirecionamento para login usando o hash (já que usamos HashRouter)
+            window.location.hash = '#/login';
+        }
     };
 
     const updateUserTheme = async (theme: string) => {
@@ -125,7 +146,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const map: Record<string, { nome: string, permissoes: string[] }> = {};
                 profiles.forEach(p => map[p.id] = { nome: p.nome, permissoes: p.permissoes });
 
-                console.log('[AuthContext] Profiles loaded:', Object.keys(map).length);
                 setProfileMap(map);
                 setProfilesLoaded(true);
 

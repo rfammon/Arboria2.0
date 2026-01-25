@@ -1,134 +1,119 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Map, BarChart3, GraduationCap, LayoutDashboard, Play, AlertTriangle } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Surface } from '../components/ui/surface';
-
+import { Map, LayoutDashboard, Play, AlertTriangle, BarChart3, GraduationCap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ServiceCard } from '../components/ui/service-card';
+import {
+  MapIllustration,
+  PlansIllustration,
+  AlertsIllustration,
+  ReportsIllustration,
+  EducationIllustration
+} from '../components/illustrations/dashboard-icons';
 
 export default function DashboardHome() {
-    const navigate = useNavigate();
-    const { hasPermission } = useAuth();
+  const navigate = useNavigate();
+  const { hasPermission } = useAuth();
 
-    const features = [
-        {
-            id: 'plans',
-            title: 'Gestor de Planos',
-            description: 'Gerencie e acompanhe todos os seus planos de intervenção',
-            icon: LayoutDashboard,
-            action: () => navigate('/plans'),
-            btnText: 'Gerenciar Planos',
-            color: 'text-indigo-600',
-            bgColor: 'bg-indigo-100'
-        },
-        {
-            id: 'execution',
-            title: 'Minhas Tarefas',
-            description: 'Acesse e execute suas ordens de serviço em campo',
-            icon: Play,
-            action: () => navigate('/execution'),
-            btnText: 'Iniciar Execução',
-            color: 'text-green-600',
-            bgColor: 'bg-green-100'
-        },
-        {
-            id: 'alerts',
-            title: 'Central de Alertas',
-            description: 'Monitore problemas e solicitações urgentes',
-            icon: AlertTriangle, // Need to add import
-            action: () => navigate('/alerts'),
-            btnText: 'Ver Alertas',
-            color: 'text-amber-600',
-            bgColor: 'bg-amber-100'
-        },
-        {
-            id: 'maps',
-            title: 'Inventário e Mapas',
-            description: 'Visualize e gerencie o cadastro georreferenciado',
-            icon: Map,
-            action: () => navigate('/inventory?view=map'),
-            btnText: 'Acessar Mapa',
-            color: 'text-blue-600',
-            bgColor: 'bg-blue-100'
-        },
-        {
-            id: 'reports',
-            title: 'Relatórios',
-            description: 'Gere análises e documentos para tomada de decisão',
-            icon: BarChart3,
-            action: () => navigate('/reports'),
-            btnText: 'Ver Relatórios',
-            color: 'text-purple-600',
-            bgColor: 'bg-purple-100'
-        },
-        {
-            id: 'education',
-            title: 'Educação',
-            description: 'Conteúdos técnicos sobre manejo e segurança',
-            icon: GraduationCap,
-            action: () => navigate('/education'),
-            btnText: 'Acessar Conteúdos',
-            color: 'text-emerald-600',
-            bgColor: 'bg-emerald-100'
-        }
-    ];
+  const features = [
+    {
+      id: 'maps',
+      title: 'Inventário e Mapas',
+      description: 'Visualize e gerencie o cadastro georreferenciado de ativos',
+      icon: Map,
+      illustration: <MapIllustration />,
+      onClick: () => navigate('/inventory?view=map'),
+      colorClass: 'dark:bg-slate-900 bg-slate-50 text-slate-900 dark:text-white border border-slate-200 dark:border-transparent',
+      className: 'lg:col-span-8 md:col-span-2 min-h-[320px]',
+      visible: hasPermission('view_inventory') || hasPermission('manage_installation')
+    },
+    {
+      id: 'execution',
+      title: 'Minhas Tarefas',
+      description: 'Acesse e execute suas ordens de serviço em campo',
+      icon: Play,
+      illustration: <PlansIllustration />, // Reusing as per instructions
+      onClick: () => navigate('/execution'),
+      colorClass: 'dark:bg-emerald-900 bg-emerald-50 text-emerald-900 dark:text-white border border-emerald-200 dark:border-transparent',
+      className: 'lg:col-span-4 md:col-span-1 min-h-[320px]',
+      visible: hasPermission('view_plans') || hasPermission('manage_installation')
+    },
+    {
+      id: 'plans',
+      title: 'Gestor de Planos',
+      description: 'Gerencie e acompanhe todos os planos de intervenção',
+      icon: LayoutDashboard,
+      illustration: <PlansIllustration />,
+      onClick: () => navigate('/plans'),
+      colorClass: 'dark:bg-indigo-900 bg-indigo-50 text-indigo-900 dark:text-white border border-indigo-200 dark:border-transparent',
+      className: 'lg:col-span-4 md:col-span-1',
+      visible: hasPermission('create_plans') || hasPermission('edit_plans') || hasPermission('approve_plans')
+    },
+    {
+      id: 'alerts',
+      title: 'Central de Alertas',
+      description: 'Monitore problemas e solicitações urgentes em tempo real',
+      icon: AlertTriangle,
+      illustration: <AlertsIllustration />,
+      onClick: () => navigate('/alerts'),
+      colorClass: 'dark:bg-rose-900 bg-rose-50 text-rose-900 dark:text-white border border-rose-200 dark:border-transparent',
+      className: 'lg:col-span-4 md:col-span-1',
+      visible: true
+    },
+    {
+      id: 'reports',
+      title: 'Relatórios',
+      description: 'Análises detalhadas',
+      icon: BarChart3,
+      illustration: <ReportsIllustration />,
+      onClick: () => navigate('/reports'),
+      colorClass: 'dark:bg-violet-900 bg-violet-50 text-violet-900 dark:text-white border border-violet-200 dark:border-transparent',
+      className: 'lg:col-span-2 md:col-span-1',
+      visible: hasPermission('manage_installation')
+    },
+    {
+      id: 'education',
+      title: 'Educação',
+      description: 'Conteúdos técnicos',
+      icon: GraduationCap,
+      illustration: <EducationIllustration />,
+      onClick: () => navigate('/education'),
+      colorClass: 'dark:bg-sky-900 bg-sky-50 text-sky-900 dark:text-white border border-sky-200 dark:border-transparent',
+      className: 'lg:col-span-2 md:col-span-1',
+      visible: true
+    }
+  ];
 
-    return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="text-center space-y-4 py-12">
-                <h1 className="text-foreground transition-all">
-                    Bem-vindo ao <span className="text-blue-600 dark:text-blue-400">Arbor</span><span className="text-green-600 dark:text-green-400">IA</span>
-                </h1>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Sua Plataforma de Manejo Integrado de Árvores
-                </p>
-            </div>
+  return (
+    <div className="min-h-full w-full mx-auto space-y-6 p-4 md:p-6 animate-in fade-in duration-500">
+      <div className="px-2 py-2">
+        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          Dashboard <span className="text-foreground/50 mx-1">/</span> Principal
+        </h2>
+      </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {features.filter(feature => {
-                    if (feature.id === 'plans') return hasPermission('create_plans') || hasPermission('edit_plans') || hasPermission('approve_plans');
-                    if (feature.id === 'execution') return hasPermission('view_plans') || hasPermission('manage_installation');
-                    if (feature.id === 'maps') return hasPermission('view_inventory') || hasPermission('manage_installation');
-                    if (feature.id === 'reports') return hasPermission('manage_installation');
-                    // Alerts and Education are visible to all (or add specific checks if needed)
-                    return true;
-                }).map((feature) => (
-                    <Surface
-                        key={feature.id}
-                        onClick={feature.action}
-                        variant="glass-default"
-                        elevation="sm"
-                        interactive
-                        className="group flex flex-col h-full ring-1 ring-white/10"
-                    >
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-20" style={{ color: 'currentColor' }} />
-                        <div className="p-6 space-y-1">
-                            <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center mb-4 shadow-inner ring-1 ring-current/20`}>
-                                <feature.icon className={`w-6 h-6 ${feature.color}`} />
-                            </div>
-                            <h3 className="text-xl font-bold">{feature.title}</h3>
-                        </div>
-                        <div className="p-6 pt-0 space-y-6 flex-1 flex flex-col justify-between">
-                            <p className="text-muted-foreground leading-relaxed h-full">
-                                {feature.description}
-                            </p>
-                            <Button
-                                onClick={feature.action}
-                                className="w-full shadow-sm hover:shadow-md transition-all active:scale-[0.97] mt-4 font-semibold h-11"
-                                variant="default"
-                            >
-                                {feature.btnText}
-                            </Button>
-                        </div>
-                    </Surface>
-                ))}
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+        {features
+          .filter(f => f.visible)
+          .map((feature) => (
+            <ServiceCard
+              key={feature.id}
+              title={feature.title}
+              description={feature.description}
+              icon={feature.icon}
+              illustration={feature.illustration}
+              onClick={feature.onClick}
+              colorClass={feature.colorClass}
+              className={feature.className}
+            />
+          ))}
+      </div>
 
-            <footer className="mt-12 text-center text-sm text-gray-500 pb-8">
-                <div className="flex justify-center gap-6">
-                    <Link to="/terms" className="hover:text-gray-900 transition-colors">Termos de Uso</Link>
-                    <Link to="/privacy" className="hover:text-gray-900 transition-colors">Política de Privacidade</Link>
-                </div>
-            </footer>
+      <footer className="mt-12 text-center text-sm text-gray-500 pb-8">
+        <div className="flex justify-center gap-6">
+          <Link to="/terms" className="hover:text-gray-900 transition-colors">Termos de Uso</Link>
+          <Link to="/privacy" className="hover:text-gray-900 transition-colors">Política de Privacidade</Link>
         </div>
-    );
+      </footer>
+    </div>
+  );
 }

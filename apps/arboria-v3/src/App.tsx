@@ -25,6 +25,7 @@ import { Toaster } from './components/ui/sonner';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import TermsOfUse from './pages/legal/TermsOfUse';
 import DownloadsPage from './pages/Downloads';
+import ExecutionReportView from './pages/ExecutionReportView';
 
 import { FilterProvider } from './context/FilterContext';
 import { usePushNotifications } from './hooks/usePushNotifications';
@@ -89,6 +90,7 @@ function AppContent() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/execution/report/:taskId" element={<ExecutionReportView />} />
       </Routes>
       <Toaster />
       

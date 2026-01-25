@@ -5,7 +5,7 @@ import { useDownloads } from '../../context/DownloadContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePlans } from '../../hooks/usePlans';
 import { useTrees } from '../../hooks/useTrees';
-import { ReportService } from '../../api/reportService';
+import { ReportService } from '../../services/reportService';
 import { downloadFile } from '../../utils/downloadUtils';
 import { toast } from 'sonner';
 import { platform } from '../../platform';

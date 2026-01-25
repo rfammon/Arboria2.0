@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { photoCache, type CachedPhoto } from '../lib/photoCache';
-import { compressPhoto, extractPhotoMetadata } from '../utils/photoCompression';
+import { compressPhoto, extractExifData } from '../lib/photoCompression';
 import { canStorePhoto } from '../utils/quotaMonitor';
 
 /**
@@ -55,10 +55,10 @@ export async function uploadPhoto(options: PhotoUploadOptions): Promise<PhotoMet
         }
 
         // Step 2: Compress photo if needed
-        const processedFile = compress ? await compressPhoto(file) : file;
+        const processedFile = compress ? (await compressPhoto(file)).compressedFile : file;
 
         // Step 3: Extract metadata
-        const metadata = await extractPhotoMetadata(processedFile);
+        const metadata = await extractExifData(processedFile);
 
         // Step 4: Generate unique filename
         const fileExt = processedFile.name.split('.').pop() || 'jpg';
@@ -110,9 +110,9 @@ export async function uploadPhoto(options: PhotoUploadOptions): Promise<PhotoMet
             filename: filename,
             file_size: processedFile.size,
             mime_type: processedFile.type,
-            gps_latitude: metadata.gpsLatitude || null,
-            gps_longitude: metadata.gpsLongitude || null,
-            captured_at: metadata.capturedAt?.toISOString() || null,
+            gps_latitude: metadata?.latitude || null,
+            gps_longitude: metadata?.longitude || null,
+            captured_at: metadata?.timestamp?.toISOString() || null,
             uploaded_by: user.id,
             display_order: 0, // Will be updated by UI reordering
         };

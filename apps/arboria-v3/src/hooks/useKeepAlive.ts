@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { App } from '@capacitor/app';
-import { ReportService } from '../api/reportService';
+import { ReportService } from '../services/reportService';
 
 export const useKeepAlive = () => {
     const pingServer = useCallback(async () => {

@@ -28,12 +28,19 @@ export default function Inventory() {
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const { filters, setFilters } = useFilters();
+    const [riskFilters, setRiskFilters] = useState<string[]>(['Alto', 'Médio', 'Baixo']);
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editTreeId, setEditTreeId] = useState<string | null>(null);
     useTrees();
 
-    const selectedTreeId = searchParams.get('selectedTree');
+    const toggleRiskFilter = (filter: string) => {
+        setRiskFilters(prev => 
+            prev.includes(filter) 
+                ? prev.filter(f => f !== filter) 
+                : [...prev, filter]
+        );
+    };
 
     const handleSelectTree = (id: string | null) => {
         const newParams = new URLSearchParams(searchParams);
@@ -61,14 +68,16 @@ export default function Inventory() {
         }
     }, [location.state]);
 
+    const selectedTreeId = searchParams.get('selectedTree');
+
     return (
-        <PageContainer>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <PageContainer maxWidth="max-w-[1920px]" className="p-1 md:p-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-3">
                     <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Inventário</h1>
                     <SyncStatusIndicator />
                 </div>
-                <p className="text-muted-foreground">Gerencie o Componente arbóreo de sua instalação</p>
+                <p className="text-muted-foreground hidden lg:block">Gerencie o Componente arbóreo de sua instalação</p>
                 <div className="flex gap-2 w-full sm:w-auto">
                     {hasPermission('create_trees') && (
                         <FieldAction
@@ -84,7 +93,7 @@ export default function Inventory() {
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-card/70 backdrop-blur-md p-4 rounded-2xl shadow-[var(--shadow-soft)] border border-white/10 space-y-4 mb-6">
+            <div className="bg-card/70 backdrop-blur-md p-3 rounded-2xl shadow-[var(--shadow-soft)] border border-white/10 space-y-4 mb-3">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
@@ -130,13 +139,15 @@ export default function Inventory() {
             </div>
 
             {/* Content Area */}
-            <div className="bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 min-h-[500px] flex flex-col overflow-hidden shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-deep)]">
+            <div className="bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 min-h-[600px] flex flex-col overflow-hidden shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-deep)]">
                 {viewMode === 'list' ? (
                     <InventoryList onCreate={() => setIsFormOpen(true)} />
                 ) : (
                     <ClusteredMapComponent
                         selectedTreeId={selectedTreeId}
                         onSelectTree={handleSelectTree}
+                        activeFilters={riskFilters}
+                        onToggleFilter={toggleRiskFilter}
                     />
                 )}
             </div>

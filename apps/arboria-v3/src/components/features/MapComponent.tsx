@@ -14,7 +14,6 @@ import { useTreePhotos } from '../../hooks/useTreePhotos';
 import { useMapLayers } from '../../hooks/useMapLayers';
 import { useUserLocation } from '../../hooks/useUserLocation';
 import { getTreeSymbol } from '../../lib/map/mapSymbology';
-import { createRiskFilter, type RiskFilter } from '../../lib/map/mapFilters';
 import { satelliteStyle } from '../../lib/map/mapStyles';
 import MapControls from './MapControls';
 import type { Tree } from '../../types/tree';
@@ -29,8 +28,16 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
     const navigate = useNavigate();
     const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
     const [highlightedTree, setHighlightedTree] = useState<Tree | null>(null);
-    const [riskFilter, setRiskFilter] = useState<RiskFilter>('Todos');
+    const [activeFilters, setActiveFilters] = useState<string[]>(['Alto', 'Médio', 'Baixo']);
     const [isMapLoaded, setIsMapLoaded] = useState(false);
+
+    const toggleFilter = (filter: string) => {
+        setActiveFilters(prev => 
+            prev.includes(filter) 
+                ? prev.filter(f => f !== filter) 
+                : [...prev, filter]
+        );
+    };
 
     // Epic 8: User Location Tracking
     const { location: userLocation, state: locationState, resetAutoDisableTimer } = useUserLocation();
@@ -81,7 +88,47 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
             `Creating GeoJSON from ${trees.length} trees`);
 
         const features = trees
-            .filter(tree => tree.latitude && tree.longitude)
+            .filter(tree => {
+                if (!tree.latitude || !tree.longitude) return false;
+
+                const symbol = getTreeSymbol(tree);
+                const treeRiskRaw = tree.risklevel?.toLowerCase() || '';
+
+                // Map the string "Alto" to the actual data values (Alto, High, Crítico)
+                const isMatch = activeFilters.some(filter => {
+                    const f = filter.toLowerCase();
+                    const symbolRisk = symbol.riskLevel.toLowerCase();
+                    
+                    // Direct match on normalized symbol
+                    if (symbolRisk.includes(f)) return true;
+                    
+                    // Explicit mapping for "Alto"
+                    if (f === 'alto') {
+                        return treeRiskRaw.includes('alto') || 
+                               treeRiskRaw.includes('high') || 
+                               treeRiskRaw.includes('crítico') ||
+                               treeRiskRaw.includes('critico');
+                    }
+                    
+                    // Mapping for "Médio"
+                    if (f === 'médio' || f === 'medio') {
+                        return treeRiskRaw.includes('médio') || 
+                               treeRiskRaw.includes('medio') || 
+                               treeRiskRaw.includes('medium') ||
+                               treeRiskRaw.includes('moderado');
+                    }
+
+                    // Mapping for "Baixo"
+                    if (f === 'baixo') {
+                        return treeRiskRaw.includes('baixo') || 
+                               treeRiskRaw.includes('low');
+                    }
+                    
+                    return false;
+                });
+
+                return isMatch;
+            })
             .map(tree => {
                 const symbol = getTreeSymbol(tree);
 
@@ -109,7 +156,7 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
             type: 'FeatureCollection' as const,
             features
         };
-    }, [treeIds]); // Only recalculates when tree IDs/timestamps change
+    }, [treeIds, activeFilters]); // Recalculates when tree IDs/timestamps OR filters change
 
     // Render or update markers on map
     const renderMarkers = useCallback(() => {
@@ -193,27 +240,12 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
         }
     }, [trees]);
 
-    // Apply risk filter
-    useEffect(() => {
-        const map = mapRef.current?.getMap();
-        if (!map || !isMapLoaded) return;
-
-        const filter = createRiskFilter(riskFilter);
-
-        if (map.getLayer('tree-circles')) {
-            map.setFilter('tree-circles', filter as any);
-        }
-        if (map.getLayer('tree-labels')) {
-            map.setFilter('tree-labels', filter as any);
-        }
-    }, [riskFilter, isMapLoaded]);
-
     // Render markers when trees change
     useEffect(() => {
         if (isMapLoaded) {
             renderMarkers();
         }
-    }, [trees, isMapLoaded, renderMarkers, currentLayer]);
+    }, [trees, isMapLoaded, renderMarkers, currentLayer, activeFilters]);
 
     // Zoom to all trees
     const handleZoomAll = useCallback(() => {
@@ -387,8 +419,8 @@ export default function MapComponent({ selectedTreeId }: MapComponentProps) {
                 <MapControls
                     currentLayer={currentLayer}
                     onToggleLayer={() => toggleLayer(mapRef.current)}
-                    riskFilter={riskFilter}
-                    onFilterChange={setRiskFilter}
+                    activeFilters={activeFilters}
+                    onToggleFilter={toggleFilter}
                     onZoomAll={handleZoomAll}
                     className="h-full"
                 />

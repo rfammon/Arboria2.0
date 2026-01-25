@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '../ui/sheet';
 import { Button } from '../ui/button';
 import { CheckCircle, ArrowRight, ArrowLeft, Save, AlertTriangle, Camera } from 'lucide-react';
@@ -35,6 +36,7 @@ type Step = 'info' | EvidencePhotoStage | 'problem';
 const STEPS_ORDER: Step[] = ['info', 'before', 'during_1', 'during_2', 'after', 'completion'];
 
 export default function TaskExecutionForm({ taskId, open, onOpenChange }: TaskExecutionFormProps) {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { data: task } = useTask(taskId || undefined);
     const { completeTask, startTask, logProgress, blockTask, createAlert } = useTaskMutations();
@@ -116,7 +118,10 @@ export default function TaskExecutionForm({ taskId, open, onOpenChange }: TaskEx
     const handleCompleteTask = () => {
         if (!task.id) return;
         completeTask.mutate({ taskId: task.id, notes, progress }, {
-            onSuccess: () => onOpenChange(false)
+            onSuccess: () => {
+                onOpenChange(false);
+                navigate(`/execution/report/${task.id}`);
+            }
         });
     };
 

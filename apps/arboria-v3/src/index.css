@@ -469,6 +469,7 @@ body,
 .safe-area-pb {
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
+
   .madeira {
     /* Soft Oak - Light wood theme, less dark and smoother */
     --background: 35 40% 94%;
@@ -503,3 +504,19 @@ body,
     --radius: 1rem;
     --shadow-color: rgba(66, 53, 43, 0.1);
   }
+
+/* MapLibre Popup Customization */
+.maplibregl-popup-content {
+  @apply p-0 bg-transparent border-none shadow-none rounded-none !important;
+}
+
+.maplibregl-popup-tip {
+  /* Match the tip to the dynamic card background color */
+  border-top-color: hsl(var(--card)) !important;
+  border-bottom-color: hsl(var(--card)) !important;
+}
+
+/* Hide default close button since we have a custom one */
+.maplibregl-popup-close-button {
+  @apply hidden;
+}

@@ -1,4 +1,4 @@
-import { useActionQueue } from '../../store/actionQueue';
+import { useActionQueue } from '../../stores/useActionQueue';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { useEffect, useState } from 'react';

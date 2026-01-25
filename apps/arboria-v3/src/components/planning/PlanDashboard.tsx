@@ -5,15 +5,14 @@ import { Plus, Calendar, Filter, Search } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { StatisticsCards } from './StatisticsCards';
+import { ForestryDashboardHero } from './ForestryDashboardHero';
 import { PlanCard } from './PlanCard';
 import { usePlans, usePlanStats } from '../../hooks/usePlans';
 import type { InterventionPlan, InterventionType } from '../../types/plan';
 import {
     sortPlansByDate,
     filterPlansByType,
-    searchPlans,
-    INTERVENTION_COLORS,
-    INTERVENTION_LABELS
+    searchPlans
 } from '../../lib/planUtils';
 import {
     Select,
@@ -101,28 +100,12 @@ export function PlanDashboard({
             </div>
 
             {/* Statistics KPIs */}
-            <div className="bg-card/30 backdrop-blur-sm rounded-2xl p-2 shadow-inner border border-white/5">
+            <div className="bg-slate-100/50 dark:bg-slate-950/20 backdrop-blur-sm rounded-3xl p-4 shadow-inner border border-slate-200 dark:border-white/5">
                 <StatisticsCards stats={stats} />
             </div>
 
-            {/* Distribution by Type */}
-            <div className="bg-card/70 backdrop-blur-md rounded-2xl border border-white/10 p-6 shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-deep)]">
-                <h3 className="text-lg font-bold mb-4 opacity-80">Distribuição por Tipo</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {Object.entries(stats.byType).map(([type, count]) => (
-                        <div
-                            key={type}
-                            className="p-4 rounded-xl border border-white/10 bg-muted/40 transition-all hover:bg-muted/60"
-                            style={{ borderLeft: `4px solid ${INTERVENTION_COLORS[type as InterventionType]}` }}
-                        >
-                            <div className="text-2xl font-black">{count}</div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                                {INTERVENTION_LABELS[type as InterventionType]}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            {/* Forestry Hero Charts */}
+            <ForestryDashboardHero plans={plans} />
 
             {/* Filters and Search */}
             <div className="flex flex-col sm:flex-row gap-4">

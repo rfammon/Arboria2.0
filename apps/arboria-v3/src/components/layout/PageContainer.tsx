@@ -3,6 +3,7 @@ import React from "react"
 
 interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
+    maxWidth?: string
 }
 
 /**
@@ -12,7 +13,7 @@ interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
  * - Desktop: 'office' spacing (16px) for information density
  * - Max-width constraint for readability
  */
-export function PageContainer({ children, className, ...props }: PageContainerProps) {
+export function PageContainer({ children, className, maxWidth = "max-w-7xl", ...props }: PageContainerProps) {
     return (
         <div
             className={cn(
@@ -22,7 +23,7 @@ export function PageContainer({ children, className, ...props }: PageContainerPr
             )}
             {...props}
         >
-            <div className="mx-auto max-w-7xl space-y-field md:space-y-office">
+            <div className={cn("mx-auto space-y-field md:space-y-office", maxWidth)}>
                 {children}
             </div>
         </div>

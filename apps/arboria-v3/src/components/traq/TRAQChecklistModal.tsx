@@ -44,11 +44,6 @@ export function TRAQChecklistModal({
     // Reset state when modal opens
     useEffect(() => {
         if (isOpen) {
-            console.log('[TRAQ DEBUG] Modal opened with criteria:', criteria);
-            console.log('[TRAQ DEBUG] Sample criteria (ID 5):', criteria.find(c => c.id === 5));
-            console.log('[TRAQ DEBUG] Sample criteria (ID 6):', criteria.find(c => c.id === 6));
-            console.log('[TRAQ DEBUG] Sample criteria (ID 10):', criteria.find(c => c.id === 10));
-
             setCurrentIndex(0);
             setStep('checklist');
             setRiskFactors(new Array(criteria.length).fill(false));

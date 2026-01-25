@@ -74,7 +74,6 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
     };
 
     const onSubmit = async (formData: any) => {
-        console.log('[TreeForm] onSubmit called with:', formData);
         setIsSubmitting(true);
         try {
             let finalTreeId = treeId;
@@ -205,7 +204,6 @@ export function TreeForm({ onClose, initialData, treeId }: TreeFormProps) {
 
             {/* Form Content */}
             <form onSubmit={handleSubmit(onSubmit, (errors) => {
-                console.error('[TreeForm] Validation errors:', errors);
                 toast.error('Verifique os campos obrigatórios');
             })} className="flex-1 overflow-y-auto overscroll-contain touch-pan-y">
                 <div className="p-6 space-y-6 pb-40">

@@ -8,6 +8,7 @@ import type {
 } from '../types/execution';
 import { toast } from 'sonner';
 import { offlineQueue } from '@/lib/offlineQueue';
+import { useAuth } from '../context/AuthContext';
 
 export const useExecutionKeys = {
     all: ['execution'] as const,
@@ -66,6 +67,7 @@ export const useExecutionStatistics = (instalacaoId: string | undefined) => {
  */
 export const useTaskMutations = () => {
     const queryClient = useQueryClient();
+    const { user, activeInstallation } = useAuth();
 
     const startTask = useMutation({
         mutationFn: async ({ taskId, location }: { taskId: string; location?: GeolocationPosition }) => {
@@ -131,10 +133,28 @@ export const useTaskMutations = () => {
                 // we treat photoUrl here. If it works with local Blob URLs in offlineQueue it's fine.
                 // But typically we need to persist the Blob in IDB.
                 // Assuming photoUrl is passed from previously persisted blob or valid local reference.
-                await offlineQueue.add('ADD_EVIDENCE', { taskId, stage, photoUrl, metadata, notes, location });
+                await offlineQueue.add('ADD_EVIDENCE', { 
+                    taskId, 
+                    stage, 
+                    photoUrl, 
+                    metadata, 
+                    notes, 
+                    location, 
+                    userId: user?.id,
+                    instalacaoId: activeInstallation?.id 
+                });
                 return { loaded: false, offline: true };
             }
-            return executionService.addEvidence(taskId, stage, photoUrl, metadata, notes, location);
+            return executionService.addEvidence(
+                taskId, 
+                stage, 
+                photoUrl, 
+                metadata, 
+                notes, 
+                location, 
+                user?.id, 
+                activeInstallation?.id
+            );
         },
         onSuccess: (data: any) => {
             if (data?.offline) {

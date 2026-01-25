@@ -123,18 +123,22 @@ export const executionService = {
         photoUrl: string,
         metadata?: any,
         notes?: string,
-        location?: GeolocationPosition
+        location?: GeolocationPosition,
+        userId?: string,
+        instalacaoId?: string
     ) {
         const { data, error } = await supabase
             .from('task_evidence')
             .insert({
                 task_id: taskId,
+                instalacao_id: instalacaoId,
                 stage,
                 photo_url: photoUrl,
                 photo_metadata: metadata || {},
                 notes,
                 capture_lat: location?.latitude,
-                capture_lng: location?.longitude
+                capture_lng: location?.longitude,
+                captured_by: userId || (await supabase.auth.getUser()).data.user?.id
             })
             .select()
             .single();
