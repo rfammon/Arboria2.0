@@ -11,9 +11,11 @@ import { InterventionPlanReport } from '../components/reports/templates/Interven
 import { TreeReport } from '../components/reports/templates/TreeReport';
 import { ScheduleReport } from '../components/reports/templates/ScheduleReport';
 import { RiskInventoryReport } from '../components/reports/templates/RiskInventoryReport';
+import { ExecutionReportTemplate } from '../components/reports/templates/ExecutionReportTemplate';
 import { InterventionPlanPDF } from '../components/features/reporting/InterventionPlanPDF';
 import { TreePDF } from '../components/features/reporting/TreePDF';
 import { SchedulePDF } from '../components/features/reporting/SchedulePDF';
+import { ExecutionReportPDF } from '../components/features/reporting/ExecutionReportPDF';
 
 const getBaseUrl = () => {
     // Priority 1: Environment variable
@@ -310,6 +312,120 @@ export const ReportService = {
 
         } catch (error) {
             console.error('Error generating Intervention Plan report:', error);
+            throw error;
+        }
+    },
+
+    async generateExecutionReport(data: { tree: any, execution: any, mapImage?: string }): Promise<Blob> {
+        try {
+            console.log(`[ReportService] Generating Execution Report for Task: ${data.execution.id}`);
+
+            // MOBILE/OFFLINE STRATEGY (React-PDF)
+            if (platform.supportsOfflineCapture) {
+                console.log('[ReportService] Generating Mobile Execution PDF locally...');
+                return await this.generatePdfLocal(
+                    <ExecutionReportPDF
+                        tree={data.tree}
+                        execution={data.execution}
+                        mapImage={data.mapImage}
+                    />
+                );
+            }
+            
+            const html = renderToStaticMarkup(
+                <ExecutionReportTemplate
+                    tree={data.tree}
+                    execution={data.execution}
+                    mapImage={data.mapImage}
+                />
+            );
+
+            return this.generatePdfFromHtml({ html, mapImage: data.mapImage });
+        } catch (error) {
+            console.error('Error generating Execution report:', error);
+            throw error;
+        }
+    },
+
+    async generateExecutionReportById(taskId: string, extraImages: { mapImage?: string } = {}): Promise<Blob> {
+        try {
+            console.log(`[ReportService] Fetching data for Execution Report: ${taskId}`);
+
+            // 1. Fetch Task Details
+            const { data: task, error: taskError } = await supabase
+                .from('tasks')
+                .select(`
+                    *,
+                    tree:arvores(*, tree_photos(*)),
+                    evidence:task_evidence(*)
+                `)
+                .eq('id', taskId)
+                .single();
+
+            if (taskError) throw new Error(`Falha ao buscar tarefa: ${taskError.message}`);
+            if (!task) throw new Error('Tarefa não encontrada.');
+
+            // 2. Prepare Photos (Categorized)
+            const photos = {
+                antes: [] as string[],
+                execucao: [] as string[],
+                depois: [] as string[]
+            };
+
+            // Inventory photos -> ANTES
+            if (task.tree?.tree_photos) {
+                for (const photo of task.tree.tree_photos) {
+                    const { data } = await supabase.storage
+                        .from('tree-photos')
+                        .createSignedUrl(photo.storage_path, 3600);
+                    if (data?.signedUrl) photos.antes.push(data.signedUrl);
+                }
+            }
+
+            // Evidence photos -> Stage grouped
+            if (task.evidence) {
+                for (const ev of task.evidence) {
+                    if (!ev.photo_url) continue;
+                    const stage = ev.stage as string;
+                    if (stage === 'before') photos.antes.push(ev.photo_url);
+                    else if (['during_1', 'during_2', 'during'].includes(stage)) photos.execucao.push(ev.photo_url);
+                    else if (['after', 'completion', 'completed'].includes(stage)) photos.depois.push(ev.photo_url);
+                }
+            }
+
+            // 3. Map Data
+            const rawTree = task.tree || (task as any).arvores;
+            const tree = Array.isArray(rawTree) ? rawTree[0] : rawTree;
+
+            const treeData = {
+                codigo: tree?.codigo || 'ARB-N/A',
+                especie: tree?.especie || 'Espécie não identificada',
+                localizacao: [tree?.local, tree?.bairro].filter(Boolean).join(', ') || 'Localização não informada',
+                nivelRisco: tree?.risklevel || 'Baixo',
+                altura: tree?.altura || 0,
+                dap: tree?.dap || 0,
+                latitude: Number(tree?.latitude || task.tree_lat || 0),
+                longitude: Number(tree?.longitude || task.tree_lng || 0)
+            };
+
+            const executionData = {
+                id: task.id.slice(0, 8).toUpperCase(),
+                dataEmissao: task.completed_at ? new Date(task.completed_at) : new Date(),
+                diagnostico: task.description || "Intervenção técnica programada.",
+                acao: task.intervention_type?.toUpperCase() || "EXECUÇÃO",
+                observacoes: task.notes || "Execução realizada sem intercorrências.",
+                equipe: (task as any).assignee_name || "Equipe ArborIA",
+                fotos: photos
+            };
+
+            return this.generateExecutionReport({
+                tree: treeData,
+                execution: executionData,
+                mapImage: extraImages.mapImage
+            });
+
+        } catch (error) {
+            console.error('Error generating Execution report by ID:', error);
             throw error;
         }
     },

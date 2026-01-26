@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,11 +6,21 @@ import { toast } from 'sonner';
 import { Building2, Plus, Search, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { InstallationCard } from '@/components/installation/InstallationCard';
+import { SplashScreen } from '@/components/layout/SplashScreen';
+import { AnimatePresence } from 'framer-motion';
 
 
 export default function InstallationSelector() {
     const { installations, loading, setActiveInstallation, activeInstallation, user, signOut } = useAuth();
+    const [timerFinished, setTimerFinished] = useState(false);
     const [selecting, setSelecting] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setTimerFinished(true), 3500);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const showSplash = loading || !timerFinished;
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
@@ -57,22 +67,14 @@ export default function InstallationSelector() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
-                <div className="text-center">
-                    <div className="relative w-20 h-20 mx-auto mb-6">
-                        <div className="absolute inset-0 rounded-full border-4 border-emerald-500/20"></div>
-                        <div className="absolute inset-0 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
-                    </div>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium animate-pulse">Carregando ecossistema...</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 selection:bg-emerald-500/30">
+        <>
+            <AnimatePresence mode="wait">
+                {showSplash && <SplashScreen key="splash" />}
+            </AnimatePresence>
+
+            {!loading && user && (
+                <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 selection:bg-emerald-500/30">
             {/* Ambient Background Elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-[25%] -left-[10%] w-[70%] h-[70%] bg-emerald-500/30 rounded-full blur-[120px] opacity-5 dark:opacity-20" />
@@ -91,7 +93,7 @@ export default function InstallationSelector() {
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black tracking-tight">
                             Selecione sua <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Unidade de Gestão</span>
+                            <span className="titulo-operacional">Unidade de Gestão</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 text-lg max-w-xl font-medium">
                             Bem-vindo de volta. Escolha qual instalação você deseja gerenciar hoje ou crie uma nova.
@@ -101,8 +103,8 @@ export default function InstallationSelector() {
                     <div className="flex items-center gap-4">
                         <Button 
                             onClick={handleLogout}
-                            variant="ghost" 
-                            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-2xl px-6 py-6"
+                            variant="fantasma" 
+                            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-6 py-6"
                         >
                             <LogOut className="w-5 h-5 mr-2" />
                             Sair da conta
@@ -123,7 +125,8 @@ export default function InstallationSelector() {
                     </div>
                     <Button 
                         onClick={() => navigate('/installation-settings')}
-                        className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-2xl h-14 px-8 shadow-xl shadow-emerald-500/20"
+                        variant="principal"
+                        className="h-14 px-8 font-bold"
                     >
                         <Plus className="w-5 h-5 mr-2" />
                         Nova Instalação
@@ -142,7 +145,8 @@ export default function InstallationSelector() {
                         </p>
                         <Button
                             onClick={() => navigate('/installation-settings')}
-                            className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold rounded-2xl px-8 h-14"
+                            variant="padrao"
+                            className="font-bold px-8 h-14"
                         >
                             Começar agora
                         </Button>
@@ -175,5 +179,7 @@ export default function InstallationSelector() {
             {/* Footer decoration */}
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-emerald-500/5 to-transparent pointer-events-none" />
         </div>
+            )}
+        </>
     );
 }

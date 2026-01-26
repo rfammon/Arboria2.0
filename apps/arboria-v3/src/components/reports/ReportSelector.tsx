@@ -5,16 +5,17 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { usePlans } from '../../hooks/usePlans';
 import { useTrees } from '../../hooks/useTrees';
+import { useTasks } from '../../hooks/useExecution';
 import { toast } from 'sonner';
 
-export type ReportType = 'intervention-plan' | 'risk-inventory' | 'schedule' | 'tree-individual';
+export type ReportType = 'intervention-plan' | 'risk-inventory' | 'schedule' | 'tree-individual' | 'execution-report';
 
 interface ReportOption {
     type: ReportType;
     title: string;
     description: string;
     icon: typeof FileText;
-    selectionType?: 'plan' | 'tree' | 'none';
+    selectionType?: 'plan' | 'tree' | 'task' | 'none';
 }
 
 const REPORT_OPTIONS: ReportOption[] = [
@@ -24,6 +25,13 @@ const REPORT_OPTIONS: ReportOption[] = [
         description: 'Relatório completo com Gantt, EPIs, procedimentos e equipe',
         icon: FileBarChart2,
         selectionType: 'plan'
+    },
+    {
+        type: 'execution-report',
+        title: 'Relatório de Execução',
+        description: 'Detalhamento técnico da intervenção realizada com fotos',
+        icon: CheckCircle2,
+        selectionType: 'task'
     },
     {
         type: 'risk-inventory',
@@ -55,6 +63,7 @@ interface ReportSelectorProps {
 export function ReportSelector({ onGenerate }: ReportSelectorProps) {
     const { plans, loading: isLoadingPlans } = usePlans();
     const { data: trees = [], isLoading: isLoadingTrees } = useTrees();
+    const { data: tasks = [], isLoading: isLoadingTasks } = useTasks();
     const [selectedType, setSelectedType] = useState<ReportType | null>(null);
     const [selectedItemId, setSelectedItemId] = useState<string>('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -73,6 +82,13 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                 (p.tree?.especie?.toLowerCase().includes(term)) ||
                 (p.id.includes(term))
             );
+        } else if (selectedOption.selectionType === 'task') {
+            return tasks.filter(t =>
+                (t.id.toLowerCase().includes(term)) ||
+                (t.intervention_type?.toLowerCase().includes(term)) ||
+                (t.tree?.especie?.toLowerCase().includes(term)) ||
+                (t.assignee_name?.toLowerCase().includes(term))
+            );
         } else {
             return trees.filter(t =>
                 (t.codigo?.toLowerCase().includes(term)) ||
@@ -81,7 +97,7 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                 (t.id.includes(term))
             );
         }
-    }, [selectedOption, plans, trees, searchTerm]);
+    }, [selectedOption, plans, trees, tasks, searchTerm]);
 
     const handleGenerate = () => {
         if (!selectedType) {
@@ -90,7 +106,8 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
         }
 
         if (selectedOption?.selectionType && selectedOption.selectionType !== 'none' && !selectedItemId) {
-            toast.error(`Selecione ${selectedOption.selectionType === 'plan' ? 'um plano' : 'uma árvore'} na tabela abaixo`);
+            const label = selectedOption.selectionType === 'plan' ? 'um plano' : selectedOption.selectionType === 'task' ? 'uma execução' : 'uma árvore';
+            toast.error(`Selecione ${label} na tabela abaixo`);
             return;
         }
 
@@ -140,7 +157,7 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                 <div className="space-y-4 pt-4 border-t border-muted/50 animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <label className="text-sm font-bold flex items-center gap-2">
-                            Selecione {selectedOption.selectionType === 'plan' ? 'o Plano' : 'a Árvore'}
+                            Selecione {selectedOption.selectionType === 'plan' ? 'o Plano' : selectedOption.selectionType === 'task' ? 'a Execução' : 'a Árvore'}
                             <span className="text-[10px] font-medium bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
                                 {filteredItems.length} encontrado(s)
                             </span>
@@ -167,7 +184,7 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {isLoadingPlans || isLoadingTrees ? (
+                                    {isLoadingPlans || isLoadingTrees || isLoadingTasks ? (
                                         <tr>
                                             <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground animate-pulse">
                                                 Carregando dados...
@@ -186,6 +203,8 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                                                         <div className="font-bold text-foreground">
                                                             {selectedOption.selectionType === 'plan'
                                                                 ? ((item as any).plan_id || item.id.slice(0, 8))
+                                                                : selectedOption.selectionType === 'task'
+                                                                ? `OS-${item.id.slice(0, 8).toUpperCase()}`
                                                                 : ((item as any).codigo || item.id.slice(0, 8))}
                                                         </div>
                                                         <div className="text-[10px] text-muted-foreground font-mono mt-0.5 uppercase tracking-tighter">
@@ -194,12 +213,12 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                                                     </td>
                                                     <td className="px-4 py-3 align-top">
                                                         <div className="font-medium">
-                                                            {selectedOption.selectionType === 'plan'
+                                                            {selectedOption.selectionType === 'plan' || selectedOption.selectionType === 'task'
                                                                 ? (item as any).intervention_type
                                                                 : (item as any).especie}
                                                         </div>
                                                         <div className="text-xs text-muted-foreground mt-0.5 italic">
-                                                            {selectedOption.selectionType === 'plan'
+                                                            {selectedOption.selectionType === 'plan' || selectedOption.selectionType === 'task'
                                                                 ? ((item as any).tree?.especie || 'N/A')
                                                                 : ((item as any).local || 'Sem localização')}
                                                         </div>
@@ -240,6 +259,7 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                     <Button
                         onClick={handleGenerate}
                         size="lg"
+                        variant="principal"
                         className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all font-bold"
                         disabled={selectedOption?.selectionType !== 'none' && !selectedItemId}
                     >

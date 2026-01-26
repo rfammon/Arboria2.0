@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { LayoutGrid, Trees, FileStack, Clock3, Zap, BellRing, GraduationCap, BarChart3, FileDown, Settings2, LogOut, PanelLeftClose } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -8,12 +8,21 @@ import { OfflineSyncIndicator } from '../components/features/OfflineSyncIndicato
 import { InstallationSwitchDialog } from '../components/features/InstallationSwitchDialog';
 import { TopHeader } from '../components/layout/TopHeader';
 import { Button } from '../components/ui/button';
+import { SplashScreen } from '../components/layout/SplashScreen';
 import { toast } from 'sonner';
-
+import { AnimatePresence } from 'framer-motion';
 
 export default function DashboardLayout() {
     const { user, loading, signOut, activeInstallation, installations, setActiveInstallation, hasPermission } = useAuth();
+    const [timerFinished, setTimerFinished] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setTimerFinished(true), 3500);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const showSplash = loading || !timerFinished;
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         const saved = localStorage.getItem('sidebar-collapsed');
         return saved === 'true';
@@ -29,24 +38,6 @@ export default function DashboardLayout() {
         });
     };
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-white text-blue-600 font-bold z-[9999]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                <p>Carregando ArborIA...</p>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
-
-    if (installations.length === 0 && !loading) {
-        return <Navigate to="/onboarding" replace />;
-    }
-
-    // Ensure we have an active installation if one exists
     if (!activeInstallation && installations.length > 0) {
         setActiveInstallation(installations[0]);
     }
@@ -88,154 +79,166 @@ export default function DashboardLayout() {
     ];
 
     return (
-        <div className="h-screen bg-background flex overflow-hidden transition-colors duration-200">
-            {/* Mobile Sidebar Backdrop */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 z-[55] bg-black/20 backdrop-blur-sm lg:hidden"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
+        <>
+            <AnimatePresence mode="wait">
+                {showSplash && <SplashScreen key="splash" />}
+            </AnimatePresence>
 
-            {/* Sidebar */}
-            <aside className={cn(
-                "fixed inset-y-0 left-0 z-[60] bg-card/95 backdrop-blur-2xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-all duration-300 ease-in-out lg:translate-x-0",
-                isSidebarOpen ? "translate-x-0" : "-translate-x-full",
-                isSidebarCollapsed ? "lg:w-20" : "lg:w-64",
-                "w-64" // mobile width
-            )}
-                style={{
-                    paddingTop: 'var(--safe-area-top)',
-                    paddingBottom: 'var(--safe-area-bottom)',
-                    paddingLeft: 'var(--safe-area-left)'
-                }}
-            >
-                <div className="flex flex-col h-full bg-transparent text-card-foreground">
-                    {/* Logo */}
-                    <div className={cn(
-                        "h-16 flex items-center border-b border-border transition-all duration-300",
-                        isSidebarCollapsed ? "px-5 justify-center" : "px-6"
-                    )}>
-                        <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
-                        {!isSidebarCollapsed && (
-                            <div className="flex flex-col flex-1 min-w-0 ml-3 animate-in fade-in duration-300">
-                                <span className="text-xl font-bold tracking-tight text-foreground/90">
-                                    Arbor<span className="text-primary italic">IA</span>
-                                </span>
-                                {activeInstallation && (
-                                    <button
-                                        onClick={() => setIsSwitchDialogOpen(true)}
-                                        className="text-[10px] text-muted-foreground truncate text-left hover:text-primary transition-colors flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 -ml-1.5 rounded-md hover:bg-accent/50"
-                                        title="Trocar instalação"
+            {!loading && !user && <Navigate to="/login" state={{ from: location }} replace />}
+
+            {!loading && user && installations.length === 0 && <Navigate to="/onboarding" replace />}
+
+            {!loading && user && installations.length > 0 && (
+                <div className="h-screen bg-background flex overflow-hidden transition-colors duration-200">
+                    {/* Mobile Sidebar Backdrop */}
+                    {isSidebarOpen && (
+                        <div
+                            className="fixed inset-0 z-[55] bg-black/20 backdrop-blur-sm lg:hidden"
+                            onClick={() => setIsSidebarOpen(false)}
+                        />
+                    )}
+                    
+                    {/* ...rest of sidebar and main content... */}
+                    <aside className={cn(
+                        "fixed inset-y-0 left-0 z-[60] bg-card/95 backdrop-blur-2xl border-r border-white/10 shadow-[var(--shadow-deep)] transform transition-all duration-300 ease-in-out lg:translate-x-0",
+                        isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+                        isSidebarCollapsed ? "lg:w-20" : "lg:w-64",
+                        "w-64" // mobile width
+                    )}
+                        style={{
+                            paddingTop: 'var(--safe-area-top)',
+                            paddingBottom: 'var(--safe-area-bottom)',
+                            paddingLeft: 'var(--safe-area-left)'
+                        }}
+                    >
+                        <div className="flex flex-col h-full bg-transparent text-card-foreground">
+                            {/* Logo */}
+                            <div className={cn(
+                                "h-16 flex items-center border-b border-border transition-all duration-300",
+                                isSidebarCollapsed ? "px-5 justify-center" : "px-6"
+                            )}>
+                                <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain shrink-0" />
+                                {!isSidebarCollapsed && (
+                                    <div className="flex flex-col flex-1 min-w-0 ml-3 animate-in fade-in duration-300">
+                                        <span className="text-xl font-bold tracking-tight text-foreground/90">
+                                            Arbor<span className="text-primary italic">IA</span>
+                                        </span>
+                                        {activeInstallation && (
+                                            <button
+                                                onClick={() => setIsSwitchDialogOpen(true)}
+                                                className="text-[10px] text-muted-foreground truncate text-left hover:text-primary transition-colors flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 -ml-1.5 rounded-md hover:bg-accent/50"
+                                                title="Trocar instalação"
+                                            >
+                                                <span className="truncate max-w-[140px] font-medium">{activeInstallation.nome}</span>
+                                                <Settings2 className="w-3 h-3 stroke-[1.5] text-muted-foreground/70" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                                {!isSidebarCollapsed && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setIsSidebarOpen(false)}
+                                        className="lg:hidden ml-auto text-muted-foreground"
                                     >
-                                        <span className="truncate max-w-[140px] font-medium">{activeInstallation.nome}</span>
-                                        <Settings2 className="w-3 h-3 stroke-[1.5] text-muted-foreground/70" />
-                                    </button>
+                                        <PanelLeftClose className="w-5 h-5 stroke-[1.5]" />
+                                    </Button>
                                 )}
                             </div>
-                        )}
-                        {!isSidebarCollapsed && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsSidebarOpen(false)}
-                                className="lg:hidden ml-auto text-muted-foreground"
-                            >
-                                <PanelLeftClose className="w-5 h-5 stroke-[1.5]" />
-                            </Button>
-                        )}
-                    </div>
 
 
-                    {/* Nav */}
-                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
-                        {navigation.map((item) => {
-                            const isActive = location.pathname === item.href;
-                            return (
-                                <Link
-                                    key={item.name}
-                                    to={item.href}
-                                    onClick={() => setIsSidebarOpen(false)}
-                                    title={isSidebarCollapsed ? item.name : undefined}
+                            {/* Nav */}
+                            <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
+                                {navigation.map((item) => {
+                                    const isActive = location.pathname === item.href;
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            to={item.href}
+                                            onClick={() => setIsSidebarOpen(false)}
+                                            title={isSidebarCollapsed ? item.name : undefined}
+                                            className={cn(
+                                                "group flex items-center text-sm font-medium rounded-xl transition-all active:scale-95",
+                                                isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3",
+                                                isActive
+                                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-inner"
+                                                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:shadow-sm"
+                                            )}
+                                        >
+                                            <item.icon 
+                                                className={cn(
+                                                    "w-5 h-5 stroke-[1.5] transition-all duration-300",
+                                                    isSidebarCollapsed ? "" : "mr-3",
+                                                    isActive 
+                                                        ? "stroke-[2.25] text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] fill-emerald-500/10" 
+                                                        : "text-muted-foreground group-hover:text-foreground"
+                                                )} 
+                                            />
+                                            {!isSidebarCollapsed && <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
+                                        </Link>
+                                    );
+                                })}
+                            </nav>
+
+                            {/* Footer */}
+                            <div className="p-4 border-t border-border">
+                                <button
+                                    onClick={async () => {
+                                        const toastId = toast.loading('Saindo...');
+                                        try {
+                                            await signOut();
+                                            toast.success('Até logo!', { id: toastId });
+                                        } catch (error) {
+                                            console.error('Logout error:', error);
+                                            toast.error('Erro ao sair, mas limpando sessão...', { id: toastId });
+                                        }
+                                    }}
+                                    title={isSidebarCollapsed ? "Sair" : undefined}
                                     className={cn(
-                                        "group flex items-center text-sm font-medium rounded-xl transition-all active:scale-95",
-                                        isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3",
-                                        isActive
-                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-inner"
-                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:shadow-sm"
+                                        "flex items-center w-full text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors",
+                                        isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3"
                                     )}
                                 >
-                                    <item.icon 
-                                        className={cn(
-                                            "w-5 h-5 stroke-[1.5] transition-all duration-300",
-                                            isSidebarCollapsed ? "" : "mr-3",
-                                            isActive 
-                                                ? "stroke-[2.25] text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] fill-emerald-500/10" 
-                                                : "text-muted-foreground group-hover:text-foreground"
-                                        )} 
-                                    />
-                                    {!isSidebarCollapsed && <span className="truncate animate-in fade-in slide-in-from-left-2 duration-300">{item.name}</span>}
-                                </Link>
-                            );
-                        })}
-                    </nav>
+                                    <LogOut className={cn("w-5 h-5 stroke-[1.5]", isSidebarCollapsed ? "" : "mr-3")} />
+                                    {!isSidebarCollapsed && <span>Sair</span>}
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
 
-                    {/* Footer */}
-                    <div className="p-4 border-t border-border">
-                        <button
-                            onClick={async () => {
-                                const toastId = toast.loading('Saindo...');
-                                try {
-                                    await signOut();
-                                    toast.success('Até logo!', { id: toastId });
-                                } catch (error) {
-                                    console.error('Logout error:', error);
-                                    toast.error('Erro ao sair, mas limpando sessão...', { id: toastId });
-                                }
-                            }}
-                            title={isSidebarCollapsed ? "Sair" : undefined}
-                            className={cn(
-                                "flex items-center w-full text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors",
-                                isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3"
-                            )}
+                    {/* Main Content */}
+                    <div
+                        className={cn(
+                            "flex-1 flex flex-col min-w-0 h-full bg-background transition-all duration-300 overflow-hidden",
+                            isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+                        )}
+                        style={{
+                            paddingTop: 'var(--safe-area-top)',
+                            paddingRight: 'var(--safe-area-right)'
+                        }}
+                    >
+                        {/* Global Top Header */}
+                        <TopHeader
+                            onMenuClick={() => setIsSidebarOpen(true)}
+                            onToggleSidebar={toggleSidebarCollapse}
+                            isSidebarCollapsed={isSidebarCollapsed}
+                        />
+
+                        {/* Page Content */}
+                        <main
+                            className="flex-1 p-4 lg:p-8 overflow-y-auto"
+                            style={{ paddingBottom: 'calc(1rem + var(--safe-area-bottom))' }}
                         >
-                            <LogOut className={cn("w-5 h-5 stroke-[1.5]", isSidebarCollapsed ? "" : "mr-3")} />
-                            {!isSidebarCollapsed && <span>Sair</span>}
-                        </button>
+                            <div className="max-w-[1920px] mx-auto w-full">
+                                <Outlet />
+                            </div>
+                        </main>
                     </div>
+                    <OfflineSyncIndicator />
+                    <InstallationSwitchDialog open={isSwitchDialogOpen} onOpenChange={setIsSwitchDialogOpen} />
                 </div>
-            </aside>
-
-            {/* Main Content */}
-            <div
-                className={cn(
-                    "flex-1 flex flex-col min-w-0 h-full bg-background transition-all duration-300 overflow-hidden",
-                    isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
-                )}
-                style={{
-                    paddingTop: 'var(--safe-area-top)',
-                    paddingRight: 'var(--safe-area-right)'
-                }}
-            >
-                {/* Global Top Header */}
-                <TopHeader
-                    onMenuClick={() => setIsSidebarOpen(true)}
-                    onToggleSidebar={toggleSidebarCollapse}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                />
-
-                {/* Page Content */}
-                <main
-                    className="flex-1 p-4 lg:p-8 overflow-y-auto"
-                    style={{ paddingBottom: 'calc(1rem + var(--safe-area-bottom))' }}
-                >
-                    <div className="max-w-[1920px] mx-auto w-full">
-                        <Outlet />
-                    </div>
-                </main>
-            </div>
-            <OfflineSyncIndicator />
-            <InstallationSwitchDialog open={isSwitchDialogOpen} onOpenChange={setIsSwitchDialogOpen} />
-        </div >
+            )}
+        </>
     );
 }

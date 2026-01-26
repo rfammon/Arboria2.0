@@ -56,6 +56,8 @@ export const GlobalBackgroundCapture: React.FC = () => {
                 filename = `Cronograma.pdf`;
             } else if (type === 'risk-inventory') {
                 filename = `Inventario_Risco.pdf`;
+            } else if (type === 'execution-report') {
+                filename = `Relatorio_Execucao_${selectedId?.substring(0, 8)}.pdf`;
             }
 
             // 2. Add to Download Hub
@@ -70,7 +72,7 @@ export const GlobalBackgroundCapture: React.FC = () => {
             const images: { mapImage?: string; ganttImage?: string } = {};
 
             // 4. Capture Map (if needed)
-            const needsMap = ['intervention-plan', 'tree-individual', 'risk-inventory'].includes(type);
+            const needsMap = ['intervention-plan', 'tree-individual', 'risk-inventory', 'execution-report'].includes(type);
             const canCaptureLocally = platform.supportsOfflineCapture || platform.platformName === 'tauri';
 
             if (needsMap && canCaptureLocally) {
@@ -117,6 +119,9 @@ export const GlobalBackgroundCapture: React.FC = () => {
                     break;
                 case 'schedule':
                     reportResult = await ReportService.generateScheduleReport(images);
+                    break;
+                case 'execution-report':
+                    reportResult = await ReportService.generateExecutionReportById(selectedId, images);
                     break;
                 case 'risk-inventory':
                 default:
@@ -181,13 +186,14 @@ export const GlobalBackgroundCapture: React.FC = () => {
             zIndex: -100
         }}>
             {/* Map Capture */}
-            {['intervention-plan', 'tree-individual', 'risk-inventory'].includes(currentRequest.type) && (
+            {['intervention-plan', 'tree-individual', 'risk-inventory', 'execution-report'].includes(currentRequest.type) && (
                 <div style={{ width: 800, height: 600 }}>
                     <ReportMap
                         trees={
                             currentRequest.type === 'tree-individual' && currentRequest.data ? [currentRequest.data] :
                                 currentRequest.type === 'intervention-plan' && currentRequest.data?.tree ? [currentRequest.data.tree] :
-                                    (currentRequest.data || [])
+                                    currentRequest.type === 'execution-report' && currentRequest.data?.tree ? [currentRequest.data.tree] :
+                                        (currentRequest.data || [])
                         }
                         onLoad={(map: any) => { mapRef.current = map; }}
                     />
