@@ -86,9 +86,9 @@ export default function DashboardHome() {
   return (
     <div className="min-h-full w-full mx-auto space-y-6 p-4 md:p-6 animate-in fade-in duration-500">
       <div className="px-2 py-2">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Dashboard <span className="text-foreground/50 mx-1">/</span> Principal
-        </h2>
+        <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+          Dashboard <span className="text-muted-foreground/50 mx-1 normal-case">/</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-emerald-600 to-indigo-700 dark:from-emerald-400 dark:via-emerald-500 dark:to-indigo-600 italic font-display">Principal</span>
+        </h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">

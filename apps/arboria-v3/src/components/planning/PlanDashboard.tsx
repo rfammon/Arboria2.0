@@ -75,7 +75,7 @@ export function PlanDashboard({
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Gestão de Planos</h1>
+                    <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground">Gestão de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-emerald-600 to-indigo-700 dark:from-emerald-400 dark:via-emerald-500 dark:to-indigo-600 italic font-display">Planos</span></h1>
                     <p className="text-muted-foreground mt-1 font-medium">
                         Acompanhamento de intervenções programadas
                     </p>
