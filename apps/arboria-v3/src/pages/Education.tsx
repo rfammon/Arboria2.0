@@ -16,7 +16,8 @@ import {
 import { EducationSearch } from '../components/education/EducationSearch';
 import { cn } from '../lib/utils';
 import { useState } from 'react';
-import { ModeSelector, LearningMode } from '../components/education/ModeSelector';
+import { ModeSelector } from '../components/education/ModeSelector';
+import type { LearningMode } from '../components/education/ModeSelector';
 import { SpecializationNavigator } from '../components/education/specialization/SpecializationNavigator';
 import { useEducationStore } from '../stores/useEducationStore';
 import { motion, AnimatePresence } from 'framer-motion';
