@@ -66,17 +66,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchUserTheme = async (userId: string) => {
         try {
+            console.log('[AuthContext] Fetching theme for user:', userId);
             const { data, error } = await supabase
                 .from('user_profiles')
                 .select('theme')
                 .eq('id', userId)
-                .single();
+                .maybeSingle(); // Changed from single() to maybeSingle() to handle missing rows gracefully
 
-            if (data && !error) {
+            if (error) {
+                console.error('[AuthContext] Error fetching theme (Supabase):', error);
+                // Don't rethrow or infinite loop
+            } else if (data) {
+                console.log('[AuthContext] Theme found:', data.theme);
                 setUserTheme(data.theme);
+            } else {
+                console.log('[AuthContext] No profile/theme found for user.');
             }
         } catch (error) {
-            console.error('Error fetching user theme:', error);
+            console.error('[AuthContext] Unexpected error fetching user theme:', error);
         }
     };
 

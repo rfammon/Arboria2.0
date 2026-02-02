@@ -44,12 +44,12 @@ const GamificationHeader = ({ streak, score, certificationStatus }: any) => (
 export default function Education() {
     const navigate = useNavigate();
     const [mode, setMode] = useState<LearningMode | null>(null);
-    const { modules, streak, certificationStatus, score } = useEducationStore((state) => ({
-        modules: state.modules,
-        streak: state.streak,
-        certificationStatus: state.certificationStatus,
-        score: Object.values(state.modules).reduce((acc, m) => acc + m.score, 0)
-    }));
+    const modules = useEducationStore((state) => state.modules);
+    const streak = useEducationStore((state) => state.streak);
+    const certificationStatus = useEducationStore((state) => state.certificationStatus);
+    const score = useEducationStore((state) =>
+        Object.values(state.modules).reduce((acc, m) => acc + m.score, 0)
+    );
 
     const topics = [
         {
