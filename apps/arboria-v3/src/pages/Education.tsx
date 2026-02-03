@@ -44,7 +44,7 @@ const ILLUSTRATION_MAP: Record<string, React.ComponentType<any>> = {
 
 // --- Gamification Header Component ---
 const GamificationHeader = ({ streak, score, certificationStatus }: any) => (
-    <div className="flex items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-2 rounded-2xl border border-slate-200 dark:border-slate-800">
+    <div className="flex items-center gap-4 bg-white/50 dark:bg-slate-900/40 backdrop-blur-md p-2 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
         <div className="flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
             <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-pulse" />
             <span className="font-bold text-orange-700 dark:text-orange-400">{streak.current} dias</span>
@@ -211,6 +211,7 @@ export default function Education() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {topics.map((topic) => {
+                        const colorName = topic.colorClass.split(' ')[0].split('-')[1];
                         const Illustration = ILLUSTRATION_MAP[topic.id] || DefinitionsIllustration;
                         // Mock lock logic for demo purposes - unlock first 3
                         const isLocked = ['waste', 'glossary'].includes(topic.id);
@@ -222,14 +223,17 @@ export default function Education() {
                             className={cn(
                                 "group relative flex flex-col justify-between h-[320px] rounded-[2rem] p-6 transition-all duration-500 overflow-hidden cursor-pointer",
                                 isLocked 
-                                    ? "bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 opacity-75 grayscale hover:grayscale-0 hover:opacity-100" 
-                                    : "bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2"
+                                    ? "bg-slate-100/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/5 opacity-75 grayscale hover:grayscale-0 hover:opacity-100" 
+                                    : cn(
+                                        "bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm hover:border-primary/50 dark:hover:border-white/20 hover:-translate-y-2",
+                                        `hover:shadow-2xl dark:hover:shadow-${colorName}-500/30`
+                                    )
                             )}
                         >
                             {/* Animated Background Blob */}
                             <div className={cn(
-                                "absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-10 dark:opacity-20 transition-all duration-700 group-hover:scale-150 group-hover:opacity-20 dark:group-hover:opacity-30",
-                                topic.colorClass.replace('text-', 'bg-')
+                                "absolute -right-10 -top-10 w-48 h-48 rounded-full blur-[80px] opacity-10 dark:opacity-15 mix-blend-plus-lighter transition-all duration-700 group-hover:scale-150 group-hover:opacity-30",
+                                topic.colorClass.replaceAll('text-', 'bg-')
                             )} />
 
                             {/* Content */}
@@ -264,7 +268,7 @@ export default function Education() {
 
                                 {/* Vector Illustration Area */}
                                 <div className="relative h-24 mt-4 w-full flex items-end justify-end">
-                                    <Illustration className="w-32 h-32 absolute -right-4 -bottom-4 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3" />
+                                    <Illustration className="w-32 h-32 absolute -right-4 -bottom-4 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3" />
                                 </div>
                             </div>
                         </div>
