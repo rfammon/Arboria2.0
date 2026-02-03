@@ -3,6 +3,9 @@
 ## Técnicas de Corte
 Fundamentos para operações de intervenção.
 
+## Plano de Poda
+Atividade prática de definição de plano.
+
 ## Tipos de Poda
 *   **Limpeza**: Remoção de galhos mortos ou doentes.
 *   **Levantamento**: Remoção de galhos baixos.

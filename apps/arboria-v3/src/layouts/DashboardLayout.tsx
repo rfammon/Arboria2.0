@@ -12,6 +12,8 @@ import { SplashScreen } from '../components/layout/SplashScreen';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 
+import { BugReportButton } from '../components/common/BugReportButton';
+
 export default function DashboardLayout() {
     const { user, loading, signOut, activeInstallation, installations, setActiveInstallation, hasPermission } = useAuth();
     const [timerFinished, setTimerFinished] = useState(false);
@@ -182,7 +184,17 @@ export default function DashboardLayout() {
                             </nav>
 
                             {/* Footer */}
-                            <div className="p-4 border-t border-border">
+                            <div className="p-4 border-t border-border space-y-1">
+                                <BugReportButton 
+                                    variant="ghost"
+                                    className={cn(
+                                        "w-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all",
+                                        isSidebarCollapsed ? "px-0 justify-center h-12 w-12 mx-auto" : "px-4 py-3 justify-start"
+                                    )}
+                                    showLabel={!isSidebarCollapsed}
+                                    label="Relatar Bug"
+                                />
+                                
                                 <button
                                     onClick={async () => {
                                         const toastId = toast.loading('Saindo...');

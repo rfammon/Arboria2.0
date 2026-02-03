@@ -1,12 +1,9 @@
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
-import { Button } from '../../ui/button';
-import { Lock, Scissors, Zap, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Scissors, Zap, AlertTriangle, ArrowRight } from 'lucide-react';
 import type { ModuleStatus } from '../../../stores/useEducationStore';
 
 interface SpecializationNavigatorProps {
     modules: Record<string, { id: string; status: ModuleStatus; score: number }>;
-    isCertified: boolean;
     onSelectTrack?: (trackId: string) => void; // Optional for testing/internal nav
 }
 
@@ -37,9 +34,7 @@ const SPECIALIZATIONS = [
     }
 ];
 
-export function SpecializationNavigator({ modules, isCertified, onSelectTrack }: SpecializationNavigatorProps) {
-    const navigate = useNavigate();
-
+export function SpecializationNavigator({ modules, onSelectTrack }: SpecializationNavigatorProps) {
     const handleSelect = (id: string) => {
         if (onSelectTrack) {
             onSelectTrack(id);
@@ -65,17 +60,15 @@ export function SpecializationNavigator({ modules, isCertified, onSelectTrack }:
             <CardContent className="grid gap-4 md:grid-cols-3">
                 {SPECIALIZATIONS.map((spec) => {
                     const moduleState = modules[spec.id];
-                    const isUnlocked = isCertified && moduleState?.status !== 'locked';
+                    const isUnlocked = moduleState?.status !== 'locked';
 
                     return (
                         <div
                             key={spec.id}
-                            onClick={() => isUnlocked && handleSelect(spec.id)}
+                            onClick={() => handleSelect(spec.id)}
                             className={`
                                 group relative p-4 rounded-xl border-2 transition-all cursor-pointer
-                                ${isUnlocked
-                                    ? 'border-slate-100 hover:border-blue-300 hover:shadow-md bg-white dark:bg-slate-900'
-                                    : 'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed grayscale'}
+                                border-slate-100 hover:border-blue-300 hover:shadow-md bg-white dark:bg-slate-900
                             `}
                         >
                             <div className={`w-12 h-12 rounded-full ${spec.bg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
@@ -95,24 +88,6 @@ export function SpecializationNavigator({ modules, isCertified, onSelectTrack }:
                     );
                 })}
             </CardContent>
-
-            {/* Locked Overlay */}
-            {!isCertified && (
-                <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-6">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-full shadow-2xl mb-4 animate-in zoom-in duration-300">
-                        <Lock className="w-12 h-12 text-slate-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-800 mb-2">
-                        Especializações Bloqueadas
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-600 max-w-md mb-6">
-                        Você precisa completar a <strong className="text-gray-900 dark:text-gray-900">Certificação de Campo</strong> (Epic 3) para acessar estas missões avançadas.
-                    </p>
-                    <Button onClick={() => navigate('/education/certification')} size="lg" className="shadow-lg">
-                        Ir para Certificação
-                    </Button>
-                </div>
-            )}
         </Card>
     );
 }

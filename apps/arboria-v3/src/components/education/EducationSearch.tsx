@@ -49,7 +49,7 @@ export function EducationSearch() {
     };
 
     const handleSelect = (result: SearchResult) => {
-        navigate(`/education/${result.topicId}`);
+        navigate(`/education/${result.topicId}?mode=reference`);
         setShowResults(false);
         setQuery('');
     };
@@ -68,44 +68,44 @@ export function EducationSearch() {
     return (
         <div className="relative w-full max-w-xl" ref={wrapperRef}>
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <Input
                     type="text"
                     placeholder={loading ? "Preparando busca..." : "Buscar nos manuais (ex: poda, risco, EPIs)..."}
-                    className="pl-9 w-full bg-white dark:bg-gray-800"
+                    className="pl-9 w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
                     value={query}
                     onChange={handleSearch}
                     onFocus={() => query.length > 2 && setShowResults(true)}
                     disabled={loading}
                 />
                 {loading && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-gray-500" />
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />
                 )}
             </div>
 
             {showResults && results.length > 0 && (
-                <Card className="absolute top-full mt-2 w-full z-50 max-h-[400px] overflow-y-auto shadow-lg animate-in fade-in zoom-in-95 duration-200">
+                <Card className="absolute top-full mt-2 w-full z-50 max-h-[400px] overflow-y-auto shadow-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-2 space-y-1">
                         {results.map((result, index) => (
                             <button
                                 key={`${result.topicId}-${index}`}
-                                className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors group"
+                                className="w-full text-left p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
                                 onClick={() => handleSelect(result)}
                             >
                                 <div className="flex items-center justify-between mb-1">
                                     <div className="flex items-center gap-2">
-                                        <FileText className="h-4 w-4 text-green-600" />
-                                        <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                                        <FileText className="h-4 w-4 text-primary" />
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                                             {result.topicTitle}
                                         </span>
-                                        <span className="text-gray-400 text-xs">•</span>
-                                        <span className="text-xs text-gray-500 font-medium">
+                                        <span className="text-slate-300 dark:text-slate-700 text-xs">•</span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                                             {result.section}
                                         </span>
                                     </div>
-                                    <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 pl-6">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 pl-6">
                                     {highlightMatch(result.content, query)}
                                 </p>
                             </button>
@@ -115,7 +115,7 @@ export function EducationSearch() {
             )}
 
             {showResults && query.length > 2 && results.length === 0 && (
-                <Card className="absolute top-full mt-2 w-full z-50 p-4 text-center text-gray-500 text-sm">
+                <Card className="absolute top-full mt-2 w-full z-50 p-4 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm shadow-lg">
                     Nenhum resultado encontrado para "{query}"
                 </Card>
             )}

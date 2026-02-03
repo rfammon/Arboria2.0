@@ -66,42 +66,55 @@ export const DiagnosticQuiz: React.FC<DiagnosticQuizProps> = ({ questions, onCom
     if (!currentQuestion) return null;
 
     return (
-        <div className="max-w-md mx-auto p-4 bg-background rounded-lg shadow-lg border border-border">
-            <div className="mb-4 flex justify-between items-center">
-                <span className="text-sm font-medium text-muted-foreground">
-                    Question {currentIndex + 1} of {questions.length}
+        <div className="max-w-xl mx-auto p-8 bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-4">
+            <div className="mb-6 flex justify-between items-center">
+                <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-500">
+                    Questão {currentIndex + 1} de {questions.length}
                 </span>
-                <span className="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded">
-                    Diagnostic Mode
+                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
+                    Modo Diagnóstico
                 </span>
             </div>
 
-            <h3 className="text-lg font-bold mb-6 text-foreground">
+            <h3 className="text-2xl font-black mb-8 text-slate-900 dark:text-white tracking-tight leading-tight">
                 {currentQuestion.text}
             </h3>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-4 mb-10">
                 {currentQuestion.options.map((option) => (
                     <button
                         key={option.id}
                         onClick={() => handleOptionClick(option.id)}
-                        className={`w-full p-4 text-left border rounded-lg transition-all ${selectedOptionId === option.id
-                            ? 'border-primary bg-primary/5 dark:bg-primary/20 ring-2 ring-primary/50'
-                            : 'border-border hover:border-primary/50 dark:border-border'
+                        className={`w-full p-5 text-left border-2 rounded-2xl transition-all duration-300 font-medium ${selectedOptionId === option.id
+                            ? 'border-primary bg-primary/5 dark:bg-primary/20 shadow-lg shadow-primary/10'
+                            : 'border-slate-100 dark:border-slate-800 hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                             }`}
                     >
-                        {option.text}
+                        <div className="flex items-center gap-4">
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedOptionId === option.id ? 'border-primary bg-primary' : 'border-slate-300 dark:border-slate-700'}`}>
+                                {selectedOptionId === option.id && <div className="w-2 h-2 bg-white rounded-full" />}
+                            </div>
+                            <span className={selectedOptionId === option.id ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}>
+                                {option.text}
+                            </span>
+                        </div>
                     </button>
                 ))}
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+                <div className="h-2 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full mr-8 overflow-hidden">
+                    <div 
+                        className="h-full bg-primary transition-all duration-500" 
+                        style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                    />
+                </div>
                 <button
                     onClick={handleConfirm}
                     disabled={!selectedOptionId}
-                    className="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs rounded-2xl disabled:opacity-30 disabled:grayscale transition-all hover:scale-105 active:scale-95"
                 >
-                    {isLastQuestion ? 'Finish' : 'Next'}
+                    {isLastQuestion ? 'Finalizar' : 'Próximo'}
                     {!isLastQuestion && <ArrowRight className="w-4 h-4" />}
                 </button>
             </div>

@@ -153,7 +153,7 @@ export const SplashScreen: React.FC = () => {
           transition={{ duration: 1.5, delay: 1.8, ease: "easeOut" }}
           className="text-4xl md:text-6xl font-black tracking-tighter"
         >
-          <span className="text-emerald-500">Arbo</span>
+          <span className="text-emerald-500">Arbor</span>
           <span className="text-blue-600">IA</span>
         </motion.h1>
         

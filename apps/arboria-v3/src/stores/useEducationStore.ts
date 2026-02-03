@@ -7,6 +7,7 @@ interface ModuleState {
     id: string;
     status: ModuleStatus;
     score: number;
+    currentCardIndex: number;
 }
 
 interface Streak {
@@ -20,6 +21,7 @@ interface EducationStore {
     certificationStatus: 'idle' | 'in_progress' | 'certified' | 'failed';
     streak: Streak;
 
+    updateModuleProgress: (moduleId: string, cardIndex: number) => void;
     completeModule: (moduleId: string, score: number, testedOut?: boolean) => void;
     unlockModule: (moduleId: string) => void;
     toggleHighContrast: () => void;
@@ -34,16 +36,16 @@ export const useEducationStore = create<EducationStore>()(
         (set, get) => ({
             modules: {
                 // Initial State mimicking the hardcoded topics in Education.tsx
-                'concepts': { id: 'concepts', status: 'locked', score: 0 },
-                'safety': { id: 'safety', status: 'available', score: 0 }, // Core Module
-                'planning': { id: 'planning', status: 'locked', score: 0 },
-                'legal': { id: 'legal', status: 'locked', score: 0 },
-                'prep': { id: 'prep', status: 'locked', score: 0 },
-                'writing': { id: 'writing', status: 'locked', score: 0 },
-                'pruning': { id: 'pruning', status: 'locked', score: 0 },
-                'ops': { id: 'ops', status: 'locked', score: 0 },
-                'risk': { id: 'risk', status: 'locked', score: 0 },
-                'sim_certification': { id: 'sim_certification', status: 'locked', score: 0 } // Epic 3 Gate
+                'concepts': { id: 'concepts', status: 'locked', score: 0, currentCardIndex: 0 },
+                'safety': { id: 'safety', status: 'available', score: 0, currentCardIndex: 0 }, // Core Module
+                'planning': { id: 'planning', status: 'locked', score: 0, currentCardIndex: 0 },
+                'legal': { id: 'legal', status: 'locked', score: 0, currentCardIndex: 0 },
+                'prep': { id: 'prep', status: 'locked', score: 0, currentCardIndex: 0 },
+                'writing': { id: 'writing', status: 'locked', score: 0, currentCardIndex: 0 },
+                'pruning': { id: 'pruning', status: 'locked', score: 0, currentCardIndex: 0 },
+                'ops': { id: 'ops', status: 'locked', score: 0, currentCardIndex: 0 },
+                'risk': { id: 'risk', status: 'locked', score: 0, currentCardIndex: 0 },
+                'sim_certification': { id: 'sim_certification', status: 'locked', score: 0, currentCardIndex: 0 } // Epic 3 Gate
             },
             isHighContrast: false,
             certificationStatus: 'idle',
@@ -90,6 +92,17 @@ export const useEducationStore = create<EducationStore>()(
                 // Update streak on completion
                 get().updateStreak();
             },
+
+            updateModuleProgress: (moduleId, cardIndex) => set((state) => {
+                const current = state.modules[moduleId];
+                if (!current) return state;
+                return {
+                    modules: {
+                        ...state.modules,
+                        [moduleId]: { ...current, currentCardIndex: cardIndex }
+                    }
+                };
+            }),
 
             unlockModule: (moduleId) => set((state) => {
                 const current = state.modules[moduleId];

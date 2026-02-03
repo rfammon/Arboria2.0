@@ -418,52 +418,50 @@ body,
   }
 }
 
-/* Educational content: fixed dark text on light backgrounds, regardless of theme */
-.educational-content :where(p, h1, h2, h3, h4, h5, h6, li, td, th, span, div, a:not(.no-educational-override), blockquote, code:not(pre code)) {
-  @apply text-gray-900 dark:text-gray-900 !important;
+/* Educational content: Adaptive text colors */
+.educational-content :where(p, h1, h2, h3, h4, h5, h6, li, td, th, span, div, blockquote, code:not(pre code)) {
+  @apply text-slate-900 dark:text-slate-100;
 }
 
 .educational-content {
-  @apply bg-white dark:bg-white !important;
-  color: #111 !important;
+  @apply bg-transparent;
 }
 
 /* Specific overrides for different text elements in educational content */
 .educational-content h1,
 .educational-content h2,
 .educational-content h3 {
-  @apply text-gray-900 dark:text-gray-900 !important;
+  @apply text-slate-900 dark:text-white font-bold tracking-tight;
 }
 
 .educational-content p,
 .educational-content li,
 .educational-content td,
 .educational-content th {
-  @apply text-gray-800 dark:text-gray-800 !important;
+  @apply text-slate-700 dark:text-slate-300;
 }
 
 .educational-content blockquote {
-  @apply text-gray-700 dark:text-gray-700 !important;
+  @apply text-slate-600 dark:text-slate-400 border-l-4 border-emerald-500 pl-4 italic;
 }
 
 .educational-content a {
-  @apply text-blue-600 dark:text-blue-600 !important;
+  @apply text-emerald-600 dark:text-emerald-400 hover:underline;
 }
 
 .educational-content code {
-  @apply text-gray-800 dark:text-gray-800 !important;
-  background-color: #f3f4f6 !important;
+  @apply text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 px-1 py-0.5 rounded font-mono text-sm;
 }
 
 .educational-content pre code {
-  @apply text-gray-100 !important;
-  background-color: initial !important;
+  @apply text-slate-100 bg-transparent;
 }
 
 .educational-content table th,
 .educational-content table td {
-  @apply border-gray-300 !important;
+  @apply border-slate-200 dark:border-slate-700;
 }
+
 
 /* Safe Area Utilities - for devices with notches/home indicators */
 .safe-area-pb {

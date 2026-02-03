@@ -120,7 +120,7 @@ export default function Login() {
                         <div className="flex items-center gap-3">
                             <img src="/logo.png" alt="ArboIA Logo" className="w-12 h-12" />
                             <span className="text-3xl font-black tracking-tighter">
-                                <span className="text-emerald-500">Arbo</span>
+                                <span className="text-emerald-500">Arbor</span>
                                 <span className="text-blue-600">IA</span>
                             </span>
                         </div>
@@ -151,7 +151,7 @@ export default function Login() {
                         <div className="lg:hidden flex items-center gap-2 mb-8">
                             <img src="/logo.png" alt="ArboIA Logo" className="w-10 h-10" />
                             <span className="text-2xl font-black tracking-tighter">
-                                <span className="text-emerald-500">Arbo</span>
+                                <span className="text-emerald-500">Arbor</span>
                                 <span className="text-blue-600">IA</span>
                             </span>
                         </div>

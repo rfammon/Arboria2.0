@@ -11,6 +11,7 @@ import { Monitor, Moon, Sun, Download, RefreshCw, Loader2, CheckCircle2, AlertCi
 import { cn } from '../lib/utils';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
+import { BugReportButton } from '../components/common/BugReportButton';
 
 export default function Settings() {
     const { activeInstallation, hasPermission } = useAuth();
@@ -30,6 +31,7 @@ export default function Settings() {
                         <TabsTrigger value="installation" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Instalação</TabsTrigger>
                     )}
                     <TabsTrigger value="downloads" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Downloads</TabsTrigger>
+                    <TabsTrigger value="support" className="rounded-xl px-6 h-10 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md transition-all">Suporte</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general" className="space-y-4">
@@ -48,6 +50,26 @@ export default function Settings() {
 
                 <TabsContent value="downloads" className="space-y-4">
                     <DownloadSettings />
+                </TabsContent>
+
+                <TabsContent value="support" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Suporte e Feedback</CardTitle>
+                            <CardDescription>
+                                Encontrou algum problema ou tem sugestões? Nos ajude a melhorar.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                                <div>
+                                    <p className="font-medium">Reportar Problema</p>
+                                    <p className="text-sm text-muted-foreground">Envie detalhes sobre bugs ou erros que você encontrou.</p>
+                                </div>
+                                <BugReportButton variant="default" size="default" />
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
         </div>

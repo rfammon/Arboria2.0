@@ -7,7 +7,7 @@ import DashboardHome from './pages/DashboardHome';
 import Inventory from './pages/Inventory';
 import TreeDetails from './pages/TreeDetails';
 import Education from './pages/Education';
-import TopicPage from './pages/TopicPage';
+import { TopicPage } from './pages/TopicPage';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import { TooltipProvider } from './components/ui/tooltip';

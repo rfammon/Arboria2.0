@@ -22,6 +22,15 @@ export function ContentViewer({ content }: ContentViewerProps) {
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeHighlight]}
                 components={{
+                    // Images with dark mode matrix filter correction
+                    img: ({ src, alt }: any) => (
+                        <img 
+                            src={src} 
+                            alt={alt} 
+                            className="rounded-lg shadow-md mx-auto my-6 dark:invert dark:hue-rotate-180 dark:contrast-150 transition-all mix-blend-multiply dark:mix-blend-screen bg-transparent" 
+                        />
+                    ),
+
                     // Handle Tooltip links: [Term](tooltip:Definition)
                     a: ({ href, children }: any) => {
                         console.log('[ContentViewer] Link clicked:', { href, children });
