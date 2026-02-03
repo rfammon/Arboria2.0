@@ -25,10 +25,11 @@ export default function InstallationSelector() {
     const navigate = useNavigate();
 
     // Redirect to login if not authenticated
-    if (!loading && !user) {
-        navigate('/login', { replace: true });
-        return null;
-    }
+    useEffect(() => {
+        if (!loading && !user) {
+            navigate('/login', { replace: true });
+        }
+    }, [loading, user, navigate]);
 
     const filteredInstallations = useMemo(() => {
         return installations.filter(inst =>

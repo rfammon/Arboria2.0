@@ -1,18 +1,17 @@
-import { 
-    BookOpen, 
-    ClipboardCheck, 
-    Scale, 
-    HardHat, 
-    Shield, 
-    Recycle, 
+import {
+    BookOpen,
+    ClipboardCheck,
+    Scale,
+    HardHat,
+    Shield,
+    Recycle,
     Library,
     Wrench,
     HeartPulse,
     AlertTriangle,
-    Mountain,
     Zap
 } from 'lucide-react';
-import { 
+import {
     DefinitionsIllustration,
     PlanningIllustration,
     LegalIllustration,
@@ -20,8 +19,7 @@ import {
     PruningIllustration,
     SafetyIllustration,
     WasteIllustration,
-    GlossaryIllustration,
-    ChainsawIcon
+    GlossaryIllustration
 } from '../components/illustrations/education-illustrations';
 
 export interface EducationTopic {
@@ -69,7 +67,7 @@ export const EDUCATION_TOPICS: EducationTopic[] = [
     {
         id: 'planning',
         title: 'Planejamento',
-        description: 'Técnicas de planejamento e avaliação de risco operacional.',
+        description: 'Planejamento operacional e análise do local.',
         icon: ClipboardCheck,
         illustration: PlanningIllustration,
         colorClass: 'dark:bg-emerald-900/20 bg-emerald-50 border-emerald-100 dark:border-white/5',
@@ -117,29 +115,9 @@ export const EDUCATION_TOPICS: EducationTopic[] = [
         blobColor: 'bg-yellow-400/20'
     },
     {
-        id: 'climbing',
-        title: 'Técnicas de Escalada',
-        description: 'Métodos seguros de ascensão e trabalho em altura.',
-        icon: Mountain,
-        illustration: PreparationIllustration,
-        colorClass: 'dark:bg-cyan-900/20 bg-cyan-50 border-cyan-100 dark:border-white/5',
-        iconColor: 'text-cyan-600 dark:text-cyan-400',
-        blobColor: 'bg-cyan-400/20'
-    },
-    {
-        id: 'pruning',
-        title: 'Técnicas de Poda',
-        description: 'Técnicas avançadas de poda e supressão vegetal.',
-        icon: ChainsawIcon,
-        illustration: PruningIllustration,
-        colorClass: 'dark:bg-violet-900/20 bg-violet-50 border-violet-100 dark:border-white/5',
-        iconColor: 'text-violet-600 dark:text-violet-400',
-        blobColor: 'bg-violet-400/20'
-    },
-    {
         id: 'chainsaw',
-        title: 'Operação de Motosserra',
-        description: 'Uso seguro e eficiente de motosserras.',
+        title: 'Operação de Motosserra e Poda',
+        description: 'Uso seguro de motosserras, técnicas de corte (3 cortes) e supressão.',
         icon: Zap,
         illustration: PruningIllustration,
         colorClass: 'dark:bg-zinc-900/20 bg-zinc-50 border-zinc-100 dark:border-white/5',
@@ -148,8 +126,8 @@ export const EDUCATION_TOPICS: EducationTopic[] = [
     },
     {
         id: 'waste',
-        title: 'Resíduos',
-        description: 'Gestão de resíduos (MTR) e impacto ambiental.',
+        title: 'Gestão de Resíduos',
+        description: 'Legislação (PNRS), MTR, compostagem e aproveitamento de biomassa.',
         icon: Recycle,
         illustration: WasteIllustration,
         colorClass: 'dark:bg-green-900/20 bg-green-50 border-green-100 dark:border-white/5',
@@ -159,8 +137,18 @@ export const EDUCATION_TOPICS: EducationTopic[] = [
     {
         id: 'first-aid',
         title: 'Primeiros Socorros',
-        description: 'Procedimentos de emergência e primeiros atendimentos.',
+        description: 'Protocolos para quedas, cortes, choque elétrico e animais peçonhentos.',
         icon: HeartPulse,
+        illustration: SafetyIllustration,
+        colorClass: 'dark:bg-rose-900/20 bg-rose-50 border-rose-100 dark:border-white/5',
+        iconColor: 'text-rose-600 dark:text-rose-400',
+        blobColor: 'bg-rose-400/20'
+    },
+    {
+        id: 'emergency',
+        title: 'Resgate Aéreo',
+        description: 'Procedimentos avançados de resgate em altura.',
+        icon: AlertTriangle,
         illustration: SafetyIllustration,
         colorClass: 'dark:bg-rose-900/20 bg-rose-50 border-rose-100 dark:border-white/5',
         iconColor: 'text-rose-600 dark:text-rose-400',

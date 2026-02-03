@@ -22,7 +22,8 @@ import {
   Sun,
   Ruler,
   Sparkles,
-  RotateCw
+  RotateCw,
+  AlertTriangle
 } from 'lucide-react';
 import { ContentViewer } from './ContentViewer';
 import { PruningPlanActivity } from './PruningPlanActivity';
@@ -350,7 +351,8 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        animate={passed ? { opacity: 1, scale: 1 } : { x: [0, -10, 10, -10, 10, 0], opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
         className={`w-full ${inline ? 'max-w-none' : 'max-w-md mx-auto'}`}
       >
         <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 p-8 text-center relative overflow-hidden">
@@ -392,13 +394,32 @@ const QuizComponent: React.FC<QuizComponentProps> = ({
               <ChevronRight size={18} />
             </button>
           ) : (
-            <button
-              onClick={initQuiz}
-              className="w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mb-3"
-            >
-              <RotateCw size={18} />
-              Tentar Novamente
-            </button>
+            <div className="space-y-3">
+              {/* Feedback Granular - Lista de Erros */}
+              {sessionQuestions.length > 0 && correctCount < sessionQuestions.length && (
+                <div className="text-left bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/20 mb-4 animate-in fade-in slide-in-from-bottom-4">
+                  <span className="text-xs font-bold text-red-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                    <AlertTriangle size={12} />
+                    Pontos para Revisão
+                  </span>
+                  <ul className="space-y-2">
+                    {/* Mostra até 3 tópicos baseados nas questões erradas - Simulado, pois não temos tracking por tópico ainda */}
+                    <li className="text-sm text-slate-600 dark:text-slate-300 flex items-start gap-2">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                      Recomendamos reler o conteúdo deste módulo, focando nos diagramas e definições chave.
+                    </li>
+                  </ul>
+                </div>
+              )}
+
+              <button
+                onClick={initQuiz}
+                className="w-full py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                <RotateCw size={18} />
+                Tentar Novamente
+              </button>
+            </div>
           )}
         </div>
       </motion.div>
@@ -662,14 +683,14 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
                     <ContentViewer content={card.content} />
                   </div>
 
-                  {/* Definitions / Flashcards inline */}
-                  {card.definitions && card.definitions.length > 0 && (
+                  {/* Definitions / Flashcards inline - Only in Training Mode */}
+                  {card.definitions && card.definitions.length > 0 && mode === 'training' && (
                     <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                       <h3 className="font-bold text-slate-400 text-xs uppercase tracking-wider mb-4 flex items-center gap-2">
                         <BrainCircuit size={14} />
                         Termos Técnicos
                       </h3>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {card.definitions.map((def, i) => (
                           <KeyConceptCard
                             key={i}
