@@ -94,11 +94,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const signOut = async () => {
         try {
-            
             // Timeout de 2 segundos para o signOut do Supabase
-            // Em ambientes Capacitor/Windows, às vezes o signOut pendura se houver problemas de rede/armazenamento
             const signOutPromise = supabase.auth.signOut();
-            const timeoutPromise = new Promise((_, reject) => 
+            const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Sign out timeout')), 2000)
             );
 
@@ -109,14 +107,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
             console.error('[AuthContext] Error during signOut logic:', error);
         } finally {
-            // Limpa estado local INDEPENDENTE do resultado do Supabase
+            console.log('[AuthContext] Performing local cleanup...');
+
+            // 1. Limpa state do React
             setSession(null);
             setInstallations([]);
             setActiveInstallation(null);
             setUserTheme(null);
+
+            // 2. Limpa varivies especificas do App
             localStorage.removeItem('arboria_active_installation');
-            
-            // Força redirecionamento para login usando o hash (já que usamos HashRouter)
+
+            // 3. CRITICAL: Limpa tokens do Supabase manualmente para evitar "stuck state"
+            // O Supabase usa chaves como "sb-<project-ref>-auth-token"
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+                    console.log('[AuthContext] Removing stale Supabase token:', key);
+                    localStorage.removeItem(key);
+                }
+            });
+
+            // 4. Força redirecionamento/reload
             window.location.hash = '#/login';
         }
     };
@@ -171,6 +182,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
             } catch (error) {
                 console.error('[AuthContext] Initialization error:', error);
+
+                // Se houver erro crítico na inicialização (ex: token malformado), 
+                // forçamos limpeza para não travar o app em loading eterno
+                console.warn('[AuthContext] Critical init error - forcing cleanup');
+                localStorage.removeItem('arboria_active_installation');
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                setSession(null);
             } finally {
                 // 4. Só seta loading=false quando TUDO estiver pronto
                 if (isMounted) {

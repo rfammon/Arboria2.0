@@ -113,7 +113,7 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
                 for (const action of actions) {
                     // Max retry limit: Move to Dead Letter Queue
                     if (action.retryCount >= 5) {
-                        logger.warn({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                        logger.warn({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                             `Action exceeded max retries (${action.retryCount}) - moving to DLQ`);
                         await offlineQueue.remove(action.id);
                         setDeadLetterCount(prev => prev + 1);
@@ -122,13 +122,13 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
 
                     // Backoff strategy: Skip if not ready for retry
                     if (!shouldRetryNow(action)) {
-                        logger.debug({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                        logger.debug({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                             `Action not ready for retry (attempt ${action.retryCount})`);
                         continue;
                     }
 
                     try {
-                        logger.debug({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                        logger.debug({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                             `Processing generic action: ${action.type}`);
 
                         // Mark attempt
@@ -189,15 +189,15 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
                         }
 
                         // Success - remove from queue
-                        logger.info({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                        logger.info({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                             `Action ${action.type} completed successfully`);
                         await offlineQueue.remove(action.id);
 
                     } catch (err) {
                         const newRetryCount = (action.retryCount || 0) + 1;
-                        logger.error({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                        logger.error({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                             `Failed to process action ${action.id} (attempt ${newRetryCount}/5)`, err);
-                        
+
                         // Update retry count and lastAttempt in the queue
                         await offlineQueue.update({
                             ...action,
@@ -210,8 +210,16 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
                 await updatePhotoCount();
                 toast.dismiss();
             }
-        } catch (error) {
+        } catch (error: any) {
             logger.error({ module: 'OfflineSync', action: 'processQueue' }, 'Generic sync error', error);
+
+            // AUTH ERROR CHECK
+            if (error?.code === 'PGRST301' || error?.status === 401 || error?.message?.includes('JWT')) {
+                logger.warn({ module: 'OfflineSync' }, 'Auth Error detected during Generic Sync - Aborting');
+                toast.error('Sessão expirada. Por favor, faça login novamente.');
+                setIsGenericSyncing(false);
+                return; // STOP EXECUTION
+            }
         } finally {
             setIsGenericSyncing(false);
         }
@@ -229,10 +237,10 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
 
             for (const action of currentQueue) {
                 if (conflictFound) break;
-                
+
                 // Max retry limit: Move to Dead Letter Queue
                 if (action.retryCount >= 5) {
-                    logger.warn({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                    logger.warn({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                         `Tree action exceeded max retries (${action.retryCount}) - moving to DLQ`);
                     removeAction(action.id);
                     dlqCount++;
@@ -241,7 +249,7 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
 
                 // Backoff strategy: Skip if not ready for retry
                 if (!shouldRetryNow(action)) {
-                    logger.debug({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                    logger.debug({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                         `Tree action not ready for retry (attempt ${action.retryCount})`);
                     continue;
                 }
@@ -277,7 +285,7 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
                                     const localTime = new Date(data.original_updated_at).getTime();
 
                                     if (serverTime > localTime) {
-                                        logger.warn({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                                        logger.warn({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                                             'Conflict detected - server newer than local');
                                         setConflict({
                                             local: data,
@@ -314,14 +322,14 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
                     if (conflictFound) break;
 
                     if (success) {
-                        logger.info({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                        logger.info({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                             `Tree action ${action.type} completed successfully`);
                         removeAction(action.id);
                     }
 
                 } catch (err) {
                     const newRetryCount = (action.retryCount || 0) + 1;
-                    logger.error({ module: 'OfflineSync', action: 'processQueue', actionId: action.id }, 
+                    logger.error({ module: 'OfflineSync', action: 'processQueue', actionId: action.id },
                         `Failed to process tree action ${action.id} (attempt ${newRetryCount}/5)`, err);
                     updateAction(action.id, { retryCount: newRetryCount });
                 }
@@ -337,8 +345,15 @@ export const OfflineSyncProvider = ({ children }: { children: React.ReactNode })
                 if (!conflictFound) toast.success('Sincronização completada!');
             }
 
-        } catch (error) {
+        } catch (error: any) {
             logger.error({ module: 'OfflineSync', action: 'processQueue' }, 'Tree sync error', error);
+
+            // AUTH ERROR CHECK
+            if (error?.code === 'PGRST301' || error?.status === 401 || error?.message?.includes('JWT')) {
+                logger.warn({ module: 'OfflineSync' }, 'Auth Error detected during Tree Sync - Aborting');
+                toast.error('Sessão expirada. Por favor, faça login novamente.');
+            }
+
         } finally {
             setActionProcessing(false);
         }

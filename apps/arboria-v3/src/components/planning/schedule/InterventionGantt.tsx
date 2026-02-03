@@ -1,22 +1,14 @@
 import { useState, useMemo } from 'react';
-import { 
-    Calendar, 
-    Search, 
+import {
+    Search,
     Clock,
     CheckCircle2,
     AlertCircle,
-    ArrowUpRight,
     ZoomIn,
     ZoomOut,
     Trees,
-    Activity,
-    Info,
-    Users,
     Briefcase,
-    Hammer,
-    Gauge,
     TrendingUp,
-    LayoutDashboard,
     User
 } from 'lucide-react';
 import { Surface } from '../../ui/surface';
@@ -38,7 +30,7 @@ type ViewMode = 'Week' | 'Month' | 'Year';
 function SPIGauge({ value }: { value: number }) {
     const percentage = Math.min(Math.max(value * 100, 0), 200);
     const rotation = (percentage / 200) * 180 - 90;
-    
+
     const getColor = (v: number) => {
         if (v >= 1) return 'text-emerald-500';
         if (v >= 0.85) return 'text-amber-500';
@@ -49,14 +41,14 @@ function SPIGauge({ value }: { value: number }) {
         <div className="relative flex flex-col items-center">
             <div className="relative w-32 h-20 overflow-hidden">
                 <div className="absolute w-32 h-32 border-[10px] border-slate-200 dark:border-slate-800/50 rounded-full" />
-                <div 
+                <div
                     className={cn(
                         "absolute w-32 h-32 border-[10px] border-current rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(var(--color-primary),0.3)]",
                         getColor(value)
                     )}
-                    style={{ 
+                    style={{
                         clipPath: 'inset(0 0 50% 0)',
-                        transform: `rotate(${rotation}deg)` 
+                        transform: `rotate(${rotation}deg)`
                     }}
                 />
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
@@ -73,30 +65,7 @@ function SPIGauge({ value }: { value: number }) {
     );
 }
 
-function StatusPill({ status, isLate }: { status: string, isLate: boolean }) {
-    if (status === 'COMPLETED') {
-        return (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Concluído</span>
-            </div>
-        );
-    }
-    if (isLate) {
-        return (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-wider animate-pulse">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>Atrasado</span>
-            </div>
-        );
-    }
-    return (
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-500/10 border border-slate-500/20 text-slate-600 dark:text-slate-400 text-[10px] font-black uppercase tracking-wider">
-            <Clock className="w-3.5 h-3.5" />
-            <span>Pendente</span>
-        </div>
-    );
-}
+
 
 // --- Table Components ---
 
@@ -169,7 +138,7 @@ function MSProjectTable({ plans }: { plans: InterventionPlan[] }) {
                                         <div className="flex flex-col items-end gap-1">
                                             <span className="font-black text-slate-900 dark:text-white font-mono text-[10px]">{progress}%</span>
                                             <div className="w-16 h-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden border border-slate-200 dark:border-white/5">
-                                                <div 
+                                                <div
                                                     className={cn(
                                                         "h-full rounded-full transition-all duration-1000",
                                                         progress === 100 ? "bg-emerald-500" : "bg-indigo-500"
@@ -211,14 +180,14 @@ function CustomGantt({ plans, scale, viewMode }: { plans: InterventionPlan[], sc
         };
 
         const [minT, maxT] = getBaseDates();
-        const start = new Date(minT); start.setDate(start.getDate() - bufferPre); start.setHours(0,0,0,0);
-        const end = new Date(maxT); end.setDate(end.getDate() + bufferPost); end.setHours(23,59,59,999);
+        const start = new Date(minT); start.setDate(start.getDate() - bufferPre); start.setHours(0, 0, 0, 0);
+        const end = new Date(maxT); end.setDate(end.getDate() + bufferPost); end.setHours(23, 59, 59, 999);
         const days = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
         return { startDate: start, endDate: end, totalDays: days || 1 };
     }, [plans, scale, viewMode]);
 
-    const getPos = (d?: string) => d ? ((new Date(d).getTime() - startDate.getTime()) / (1000*60*60*24)) / totalDays * 100 : 0;
-    const getWid = (s?: string, e?: string) => s && e ? (Math.max((new Date(e).getTime() - new Date(s).getTime()) / (1000*60*60*24), 0.5) / totalDays) * 100 : 0;
+    const getPos = (d?: string) => d ? ((new Date(d).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) / totalDays * 100 : 0;
+    const getWid = (s?: string, e?: string) => s && e ? (Math.max((new Date(e).getTime() - new Date(s).getTime()) / (1000 * 60 * 60 * 24), 0.5) / totalDays) * 100 : 0;
 
     const getInterventionGradient = (type: string) => {
         const gradients: Record<string, string> = {
@@ -250,7 +219,7 @@ function CustomGantt({ plans, scale, viewMode }: { plans: InterventionPlan[], sc
                 </div>
 
                 <div className="relative pb-4 min-h-[160px]">
-                    <div className="absolute inset-0 pointer-events-none opacity-[0.1] dark:opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(to right, #64748b 1px, transparent 1px)', backgroundSize: `${100/totalDays}% 100%` }} />
+                    <div className="absolute inset-0 pointer-events-none opacity-[0.1] dark:opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(to right, #64748b 1px, transparent 1px)', backgroundSize: `${100 / totalDays}% 100%` }} />
                     {plans.map((plan, idx) => {
                         const start = plan.schedule?.start || plan.schedule?.startDate;
                         const end = plan.schedule?.end || plan.schedule?.endDate;
@@ -259,7 +228,7 @@ function CustomGantt({ plans, scale, viewMode }: { plans: InterventionPlan[], sc
                         const progress = isCompleted ? 100 : (plan.progress || 0);
                         const label = INTERVENTION_LABELS[plan.intervention_type] || plan.intervention_type;
                         const gradientClass = getInterventionGradient(plan.intervention_type);
-                        
+
                         return (
                             <div key={plan.id} className="group flex h-10 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-all items-center border-b border-slate-100 dark:border-white/[0.02]">
                                 <div className="w-[200px] px-4 flex-shrink-0 border-r border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-900/40 sticky left-0 z-30 backdrop-blur-xl">
@@ -267,26 +236,26 @@ function CustomGantt({ plans, scale, viewMode }: { plans: InterventionPlan[], sc
                                         <div className="flex items-center gap-1.5">
                                             <div className={cn("w-1.5 h-1.5 rounded-full ring-1 ring-white dark:ring-slate-950", isCompleted ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]" : isLate ? "bg-rose-500 animate-pulse shadow-[0_0_6px_rgba(244,63,94,0.8)]" : "bg-slate-300 dark:bg-slate-700")} />
                                             <span className="font-black text-slate-700 dark:text-slate-100 uppercase tracking-tight text-[10px] group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                                #{idx+1} {label}
+                                                #{idx + 1} {label}
                                             </span>
                                         </div>
-                                        <span className="text-[8px] font-mono text-slate-400 dark:text-slate-500 ml-3 opacity-60 font-black tracking-widest uppercase">ID {plan.plan_id || plan.id.substring(0,8)}</span>
+                                        <span className="text-[8px] font-mono text-slate-400 dark:text-slate-500 ml-3 opacity-60 font-black tracking-widest uppercase">ID {plan.plan_id || plan.id.substring(0, 8)}</span>
                                     </div>
                                 </div>
                                 <div className="flex-1 relative h-full">
-                                    <div 
+                                    <div
                                         className={cn(
                                             "absolute h-5 top-1/2 -translate-y-1/2 rounded-full shadow-md flex items-center overflow-hidden transition-all duration-700 group/bar border border-slate-200 dark:border-white/5",
                                             isCompleted ? "bg-emerald-500/10" : isLate ? "bg-rose-500/10" : "bg-indigo-500/10"
                                         )}
                                         style={{ left: `${getPos(start)}%`, width: `${Math.max(getWid(start, end), 0.5)}%`, minWidth: '60px' }}
                                     >
-                                        <div 
+                                        <div
                                             className={cn(
                                                 "h-full transition-all duration-1000 ease-out flex items-center px-3",
-                                                isCompleted ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : 
-                                                isLate ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" : 
-                                                `bg-gradient-to-r ${gradientClass}`
+                                                isCompleted ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" :
+                                                    isLate ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" :
+                                                        `bg-gradient-to-r ${gradientClass}`
                                             )}
                                             style={{ width: `${progress}%` }}
                                         >
@@ -315,27 +284,27 @@ export function InterventionGantt({ plans }: InterventionGanttProps) {
 
     const { filteredPlans, spi, stats } = useMemo(() => {
         if (!plans) return { filteredPlans: [], spi: 0, stats: { completed: 0, planned: 0, late: 0 } };
-        
+
         const now = new Date();
         const plannedToDate = plans.filter(p => {
             const start = p.schedule?.start || p.schedule?.startDate;
             return start && new Date(start) <= now;
         }).length || 1;
-        
+
         const completed = plans.filter(p => p.status === 'COMPLETED').length;
         const late = plans.filter(p => {
             const start = p.schedule?.start || p.schedule?.startDate;
             return start && new Date(start) <= now && p.status !== 'COMPLETED';
         }).length;
 
-        const filtered = searchTerm ? plans.filter(p => 
+        const filtered = searchTerm ? plans.filter(p =>
             (p.plan_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (p.intervention_type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (p.tree?.especie || '').toLowerCase().includes(searchTerm.toLowerCase())
         ) : plans;
 
-        return { 
-            filteredPlans: filtered, 
+        return {
+            filteredPlans: filtered,
             spi: completed / plannedToDate,
             stats: { completed, planned: plannedToDate, late }
         };
@@ -389,7 +358,7 @@ export function InterventionGantt({ plans }: InterventionGanttProps) {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="relative group flex-1 max-w-md">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-                        <input 
+                        <input
                             type="text"
                             placeholder="Buscar tarefas, ativos ou equipes..."
                             value={searchTerm}
@@ -406,8 +375,8 @@ export function InterventionGantt({ plans }: InterventionGanttProps) {
                                     onClick={() => setViewMode(mode)}
                                     className={cn(
                                         "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-widest",
-                                        viewMode === mode 
-                                            ? "bg-emerald-500 text-white shadow-md scale-105" 
+                                        viewMode === mode
+                                            ? "bg-emerald-500 text-white shadow-md scale-105"
                                             : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                                     )}
                                 >
@@ -417,9 +386,9 @@ export function InterventionGantt({ plans }: InterventionGanttProps) {
                         </div>
 
                         <div className="flex items-center bg-slate-100 dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-white/5 shadow-sm">
-                            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(1, s - 1))} className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"><ZoomOut className="w-4 h-4"/></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(1, s - 1))} className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"><ZoomOut className="w-4 h-4" /></Button>
                             <span className="px-3 text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">{scale}X</span>
-                            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(5, s + 1))} className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"><ZoomIn className="w-4 h-4"/></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(5, s + 1))} className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"><ZoomIn className="w-4 h-4" /></Button>
                         </div>
                     </div>
                 </div>

@@ -1,11 +1,11 @@
 
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+
 
 const styles = StyleSheet.create({
     page: { padding: 30, fontFamily: 'Helvetica', fontSize: 9, color: '#002B36', backgroundColor: '#FFFFFF' },
-    
+
     // Header - ArborIA Unified
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
     logoSection: { flexDirection: 'column' },
@@ -15,11 +15,11 @@ const styles = StyleSheet.create({
     logoText: { fontSize: 20, fontWeight: 'bold', color: '#002B36' },
     logoGreen: { color: '#00E676' },
     brandSubtitle: { fontSize: 7, color: '#94A3B8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1.5 },
-    
+
     headerPill: { backgroundColor: '#15803d', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginBottom: 4 },
     pillText: { color: '#FFFFFF', fontSize: 8, fontWeight: 'bold' },
     headerDate: { fontSize: 7, color: '#94A3B8', textAlign: 'right', fontWeight: 'bold' },
-    
+
     divider: { height: 2, backgroundColor: '#0F172A', marginBottom: 20 },
 
     // Sections
@@ -31,12 +31,12 @@ const styles = StyleSheet.create({
     // Cards
     statusCard: { backgroundColor: '#002B36', borderRadius: 18, padding: 15, marginBottom: 15, color: '#FFFFFF' },
     card: { backgroundColor: '#F8FAFC', borderRadius: 18, padding: 15, marginBottom: 15, borderRotate: 1, borderColor: '#F1F5F9' },
-    
+
     imageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
     photoBox: { width: '31%', height: 100, borderRadius: 12, overflow: 'hidden', marginBottom: 5 },
     image: { width: '100%', height: '100%', objectFit: 'cover' },
     photoLabel: { fontSize: 6, color: '#94A3B8', textAlign: 'center', marginTop: 2, textTransform: 'uppercase' },
-    
+
     dataGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     dataField: { width: '45%', marginBottom: 6, borderBottomWidth: 0.5, borderBottomColor: '#F1F5F9', paddingBottom: 2 },
     label: { fontSize: 6.5, color: '#94A3B8', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: 1 },
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     pageNumberText: { fontSize: 7, color: '#0F172A', fontWeight: 'bold' }
 });
 
-export const ExecutionReportPDF = ({ tree, execution, mapImage }: any) => {
+export const ExecutionReportPDF = ({ tree, execution }: any) => {
     const formatDate = (date: any) => {
         if (!date) return 'N/A';
         try {
@@ -95,7 +95,7 @@ export const ExecutionReportPDF = ({ tree, execution, mapImage }: any) => {
                         <Text style={styles.sectionIndex}>01</Text>
                         <Text style={styles.sectionTitle}>Identificação do Ativo</Text>
                     </View>
-                    
+
                     <View style={styles.card}>
                         <View style={styles.dataGrid}>
                             <View style={styles.dataField}><Text style={styles.label}>Espécie:</Text><Text style={styles.value}>{tree.especie}</Text></View>

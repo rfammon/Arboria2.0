@@ -25,13 +25,13 @@ export function SectionHeader({
 
   return (
     <div className={cn(
-      "group flex flex-col space-y-6 mb-8", 
+      "group flex flex-col space-y-6 mb-8",
       isLeft ? "items-start text-left" : "items-center text-center",
       className
     )}>
       {/* Badge Superior */}
-      <Badge 
-        variant="sucesso" 
+      <Badge
+        variant="default"
         className="gap-2 px-4 py-1.5 border-emerald-500/20 shadow-none animate-in fade-in slide-in-from-bottom-4 duration-1000"
       >
         <Icon className="w-3.5 h-3.5 stroke-[2.5] text-emerald-500" />
@@ -58,7 +58,7 @@ export function SectionHeader({
           {description}
         </p>
       </div>
-      
+
       {/* Detalhe Visual */}
       <div className={cn(
         "w-12 h-1 bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-full opacity-20 group-hover:opacity-100 transition-opacity duration-500",

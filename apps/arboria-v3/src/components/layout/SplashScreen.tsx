@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { useTheme } from '@/components/theme-provider';
 
 /**
@@ -16,41 +16,41 @@ export const SplashScreen: React.FC = () => {
   const isDark = theme?.toLowerCase().includes('dark') || theme?.toLowerCase().includes('forest');
 
   // SVG Animation Variants
-  const pathVariants = {
+  const pathVariants: Variants = {
     hidden: { pathLength: 0, opacity: 0 },
     visible: {
       pathLength: 1,
       opacity: 1,
       transition: {
-        pathLength: { duration: 3, ease: "easeInOut" },
+        pathLength: { duration: 3, ease: "easeInOut" as const },
         opacity: { duration: 0.5 }
       }
     }
   };
 
-  const nodeVariants = {
+  const nodeVariants: Variants = {
     hidden: { scale: 0, opacity: 0 },
     visible: (i: number) => ({
       scale: 1,
       opacity: 1,
-      transition: { delay: 1.8 + i * 0.1, duration: 0.4, ease: "backOut" }
+      transition: { delay: 1.8 + i * 0.1, duration: 0.4, ease: "backOut" as const }
     })
   };
 
   const bgColors = isDark ? "bg-[#020617]" : "bg-slate-50";
-  
+
   // Visual Palette Switch
-  const glowColors = isDark 
+  const glowColors = isDark
     ? [
-        'radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(2, 6, 23, 0) 70%)',
-        'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(2, 6, 23, 0) 70%)',
-        'radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(2, 6, 23, 0) 70%)',
-      ]
+      'radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(2, 6, 23, 0) 70%)',
+      'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(2, 6, 23, 0) 70%)',
+      'radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(2, 6, 23, 0) 70%)',
+    ]
     : [
-        'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(248, 250, 252, 0) 70%)',
-        'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(248, 250, 252, 0) 70%)',
-        'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(248, 250, 252, 0) 70%)',
-      ];
+      'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(248, 250, 252, 0) 70%)',
+      'radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(248, 250, 252, 0) 70%)',
+      'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(248, 250, 252, 0) 70%)',
+    ];
 
   // Adjust stroke colors for visibility
   const strokeEmerald = isDark ? "#34D399" : "#059669";
@@ -59,8 +59,8 @@ export const SplashScreen: React.FC = () => {
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ 
-        opacity: 0, 
+      exit={{
+        opacity: 0,
         scale: 1.1,
         transition: { duration: 1, delay: 0.5, ease: "easeInOut" }
       }}
@@ -128,17 +128,17 @@ export const SplashScreen: React.FC = () => {
 
         <motion.div
           animate={{
-            boxShadow: isDark 
+            boxShadow: isDark
               ? [
-                  "0 0 20px rgba(37,99,235,0.2)",
-                  "0 0 40px rgba(16,185,129,0.3)",
-                  "0 0 20px rgba(37,99,235,0.2)"
-                ]
+                "0 0 20px rgba(37,99,235,0.2)",
+                "0 0 40px rgba(16,185,129,0.3)",
+                "0 0 20px rgba(37,99,235,0.2)"
+              ]
               : [
-                  "0 0 20px rgba(37,99,235,0.1)",
-                  "0 0 40px rgba(16,185,129,0.15)",
-                  "0 0 20px rgba(37,99,235,0.1)"
-                ]
+                "0 0 20px rgba(37,99,235,0.1)",
+                "0 0 40px rgba(16,185,129,0.15)",
+                "0 0 20px rgba(37,99,235,0.1)"
+              ]
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full blur-xl ${isDark ? 'bg-white/10' : 'bg-black/5'}`}
@@ -156,7 +156,7 @@ export const SplashScreen: React.FC = () => {
           <span className="text-emerald-500">Arbor</span>
           <span className="text-blue-600">IA</span>
         </motion.h1>
-        
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}

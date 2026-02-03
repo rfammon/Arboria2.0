@@ -1,116 +1,96 @@
-# Planejamento e Risco
+# Módulo de Treinamento: Planejamento Operacional e Plano de Poda
 
-Este capítulo aborda a avaliação clínica da árvore, a identificação de alvos e o planejamento seguro de intervenções.
+## Introdução
 
-## 1. Objetivo
-Capacitar o profissional na identificação de riscos e no planejamento seguro das operações de manejo arbóreo.
+Na engenharia florestal e arboricultura urbana, a diferença entre uma operação bem-sucedida e um acidente fatal reside quase inteiramente na fase de pré-execução. O **Planejamento** não é uma mera formalidade burocrática; é a "fisiologia" da operação, onde diagnosticamos os riscos e prescrevemos a intervenção cirúrgica correta.
 
----
+Este módulo foca na elaboração do **Plano de Trabalho**, a análise crítica do sítio (incluindo interferências elétricas e civis) e a seleção estratégica de ferramentas. Para o engenheiro experiente, o planejamento deve transcender o "o que cortar" e focar no "como gerenciar a energia e a massa" da árvore em um ambiente hostil, garantindo a integridade da equipe e do patrimônio.
 
-# 2. Avaliação Clínica e Biomecânica da Árvore
+## Seções Técnicas
 
-Para o engenheiro experiente, a avaliação da árvore transcende a estética. Trata-se de uma análise clínica da integridade estrutural e da resposta fisiológica da árvore ao estresse (compartimentalização).
+### A Centralidade do "Plano de Trabalho" (The Work Plan)
 
-## 2.1. A Abordagem Sistemática (Avaliação Visual da Árvore - AVA)
+Antes de qualquer motosserra ser ligada, um Plano de Trabalho formal deve ser desenvolvido. Este documento consolida o entendimento da equipe sobre o escopo e os riscos.
 
-A inspeção deve ser realizada em 360 graus, do sistema radicular à copa. Ferramentas como binóculos, maços de borracha e sondas metálicas são essenciais para o diagnóstico preliminar.
+*   **Definição do Escopo e Objetivo:** O plano deve distinguir claramente se a intervenção é uma poda de condução, limpeza, adequação (conflito com estruturas), levantamento ou uma supressão total. Cortes desnecessários ou mal planejados (como o *topping* ou poda drástica) geram brotações epicórmicas que se tornarão os riscos de amanhã.
+*   **Análise de Risco Preliminar (APR/PT):** A Permissão de Trabalho (PT) deve ser validada com a equipe de segurança. Ela deve contemplar não apenas a queda da árvore, mas riscos ocultos como fadiga térmica, animais peçonhentos e reações alérgicas a plantas.
+*   **Cronograma e Recursos:** O plano define *quem* faz *o que*, *quando* e *com que ferramenta*. A alocação correta de pessoal qualificado (escalador vs. operador de solo) é vital.
 
-![Inspeção AVA](/docs/education/images/vta_inspection.png)
+### Avaliação das Condições do Local (Site Assessment)
 
-### A. Zona Radicular e Colo (A Base da Estabilidade)
-A falha nesta zona é frequentemente catastrófica (tombamento total).
+Uma análise minuciosa do entorno é mandatória:
 
-*   **Fisiopatologia**: Procure por [Raízes Estranguladoras](tooltip:Raízes que crescem ao redor do tronco, comprimindo o fluxo de seiva). Estas comprimem o tecido vascular, causando declínio da copa e criando um ponto de fratura na base.
-*   **Sinais Críticos**: Movimentação da placa radicular (levantamento do solo), ausência de alargamento visível do colo (indicando plantio profundo ou aterro) e corpos de frutificação fúngica (Ganoderma spp., Armillaria spp.).
-*   **Zona Crítica da Raiz (ZCR)**: O raio crítico para a estabilidade é calculado, geralmente, como 1,5 pés para cada polegada de DAP (Diâmetro à Altura do Peito) ou uma projeção baseada no raio da copa. Danos superiores a 40% das raízes nesta zona indicam alto risco de falha.
+*   **Interferências Aéreas:** Fios de alta/baixa tensão. A regra de ouro é: "Assuma que está energizado". Manter distâncias mínimas de segurança (Zonas de Livre Acesso vs. Zonas Controladas) conforme NR-10.
+*   **Alvos Móveis e Fixos:** Identificar pedestres, tráfego de veículos (sinalização viária necessária?), edifícios, muros e outras estruturas que podem ser atingidas pela queda de galhos.
+*   **Topografia e Solo:** Terreno inclinado afeta a estabilidade de guindastes (caminhão munck) e a zona de queda. Solo encharcado ou compactado pode comprometer a ancoragem da árvore durante o trabalho.
 
-### B. O Tronco (Coluna de Sustentação)
-*   **Fissuras e Fendas**: Diferencie fissuras superficiais de fissuras de cisalhamento que atravessam o lenho. Fissuras horizontais são sinais de falha iminente (colapso das fibras sob tensão/compressão).
-*   **Decaimento e Cavidades**: Utilize a regra da "Espessura da Casca Sã". Para árvores sem aberturas, recomenda-se 1 polegada de madeira sã para cada 6 polegadas de diâmetro. Se houver uma abertura na cavidade (>30% da circunferência), a exigência sobe para 2 polegadas de madeira sã.
-*   **Madeira de Reação**: Observe costelas ou "costuras" no tronco. Elas indicam uma tentativa da árvore de fechar feridas antigas ou estabilizar fissuras internas.
+### Seleção de Ferramentas e Técnicas
 
-### C. A Copa e Uniões de Ramos
-*   **[Casca Inclusa](tooltip:Casca que cresce para dentro da união de dois ramos, impedindo a conexão física da madeira)**: Em uniões de ramos ("V" apertado), a casca fica presa entre os tecidos lenhosos, impedindo a conexão física da madeira. Esta é uma das principais causas de falha em tempestades.
-*   **Ramos Epicórmicos**: Rebentos que surgem após podas drásticas ou estresse. Têm inserção superficial e tornam-se perigosos à medida que ganham peso.
-*   **Galhos Pendurados**: Ramos quebrados que permanecem suspensos na copa, constituindo risco imediato.
+A ferramenta deve casar com o objetivo:
 
----
+*   **Para Poda Fina:** Tesouras de mão e serras de poda manuais para cortes limpos em galhos menores (<5cm).
+*   **Para Desgalhamento e Trozamento:** Motosserras adequadas ao diâmetro do tronco. Uso de motopodas para alcance vertical sem escalada.
+*   **Acesso:** Decidir entre escalada (corda dupla/SRT), plataforma elevatória (cesto aéreo) ou trabalho do solo, baseado na segurança e acessibilidade.
 
-# 3. Identificação de Alvos e Zonamento de Risco
+### Planejamento de Resposta a Emergências
 
-Uma árvore defeituosa só é um "risco" se houver um alvo. A gestão de risco é, portanto, a gestão da interação entre a falha potencial da árvore e o alvo.
+Nenhum plano está completo sem o "Plano B":
 
-![Zonamento de Risco](/docs/education/images/risk_zoning.png)
+*   **Resgate Aéreo:** Um segundo escalador ou membro da equipe deve estar apto e equipado para realizar um resgate em altura imediato.
+*   **Comunicação:** Rádios comunicadores testados. Sinais de mão padronizados para ambientes ruidosos.
+*   **Rota de Fuga:** Caminhos livres de obstáculos para evacuação rápida em caso de queda imprevista da árvore.
 
-## 3.1. Classificação de Alvos
-Os alvos são pessoas, bens ou atividades que podem ser atingidos. Devem ser classificados pela frequência de ocupação:
+## Avaliação de Conhecimento
 
-*   **Uso Frequente/Constante**: Estradas principais, escolas, parques infantis, edifícios ocupados.
-*   **Uso Intermédio**: Estradas secundárias, parques de uso moderado.
-*   **Uso Ocasional/Raro**: Trilhas remotas, áreas florestais densas.
-
-## 3.2. Zonamento de Gestão (Abordagem de Área)
-Divida a área sob sua responsabilidade em zonas de prioridade:
-
-*   **Categoria I (Prioridade Máxima)**: Áreas de tráfego intenso ou congregação de pessoas. Inspeções anuais detalhadas (Formulário nível 2) são obrigatórias.
-*   **Categoria II (Uso Infrequente)**: Inspeções a cada 3-5 anos ou reativas.
-*   **Categoria III (Uso Raro)**: Inspeções reativas ou antes de épocas de tempestade.
-
-## 3.3. Sistema de Triagem
-Em zonas de alta prioridade (Categoria I), aplique um sistema de cores para ação imediata:
-
-*   **Preto (Perigo Iminente)**: Árvores mortas ou com falha irreversível. Remoção imediata ou isolamento da área.
-*   **Vermelho (Problemático)**: Defeitos severos (ex: cavidade >1/3 do diâmetro, fungos radiculares). Requer mitigação rápida e monitorização a cada 6 meses.
-*   **Amarelo**: Árvores que necessitam de manutenção, mas sem risco iminente.
-
----
-
-# 4. Planeamento da Atividade de Poda e Supressão
-
-## 4.1. Definição da Zona de Trabalho e Segurança
-A segurança operacional exige o estabelecimento de perímetros físicos:
-
-*   **Zona de Exclusão (Zona Quente)**: Área onde a queda de ramos ou da árvore é provável.
-    *   **Raio**: Mínimo de 1,5 vezes a altura da árvore (ou do galho a ser cortado).
-    *   **Sinalização**: Uso de cones, correntes plásticas ou sinaleiros.
-*   **Rotas de Fuga**: Devem ser planeadas a 45º no sentido oposto à queda prevista da árvore, livres de obstáculos.
-
-## 4.2. Especificação Técnica da Poda
-A prescrição da poda deve ser cirúrgica para evitar danos futuros (iatrogenia). Nunca utilizar "esporas" em árvores que serão preservadas.
-
-![Técnica dos Três Cortes](/docs/education/images/three_cut_technique_v3.png)
-
-### A Técnica dos Três Cortes (Obrigatória para Ramos Grandes)
-Para evitar o rasgamento da casca e danos ao tecido do tronco:
-
-1.  **Corte de Alívio (Inferior)**: Um corte de baixo para cima, a cerca de 30 cm do tronco, penetrando 1/3 do ramo.
-2.  **Corte de Queda (Superior)**: Um corte de cima para baixo, ligeiramente à frente do corte de alívio, para remover o peso do ramo.
-3.  **Corte Final (Acabamento)**: Corte final junto ao colar do galho (branch collar) e crista da casca, sem deixar tocos e sem cortar rente ao tronco (corte rente), preservando a zona de proteção natural da árvore.
-
-## 4.3. Autorizações e Licenciamento
-Verifique a necessidade de Autorização de Supressão de Vegetação (ASV), especialmente em Áreas de Preservação Permanente (APP). A supressão sem licença pode configurar crime ambiental.
-
----
-
-# 5. Resumo Executivo
-
-A gestão de risco exige a transição da "reação a crises" para a "manutenção preventiva". Identifique defeitos estruturais críticos e correlacione-os com a presença de Alvos. Utilize o sistema de zonamento para alocar recursos onde o risco é maior. Na execução, a segurança é não-negociável (zona de exclusão de 1,5x a altura) e a técnica deve ser cirúrgica ([Técnica dos Três Cortes](tooltip:Método de poda em três etapas para prevenir danos ao tronco)).
-
----
-
-# 6. Referência Técnica do Engenheiro
-
-| Fase | Ação Crítica | Regra de Ouro |
-| :--- | :--- | :--- |
-| **Diagnóstico** | Sondagem de Decaimento | Regra t/R < 0.3: Parede de madeira sã < 1/3 do raio = Risco Alto. |
-| **Diagnóstico** | Uniões de Ramos | Atenção a formas em "V" com casca inclusa. Prefira formas em "U". |
-| **Diagnóstico** | Raízes (ZCR) | DAP x 1,5 (em pés). Danos > 40% = Falha Provável. |
-| **Alvos** | Priorização | Categoria I: Inspeção anual obrigatória. |
-| **Planeamento** | Zona de Trabalho | Raio de 1,5x a altura da árvore. |
-| **Execução** | Técnica de Corte | 3 Cortes: Alívio, Queda e Final. |
-| **Execução** | Limites | Nunca remover mais de 25% da copa viva. |
-| **Legal** | Conformidade | Verificar ASV antes do início. |
-| **Segurança** | EPI | Capacete, calça anticorte, proteção auditiva/ocular. |
-
----
-*Atualizado via OTA v1.0.45*
+```json
+{
+  "type": "quiz",
+  "minScore": 7.5,
+  "questions": [
+    {
+      "text": "Qual é a prioridade número um ao identificar linhas de energia próximas a uma árvore a ser podada?",
+      "options": [
+        "Assumir que todas as linhas estão energizadas e manter as Distâncias Mínimas de Aproximação (DMA) até que a concessionária confirme o desenergizamento.",
+        "Tentar afastar os galhos com uma vara de manobra isolada.",
+        "Podar rapidamente os galhos mais próximos para eliminar o risco.",
+        "Verificar se os cabos têm capa protetora e encostar neles se necessário."
+      ],
+      "correctAnswer": 0,
+      "explanation": "A regra fundamental de segurança elétrica é tratar todo condutor como energizado. A violação da DMA é uma das maiores causas de morte na arboricultura."
+    },
+    {
+      "text": "O que deve ser incluído obrigatoriamente no planejamento de emergência de uma operação de poda em altura, além do kit de primeiros socorros?",
+      "options": [
+        "Ter um kit de primeiros socorros no caminhão e uma segunda linha de escalada/acesso instalada ou pronta para uso imediato por um membro da equipe em solo.",
+        "Garantir um rádio comunicador para o operador.",
+        "Ter um desfibrilador no local.",
+        "Ter um médico de plantão."
+      ],
+      "correctAnswer": 0,
+      "explanation": "As normas exigem que, além do kit de primeiros socorros, haja um membro da equipe em solo equipado e uma linha de resgate disponível para acessar a vítima imediatamente."
+    },
+    {
+      "text": "Ao avaliar uma árvore para poda, você nota uma 'inrolled crack' (rachadura com casca inclusa/enrolada) vertical no tronco. Qual é a implicação estrutural deste defeito para o seu plano de trabalho?",
+      "options": [
+        "Indica que a árvore falhou em fechar uma ferida antiga, com decaimento interno avançado associado; a integridade estrutural do cilindro do tronco está comprometida.",
+        "É superficial e afeta apenas a casca; não altera o plano.",
+        "Indica que a árvore está cicatrizando bem; pode-se escalar normalmente.",
+        "Indica deficiência de nutrientes."
+      ],
+      "correctAnswer": 0,
+      "explanation": "A 'inrolled crack' ocorre quando o calo de cicatrização não fecha, enrolando-se para dentro. Isso está invariavelmente associado a podridão avançada e perda severa de resistência."
+    },
+    {
+      "text": "Qual fator topográfico é crítico para o uso de caminhões munck ou plataformas elevatórias?",
+      "options": [
+        "A inclinação e estabilidade do solo, que podem causar o tombamento do equipamento.",
+        "A cor do solo.",
+        "A presença de grama.",
+        "A temperatura do asfalto."
+      ],
+      "correctAnswer": 0,
+      "explanation": "Equipamentos pesados de elevação exigem solo estável e nivelado. A inclinação excessiva altera o centro de gravidade e pode causar tombamento catastrófico."
+    }
+  ]
+}
+```

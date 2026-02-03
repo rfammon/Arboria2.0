@@ -48,8 +48,8 @@ export const EDUCATION_TOPICS: EducationTopic[] = [
     },
     {
         id: 'legal',
-        title: 'Termos Legais',
-        description: 'Documentação legal e autorizações necessárias (ASV).',
+        title: 'Termos Legais e Legislação',
+        description: 'Normas técnicas (NBR 16246-1), crimes ambientais e autorizações (ASV).',
         icon: Scale,
         illustration: LegalIllustration,
         colorClass: 'dark:bg-amber-900/20 bg-amber-50 border-amber-100 dark:border-white/5',

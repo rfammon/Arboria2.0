@@ -29,8 +29,8 @@ export default function Reports() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Filter finished reports
-    const finishedReports = allTasks.filter(t => 
-        (t.status === 'COMPLETED' || t.status === 'PENDING_APPROVAL') && 
+    const finishedReports = allTasks.filter(t =>
+        (t.status === 'COMPLETED' || t.status === 'PENDING_APPROVAL') &&
         t.instalacao_id === activeInstallation?.id
     ).sort((a, b) => new Date(b.completed_at || b.updated_at).getTime() - new Date(a.completed_at || a.updated_at).getTime());
 
@@ -144,7 +144,7 @@ export default function Reports() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 relative bg-slate-50 dark:bg-slate-950 p-6 rounded-3xl min-h-full">
-            <SectionHeader 
+            <SectionHeader
                 badge="Intelligence"
                 title="Relatórios &"
                 highlight="Documentos"
@@ -212,18 +212,18 @@ export default function Reports() {
                                             </div>
                                         </div>
 
-                                         <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
-                                            <Button 
-                                                variant="contorno" 
-                                                size="sm" 
+                                        <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 className="h-9 px-4 rounded-xl font-bold gap-2 hover:bg-emerald-50 hover:text-emerald-700"
                                                 onClick={() => navigate(`/execution/report/${report.id}`)}
                                             >
                                                 <Printer className="w-4 h-4" /> Visualizar / Imprimir
                                             </Button>
-                                            <Button 
-                                                variant="fantasma" 
-                                                size="icon" 
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 className="h-9 w-9 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50"
                                                 onClick={() => handleDeleteReport(report.id)}
                                             >
@@ -250,7 +250,7 @@ export default function Reports() {
                             <CardContent>
                                 <Button
                                     className="w-full"
-                                    variant="principal"
+                                    variant="default"
                                     onClick={() => handleAction('Exportar CSV')}
                                 >
                                     Exportar CSV
@@ -269,7 +269,7 @@ export default function Reports() {
                             <CardContent>
                                 <Button
                                     className="w-full"
-                                    variant="principal"
+                                    variant="default"
                                     onClick={() => handleAction('Baixar Backup')}
                                 >
                                     Baixar Backup
@@ -288,7 +288,7 @@ export default function Reports() {
                             <CardContent>
                                 <Button
                                     className="w-full"
-                                    variant="principal"
+                                    variant="default"
                                     onClick={() => handleAction('Importar Dados')}
                                 >
                                     Importar

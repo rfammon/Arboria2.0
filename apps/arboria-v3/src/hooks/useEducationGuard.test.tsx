@@ -7,8 +7,8 @@ describe('useEducationGuard', () => {
     beforeEach(() => {
         useEducationStore.setState({
             modules: {
-                'safety': { id: 'safety', status: 'available', score: 0 },
-                'pruning': { id: 'pruning', status: 'locked', score: 0 }
+                'safety': { id: 'safety', status: 'available', score: 0, currentCardIndex: 0 },
+                'pruning': { id: 'pruning', status: 'locked', score: 0, currentCardIndex: 0 }
             }
         });
     });

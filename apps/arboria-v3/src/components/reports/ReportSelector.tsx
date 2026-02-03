@@ -204,8 +204,8 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                                                             {selectedOption.selectionType === 'plan'
                                                                 ? ((item as any).plan_id || item.id.slice(0, 8))
                                                                 : selectedOption.selectionType === 'task'
-                                                                ? `OS-${item.id.slice(0, 8).toUpperCase()}`
-                                                                : ((item as any).codigo || item.id.slice(0, 8))}
+                                                                    ? `OS-${item.id.slice(0, 8).toUpperCase()}`
+                                                                    : ((item as any).codigo || item.id.slice(0, 8))}
                                                         </div>
                                                         <div className="text-[10px] text-muted-foreground font-mono mt-0.5 uppercase tracking-tighter">
                                                             {item.id}
@@ -259,7 +259,7 @@ export function ReportSelector({ onGenerate }: ReportSelectorProps) {
                     <Button
                         onClick={handleGenerate}
                         size="lg"
-                        variant="principal"
+                        variant="default"
                         className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all font-bold"
                         disabled={selectedOption?.selectionType !== 'none' && !selectedItemId}
                     >

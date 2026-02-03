@@ -37,8 +37,8 @@ describe('Certification Page Integration', () => {
     beforeEach(() => {
         useEducationStore.setState({
             modules: {
-                'safety': { id: 'safety', status: 'completed', score: 100 },
-                'pruning': { id: 'pruning', status: 'locked', score: 0 }
+                'safety': { id: 'safety', status: 'completed', score: 100, currentCardIndex: 0 },
+                'pruning': { id: 'pruning', status: 'locked', score: 0, currentCardIndex: 0 }
             },
             certificationStatus: 'idle',
             // grantCertification: vi.fn(), // REMOVED: Use real logic

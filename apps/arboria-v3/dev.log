@@ -1,0 +1,715 @@
+
+> arboria-v3@1.1.64 dev
+> node scripts/dev.mjs
+
+--- ArborIA Dev Launcher ---
+Starting PDF Report Server...
+Starting Vite Frontend...
+(node:16548) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Report Service running on http://0.0.0.0:3001
+
+  [32m[1mVITE[22m v7.2.7[39m  [2mready in [0m[1m838[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m00:47:32[22m [36m[1m[vite][22m[39m [2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/0138baf75621871163ccf3d1715507d0604709785c307e896221562e15563df5.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/07746dd701f48c6c73f989ee2e682ebc098a6b3da81dc1d51531af38b2ea7b58.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/09642a2ccbc2d6737f059c6425ccf6bebae7cfe8072d5696440f1f7b492bebff.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/0a4eefb0dd62b443ac3829195d5e23f76d423e10cc552988b9c6cab6c4e7de0d.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/0f70e3b5c1d792ffe30b52c7ef548835f3b6088de32042986902f6e1713fa7eb.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/1ba0b9c1da3b06d8c2b45a38fd887eb1dad53f21cbdbb9ce761ba7f3a99da752.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/1d226e2057af57eb3befff8e96f62df14f3ad14a36983e2f15df860a48c195ab.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/24d766f73c1c5755fff34e0d3e0043cc55b022be61fccf1c2ed5f6cc70b18d65.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/28b1d1e21f92d8d3fef299abacc90d92a188f3ba5ab2e523762bab66548a62f6.html[22m
+[2m09:48:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/3ffb2f8bd117e226acbac59284fd0169e49b31ade5c970a4e0340ee58297981e.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/486e80489625b396cec42799c80c4e1c695125e85a7b22e1702f6f335dbc25b0.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/47be8ae9ac32c25b1cb25b362f456bc9a634c536bdf8ed0cd05f281b74ee1462.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/5019dbb9a926e389a11fb532d8b6d9711233d1ebe61729ffb849ac0688f254dd.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/583102705218add54912c5b4e66fb9e9b8c392e6bdf43fa3526c503b999ee0da.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/5c1db5d67a2488c5b0fae99447ed764cb8eadba842a105873c62ac9c2349744c.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/5dcc5d45c61c26d277c8ee6a33690cf87e465880788acff7c990ec8a385f823f.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/62c1c74b0f9251fe9ffa7c328cb54dc22359b4277b5b65cf75309a60c9e907fc.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/6747ef996062fa2c1601ee336eb13543196aa27a814555613ddc6a5d17120ad0.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/6c0a1dac1d9de93eeee18e4b28188b09fa4d1503ff5d441a7d71421b95f8fca4.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/75c2649a7e8ae46ac8b8f1a36c7ed74cccafd1a185084ad2682f6aa1b4a32838.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/899a38a26d22efc140e55db86597f09b3a3a21786610d4883f11066433c842be.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/906fe5bf9cb48551667ccd84898f56726d24a626f0d612ec2629308d0c24f003.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/92bb9009e1fbcb60d4dab40e0b31e6dbe60df6d351f5f15f234a0d9cdaf817d4.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/9407c2e2736bf4f64424a094fc953ab750d9959589e796785527bd48ef08db88.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/a5939617c62b5b19e21ffb05893b815d141cc9dc68dc91972ab419e3d7a7aedb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b04e2f18d36af56443d00148954b7dc6c9d2f8d4f12bc344d9ec195846be0b1d.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b099f3bfb713a3a5d21efd4bc7a12b30f473af5362912e5742a7c69f6805575c.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b52ae2c31052f247b6f592189f4b8ea006ee7d48c90c503bf91a6a8c7593b525.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b876e2b61e159fa0906d758c9ea44406cbb5a78551737f9b882fe02226b603fb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/be8f4548f944f46f28e6dad34cf58ce24eb70b4d4767cf5124554e37e8000ebd.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/ccf97a641fc7887dc421a0afe2520845b7ffe653da84c60fef41b1acd51c4999.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/cfcd3b71d341de3c3570c4336271b18e2dc678d099848919a3728556b508b1eb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/dd18575b0382652edfd9d6ff584a81e34989eefbbcec1ec45139bc579cce4d87.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/ef0d81c6ff0cad48874750d6f537a3f59b759f20d673fd300152346f488e47fc.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/006740a35decb1d9e34cfd8afbeaf52322648e1ac3adaa4f34f6545955980796.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/0a83ae35963b54a4eeb8697222c7047b4ccc069ac9d2449a196ecda9f3fed77f.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/a5939617c62b5b19e21ffb05893b815d141cc9dc68dc91972ab419e3d7a7aedb.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/f30db341be7d5ceb6d2d029d7046ae32417cc99cef972e4488ce113bf2747d09.html[22m
+s the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveViewer.tsx[39m:8:21
+[33m  7  |  import { ContentViewer } from "./ContentViewer";
+  8  |  import { cn } from "../../lib/utils";
+  9  |  import confetti from "canvas-confetti";
+     |                        ^
+  10 |  export function InteractiveViewer({ content, title, onComplete }) {
+  11 |    _s();[39m
+[2m01:11:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m01:11:02[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "canvas-confetti" from "src/components/education/InteractiveViewer.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveViewer.tsx[39m:8:21
+[33m  7  |  import { ContentViewer } from "./ContentViewer";
+  8  |  import { cn } from "../../lib/utils";
+  9  |  import confetti from "canvas-confetti";
+     |                        ^
+  10 |  export function InteractiveViewer({ content, title, onComplete }) {
+  11 |    _s();[39m
+[2m01:11:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m01:11:03[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "canvas-confetti" from "src/components/education/InteractiveViewer.tsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveViewer.tsx[39m:8:21
+[33m  7  |  import { ContentViewer } from "./ContentViewer";
+  8  |  import { cn } from "../../lib/utils";
+  9  |  import confetti from "canvas-confetti";
+     |                        ^
+  10 |  export function InteractiveViewer({ content, title, onComplete }) {
+  11 |    _s();[39m
+[2m01:12:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m01:12:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/education/InteractiveViewer.tsx, /src/index.css[22m
+[2m01:24:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m01:25:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m01:25:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ContentViewer.tsx[22m
+[2m01:25:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ new dependencies optimized: [33mcanvas-confetti[32m[39m
+[2m01:25:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m01:45:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/layout/SplashScreen.tsx[22m
+[2m01:52:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m01:53:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m01:53:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m01:56:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m01:56:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:01:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:02:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:03:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:03:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:03:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:03:41[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Unexpected token, expected "," (164:3)
+
+[0m [90m 162 |[31m       handleCompletion()[33m;[31m
+ [90m 163 |[31m     }
+[31m[1m>[22m[31m[90m 164 |[31m   }[33m;[31m
+ [90m     |[31m    [31m[1m^[22m[31m
+ [90m 165 |[31m
+ [90m 166 |[31m   [36mconst[31m handlePrevious [33m=[31m () [33m=>[31m {
+ [90m 167 |[31m     [36mif[31m (currentIndex [33m>[31m [35m0[31m) {[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:164:3
+[33m  162 |        handleCompletion();
+  163 |      }
+  164 |    };
+      |     ^
+  165 |  
+  166 |    const handlePrevious = () => {[39m
+      at constructor (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:367:19)
+      at TypeScriptParserMixin.raise (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6624:19)
+      at TypeScriptParserMixin.unexpected (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6644:16)
+      at TypeScriptParserMixin.expect (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6924:12)
+      at TypeScriptParserMixin.parseCallExpressionArguments (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11307:14)
+      at TypeScriptParserMixin.parseCoverCallAndAsyncArrowHead (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11250:29)
+      at TypeScriptParserMixin.parseSubscript (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11184:19)
+      at TypeScriptParserMixin.parseSubscript (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9329:18)
+      at TypeScriptParserMixin.parseSubscripts (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11158:19)
+      at TypeScriptParserMixin.parseExprSubscripts (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11149:17)
+      at TypeScriptParserMixin.parseUpdate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11130:21)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11110:23)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9890:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10963:61)
+      at TypeScriptParserMixin.parseExprOps (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10968:23)
+      at TypeScriptParserMixin.parseMaybeConditional (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10945:23)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10895:21)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9839:20)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:39
+      at TypeScriptParserMixin.allowInAnd (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12495:16)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:17)
+      at TypeScriptParserMixin.parseVar (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13460:91)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13306:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13392:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13385:10)
+      at TypeScriptParserMixin.parseBlock (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13373:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12174:24)
+      at TypeScriptParserMixin.parseArrowExpression (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12149:10)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11759:12)
+      at TypeScriptParserMixin.parseExprAtom (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11395:23)
+      at TypeScriptParserMixin.parseExprAtom (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:4793:20)
+      at TypeScriptParserMixin.parseExprSubscripts (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11145:23)
+      at TypeScriptParserMixin.parseUpdate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11130:21)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11110:23)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9890:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10963:61)
+      at TypeScriptParserMixin.parseExprOps (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10968:23)
+      at TypeScriptParserMixin.parseMaybeConditional (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10945:23)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10895:21)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9839:20)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:39
+      at TypeScriptParserMixin.allowInAnd (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12495:16)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:17)
+      at TypeScriptParserMixin.parseVar (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13460:91)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13306:10)
+[2m02:04:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:06:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:06:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:08:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:09:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m02:09:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m09:47:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/0138baf75621871163ccf3d1715507d0604709785c307e896221562e15563df5.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/07746dd701f48c6c73f989ee2e682ebc098a6b3da81dc1d51531af38b2ea7b58.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/09642a2ccbc2d6737f059c6425ccf6bebae7cfe8072d5696440f1f7b492bebff.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/0a4eefb0dd62b443ac3829195d5e23f76d423e10cc552988b9c6cab6c4e7de0d.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/0f70e3b5c1d792ffe30b52c7ef548835f3b6088de32042986902f6e1713fa7eb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/1ba0b9c1da3b06d8c2b45a38fd887eb1dad53f21cbdbb9ce761ba7f3a99da752.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/1d226e2057af57eb3befff8e96f62df14f3ad14a36983e2f15df860a48c195ab.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/24d766f73c1c5755fff34e0d3e0043cc55b022be61fccf1c2ed5f6cc70b18d65.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/28b1d1e21f92d8d3fef299abacc90d92a188f3ba5ab2e523762bab66548a62f6.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/3ffb2f8bd117e226acbac59284fd0169e49b31ade5c970a4e0340ee58297981e.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/47be8ae9ac32c25b1cb25b362f456bc9a634c536bdf8ed0cd05f281b74ee1462.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/486e80489625b396cec42799c80c4e1c695125e85a7b22e1702f6f335dbc25b0.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/5019dbb9a926e389a11fb532d8b6d9711233d1ebe61729ffb849ac0688f254dd.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/583102705218add54912c5b4e66fb9e9b8c392e6bdf43fa3526c503b999ee0da.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/5c1db5d67a2488c5b0fae99447ed764cb8eadba842a105873c62ac9c2349744c.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/5dcc5d45c61c26d277c8ee6a33690cf87e465880788acff7c990ec8a385f823f.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/62c1c74b0f9251fe9ffa7c328cb54dc22359b4277b5b65cf75309a60c9e907fc.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/6747ef996062fa2c1601ee336eb13543196aa27a814555613ddc6a5d17120ad0.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/6c0a1dac1d9de93eeee18e4b28188b09fa4d1503ff5d441a7d71421b95f8fca4.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/75c2649a7e8ae46ac8b8f1a36c7ed74cccafd1a185084ad2682f6aa1b4a32838.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/899a38a26d22efc140e55db86597f09b3a3a21786610d4883f11066433c842be.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/906fe5bf9cb48551667ccd84898f56726d24a626f0d612ec2629308d0c24f003.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/92bb9009e1fbcb60d4dab40e0b31e6dbe60df6d351f5f15f234a0d9cdaf817d4.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/9407c2e2736bf4f64424a094fc953ab750d9959589e796785527bd48ef08db88.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/a5939617c62b5b19e21ffb05893b815d141cc9dc68dc91972ab419e3d7a7aedb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b04e2f18d36af56443d00148954b7dc6c9d2f8d4f12bc344d9ec195846be0b1d.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b099f3bfb713a3a5d21efd4bc7a12b30f473af5362912e5742a7c69f6805575c.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b52ae2c31052f247b6f592189f4b8ea006ee7d48c90c503bf91a6a8c7593b525.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/b876e2b61e159fa0906d758c9ea44406cbb5a78551737f9b882fe02226b603fb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/be8f4548f944f46f28e6dad34cf58ce24eb70b4d4767cf5124554e37e8000ebd.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/ccf97a641fc7887dc421a0afe2520845b7ffe653da84c60fef41b1acd51c4999.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/cfcd3b71d341de3c3570c4336271b18e2dc678d099848919a3728556b508b1eb.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/dd18575b0382652edfd9d6ff584a81e34989eefbbcec1ec45139bc579cce4d87.html[22m
+[2m09:48:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/release/build/arboria-4fbea65810eff0a1/out/tauri-codegen-assets/ef0d81c6ff0cad48874750d6f537a3f59b759f20d673fd300152346f488e47fc.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/006740a35decb1d9e34cfd8afbeaf52322648e1ac3adaa4f34f6545955980796.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/0a83ae35963b54a4eeb8697222c7047b4ccc069ac9d2449a196ecda9f3fed77f.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/a5939617c62b5b19e21ffb05893b815d141cc9dc68dc91972ab419e3d7a7aedb.html[22m
+[2m09:48:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc-tauri/target/x86_64-pc-windows-msvc/release/build/arboria-3367991db12c9ecc/out/tauri-codegen-assets/f30db341be7d5ceb6d2d029d7046ae32417cc99cef972e4488ce113bf2747d09.html[22m
+[2m09:52:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m09:55:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:06:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:07:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:07:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:28:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:42:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:42:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:42:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:42:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m10:42:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m11:01:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m11:01:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m11:01:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m11:01:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m11:07:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m11:07:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ContentViewer.tsx[22m
+[2m12:09:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ContentViewer.tsx[22m
+[2m12:09:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ContentViewer.tsx[22m
+[2m12:10:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ContentViewer.tsx[22m
+[2m12:21:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:21:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:21:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:21:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:21:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:21:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m12:22:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/PruningPlanActivity.tsx[22m
+[2m12:22:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/PruningPlanActivity.tsx[22m
+[2m12:22:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m12:22:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/EducationSearch.tsx, /src/components/features/search/GlobalSearch.tsx[22m
+[2m12:22:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:31:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:31:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m12:32:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m13:18:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m13:18:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:18:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/EducationSearch.tsx, /src/components/features/search/GlobalSearch.tsx[22m
+[2m13:53:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:53:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:53:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:53:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:53:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:53:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:53:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m13:54:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:04:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:04:43[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Identifier 'handlePrevious' has already been declared. (312:8)
+
+[0m [90m 310 |[31m
+ [90m 311 |[31m
+[31m[1m>[22m[31m[90m 312 |[31m   [36mconst[31m handlePrevious [33m=[31m () [33m=>[31m {
+ [90m     |[31m         [31m[1m^[22m[31m
+ [90m 313 |[31m     [36mif[31m (currentIndex [33m>[31m [35m0[31m) {
+ [90m 314 |[31m       setCurrentIndex(prev [33m=>[31m prev [33m-[31m [35m1[31m)[33m;[31m
+ [90m 315 |[31m     }[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:312:8
+[33m  310 |  
+  311 |  
+  312 |    const handlePrevious = () => {
+      |          ^
+  313 |      if (currentIndex > 0) {
+  314 |        setCurrentIndex(prev => prev - 1);[39m
+      at constructor (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:367:19)
+      at TypeScriptParserMixin.raise (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6624:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:1646:19)
+      at TypeScriptScopeHandler.declareName (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:1612:12)
+      at TypeScriptScopeHandler.declareName (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:4909:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:7594:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:7590:12)
+      at TypeScriptParserMixin.checkLVal (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:7527:12)
+      at TypeScriptParserMixin.parseVarId (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13488:10)
+      at TypeScriptParserMixin.parseVarId (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9805:11)
+      at TypeScriptParserMixin.parseVar (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13459:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13306:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13392:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13385:10)
+      at TypeScriptParserMixin.parseBlock (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13373:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12174:24)
+      at TypeScriptParserMixin.parseArrowExpression (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12149:10)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11759:12)
+      at TypeScriptParserMixin.parseExprAtom (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11395:23)
+      at TypeScriptParserMixin.parseExprAtom (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:4793:20)
+      at TypeScriptParserMixin.parseExprSubscripts (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11145:23)
+      at TypeScriptParserMixin.parseUpdate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11130:21)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11110:23)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9890:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10963:61)
+      at TypeScriptParserMixin.parseExprOps (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10968:23)
+      at TypeScriptParserMixin.parseMaybeConditional (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10945:23)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10895:21)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9839:20)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:39
+      at TypeScriptParserMixin.allowInAnd (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12495:16)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:17)
+      at TypeScriptParserMixin.parseVar (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13460:91)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13306:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14010:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9690:85)
+      at TypeScriptParserMixin.maybeParseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13969:31)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13888:29)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9446:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12954:27)
+[2m15:04:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:05:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:05:46[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m15:06:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ModeSelector.tsx[22m
+[2m15:06:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ModeSelector.tsx[22m
+[2m15:06:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m15:06:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m15:06:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m15:30:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:31:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:31:28[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Identifier 'currentCard' has already been declared. (873:8)
+
+[0m [90m 871 |[31m   }[33m;[31m
+ [90m 872 |[31m
+[31m[1m>[22m[31m[90m 873 |[31m   [36mconst[31m currentCard [33m=[31m cards[currentIndex][33m;[31m
+ [90m     |[31m         [31m[1m^[22m[31m
+ [90m 874 |[31m
+ [90m 875 |[31m   [90m// --- SUB-COMPONENTS ---[31m
+ [90m 876 |[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:873:8
+[33m  871 |    };
+  872 |  
+  873 |    const currentCard = cards[currentIndex];
+      |          ^
+  874 |  
+  875 |    // --- SUB-COMPONENTS ---[39m
+      at constructor (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:367:19)
+      at TypeScriptParserMixin.raise (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6624:19)
+      at TypeScriptScopeHandler.checkRedeclarationInScope (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:1646:19)
+      at TypeScriptScopeHandler.declareName (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:1612:12)
+      at TypeScriptScopeHandler.declareName (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:4909:11)
+      at TypeScriptParserMixin.declareNameFromIdentifier (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:7594:16)
+      at TypeScriptParserMixin.checkIdentifier (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:7590:12)
+      at TypeScriptParserMixin.checkLVal (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:7527:12)
+      at TypeScriptParserMixin.parseVarId (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13488:10)
+      at TypeScriptParserMixin.parseVarId (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9805:11)
+      at TypeScriptParserMixin.parseVar (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13459:12)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13306:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13392:61)
+      at TypeScriptParserMixin.parseBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13385:10)
+      at TypeScriptParserMixin.parseBlock (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13373:10)
+      at TypeScriptParserMixin.parseFunctionBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12174:24)
+      at TypeScriptParserMixin.parseArrowExpression (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12149:10)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11759:12)
+      at TypeScriptParserMixin.parseExprAtom (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11395:23)
+      at TypeScriptParserMixin.parseExprAtom (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:4793:20)
+      at TypeScriptParserMixin.parseExprSubscripts (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11145:23)
+      at TypeScriptParserMixin.parseUpdate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11130:21)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:11110:23)
+      at TypeScriptParserMixin.parseMaybeUnary (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9890:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10963:61)
+      at TypeScriptParserMixin.parseExprOps (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10968:23)
+      at TypeScriptParserMixin.parseMaybeConditional (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10945:23)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10895:21)
+      at TypeScriptParserMixin.parseMaybeAssign (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9839:20)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:39
+      at TypeScriptParserMixin.allowInAnd (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12495:16)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10864:17)
+      at TypeScriptParserMixin.parseVar (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13460:91)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13306:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14010:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9690:85)
+      at TypeScriptParserMixin.maybeParseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13969:31)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13888:29)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9446:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12954:27)
+[2m15:31:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:32:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:32:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:46:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:46:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m15:46:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m16:04:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m16:04:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m16:05:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m16:05:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m16:47:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m16:47:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m16:47:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m16:47:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m16:48:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m16:49:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m16:50:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/ReferenceDashboard.tsx[22m
+[2m17:04:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m17:04:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/pages/TopicPage.tsx, /src/components/education/ReferenceDashboard.tsx, /src/index.css[22m
+[2m17:05:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/EducationSearch.tsx, /src/components/features/search/GlobalSearch.tsx[22m
+[2m17:05:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/EducationSearch.tsx, /src/components/features/search/GlobalSearch.tsx[22m
+[2m17:06:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx, /src/pages/Education.tsx, /src/pages/TopicPage.tsx[22m
+[2m17:07:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m17:07:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Education.tsx, /src/index.css[22m
+[2m20:38:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:38:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m20:38:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:38:46[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:38:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:39:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:39:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:39:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m20:39:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:39:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:44:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:44:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m20:44:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:44:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/layouts/DashboardLayout.tsx, /src/index.css[22m
+[2m20:45:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/layouts/DashboardLayout.tsx, /src/index.css[22m
+[2m20:45:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/layouts/DashboardLayout.tsx, /src/index.css[22m
+[2m20:45:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:45:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m20:45:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:45:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m20:45:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m20:45:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m20:45:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/TopicPage.tsx, /src/index.css[22m
+[2m20:47:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:47:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m20:47:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:58:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/context/AuthContext.tsx, /src/index.css[22m
+[2m20:58:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/context/AuthContext.tsx[22m Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m20:58:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/context/AuthContext.tsx[22m
+[2m20:58:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/index.css[22m
+[2m20:58:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/index.css[22m
+[2m20:59:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/index.css[22m
+[2m21:13:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx, /src/pages/Education.tsx, /src/pages/TopicPage.tsx[22m
+[2m21:13:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: [33mDuplicate key "upsertUserProgress" in object literal[33m
+34 |    },
+35 |  
+36 |      async upsertUserProgress(userId: string, moduleId: string, score: number, status: string) {
+   |            ^
+37 |          try {
+38 |              const { data, error } = await supabase
+[39m
+  Plugin: [35mvite:esbuild[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/services/educationService.ts[39m
+[2m21:13:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m
+[2m21:13:22[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Missing semicolon. (247:5)
+
+[0m [90m 245 |[31m     }
+ [90m 246 |[31m   }[33m;[31m
+[31m[1m>[22m[31m[90m 247 |[31m     })[33m;[31m
+ [90m     |[31m      [31m[1m^[22m[31m
+ [90m 248 |[31m   }[33m,[31m [content])[33m;[31m
+ [90m 249 |[31m
+ [90m 250 |[31m   [90m// Effect to sync mobile view based on content type[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:247:5
+[33m  245 |      }
+  246 |    };
+  247 |      });
+      |       ^
+  248 |    }, [content]);
+  249 |  [39m
+      at constructor (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:367:19)
+      at TypeScriptParserMixin.raise (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6624:19)
+      at TypeScriptParserMixin.semicolon (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6920:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13307:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14010:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9690:85)
+      at TypeScriptParserMixin.maybeParseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13969:31)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13888:29)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9446:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12954:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12820:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13392:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13385:10)
+      at TypeScriptParserMixin.parseProgram (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12698:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12688:25)
+      at TypeScriptParserMixin.parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14568:25)
+      at TypeScriptParserMixin.parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10183:18)
+      at parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14602:38)
+      at parser (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transformation\normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:261:32)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:273:13
+      at async.call.result.err.err (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:223:11)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:189:28
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\gensync-utils\async.js:67:7
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:113:33
+      at step (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:287:14)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:273:13
+      at async.call.result.err.err (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:223:11)
+[2m21:13:33[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Missing semicolon. (247:5)
+
+[0m [90m 245 |[39m     }
+ [90m 246 |[39m   }[33m;[39m
+[31m[1m>[22m[39m[90m 247 |[39m     })[33m;[39m
+ [90m     |[39m      [31m[1m^[22m[39m
+ [90m 248 |[39m   }[33m,[39m [content])[33m;[39m
+ [90m 249 |[39m
+ [90m 250 |[39m   [90m// Effect to sync mobile view based on content type[39m[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:247:5
+[33m  245 |      }
+  246 |    };
+  247 |      });
+      |       ^
+  248 |    }, [content]);
+  249 |  [39m
+[2m21:13:34[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Missing semicolon. (247:5)
+
+[0m [90m 245 |[31m     }
+ [90m 246 |[31m   }[33m;[31m
+[31m[1m>[22m[31m[90m 247 |[31m     })[33m;[31m
+ [90m     |[31m      [31m[1m^[22m[31m
+ [90m 248 |[31m   }[33m,[31m [content])[33m;[31m
+ [90m 249 |[31m
+ [90m 250 |[31m   [90m// Effect to sync mobile view based on content type[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:247:5
+[33m  245 |      }
+  246 |    };
+  247 |      });
+      |       ^
+  248 |    }, [content]);
+  249 |  [39m
+      at constructor (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:367:19)
+      at TypeScriptParserMixin.raise (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6624:19)
+      at TypeScriptParserMixin.semicolon (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6920:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13307:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14010:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9690:85)
+      at TypeScriptParserMixin.maybeParseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13969:31)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13888:29)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9446:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12954:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12820:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13392:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13385:10)
+      at TypeScriptParserMixin.parseProgram (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12698:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12688:25)
+      at TypeScriptParserMixin.parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14568:25)
+      at TypeScriptParserMixin.parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10183:18)
+      at parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14602:38)
+      at parser (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transformation\normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:261:32)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:273:13
+      at async.call.result.err.err (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:223:11)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:189:28
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\gensync-utils\async.js:67:7
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:113:33
+      at step (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:287:14)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:273:13
+      at async.call.result.err.err (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:223:11)
+[2m21:13:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx, /src/pages/Education.tsx, /src/pages/TopicPage.tsx[22m
+[2m21:13:43[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Missing semicolon. (247:5)
+
+[0m [90m 245 |[39m     }
+ [90m 246 |[39m   }[33m;[39m
+[31m[1m>[22m[39m[90m 247 |[39m     })[33m;[39m
+ [90m     |[39m      [31m[1m^[22m[39m
+ [90m 248 |[39m   }[33m,[39m [content])[33m;[39m
+ [90m 249 |[39m
+ [90m 250 |[39m   [90m// Effect to sync mobile view based on content type[39m[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:247:5
+[33m  245 |      }
+  246 |    };
+  247 |      });
+      |       ^
+  248 |    }, [content]);
+  249 |  [39m
+[2m21:13:43[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Transform failed with 1 error:
+C:/BMAD-workflow/apps/arboria-v3/src/services/educationService.ts:35:0: ERROR: Expected identifier but found end of file
+  Plugin: [35mvite:esbuild[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/services/educationService.ts[39m:35:0
+[33m  
+  [33mExpected identifier but found end of file[33m
+  33 |      }
+  34 |    },
+  35 |  
+     |  ^
+  [39m
+[2m21:13:44[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\BMAD-workflow\apps\arboria-v3\src\components\education\InteractiveLearningExperience.tsx: Missing semicolon. (247:5)
+
+[0m [90m 245 |[31m     }
+ [90m 246 |[31m   }[33m;[31m
+[31m[1m>[22m[31m[90m 247 |[31m     })[33m;[31m
+ [90m     |[31m      [31m[1m^[22m[31m
+ [90m 248 |[31m   }[33m,[31m [content])[33m;[31m
+ [90m 249 |[31m
+ [90m 250 |[31m   [90m// Effect to sync mobile view based on content type[31m[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/components/education/InteractiveLearningExperience.tsx[39m:247:5
+[33m  245 |      }
+  246 |    };
+  247 |      });
+      |       ^
+  248 |    }, [content]);
+  249 |  [39m
+      at constructor (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:367:19)
+      at TypeScriptParserMixin.raise (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6624:19)
+      at TypeScriptParserMixin.semicolon (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:6920:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13307:10)
+      at TypeScriptParserMixin.parseVarStatement (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9469:31)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12927:23)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseStatementListItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12823:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14010:17)
+      at TypeScriptParserMixin.parseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9690:85)
+      at TypeScriptParserMixin.maybeParseExportDeclaration (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13969:31)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13888:29)
+      at TypeScriptParserMixin.parseExport (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9446:20)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12954:27)
+      at TypeScriptParserMixin.parseStatementContent (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:9569:18)
+      at TypeScriptParserMixin.parseStatementLike (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12843:17)
+      at TypeScriptParserMixin.parseModuleItem (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12820:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13392:36)
+      at TypeScriptParserMixin.parseBlockBody (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:13385:10)
+      at TypeScriptParserMixin.parseProgram (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12698:10)
+      at TypeScriptParserMixin.parseTopLevel (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:12688:25)
+      at TypeScriptParserMixin.parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14568:25)
+      at TypeScriptParserMixin.parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:10183:18)
+      at parse (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\parser\lib\index.js:14602:38)
+      at parser (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transformation\normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:261:32)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:273:13
+      at async.call.result.err.err (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:223:11)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:189:28
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\@babel\core\lib\gensync-utils\async.js:67:7
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:113:33
+      at step (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:287:14)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:273:13
+      at async.call.result.err.err (C:\BMAD-workflow\apps\arboria-v3\node_modules\gensync\index.js:223:11)
+[2m21:13:45[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+C:/BMAD-workflow/apps/arboria-v3/src/services/educationService.ts:35:0: ERROR: Expected identifier but found end of file[39m
+  Plugin: [35mvite:esbuild[39m
+  File: [36mC:/BMAD-workflow/apps/arboria-v3/src/services/educationService.ts[39m:35:0
+[33m  
+  [33mExpected identifier but found end of file[33m
+  33 |      }
+  34 |    },
+  35 |  
+     |  ^
+  [39m
+      at failureErrorWithLog (C:\BMAD-workflow\apps\arboria-v3\node_modules\esbuild\lib\main.js:1467:15)
+      at C:\BMAD-workflow\apps\arboria-v3\node_modules\esbuild\lib\main.js:736:50
+      at responseCallbacks.<computed> (C:\BMAD-workflow\apps\arboria-v3\node_modules\esbuild\lib\main.js:603:9)
+      at handleIncomingPacket (C:\BMAD-workflow\apps\arboria-v3\node_modules\esbuild\lib\main.js:658:12)
+      at Socket.readFromStdout (C:\BMAD-workflow\apps\arboria-v3\node_modules\esbuild\lib\main.js:581:7)
+      at Socket.emit (node:events:508:28)
+      at addChunk (node:internal/streams/readable:559:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+      at Readable.push (node:internal/streams/readable:390:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+[2m21:13:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/education/InteractiveLearningExperience.tsx[22m

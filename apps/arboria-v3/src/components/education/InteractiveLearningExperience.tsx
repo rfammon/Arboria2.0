@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  CheckCircle2, 
-  XCircle, 
-  Trophy, 
-  Zap, 
-  BookOpen, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  XCircle,
+  Trophy,
+  Zap,
+  BookOpen,
   BrainCircuit,
   Award,
   Search,
@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ContentViewer } from './ContentViewer';
 import { PruningPlanActivity } from './PruningPlanActivity';
+import { KeyConceptCard } from './KeyConceptCard';
 import { useEducationStore } from '../../stores/useEducationStore';
 import confetti from 'canvas-confetti';
 
@@ -180,7 +181,7 @@ const useAudioFeedback = () => {
     try {
       const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
-      
+
       const win = window as Window & { _arboriaAudioCtx?: AudioContext };
       if (!win._arboriaAudioCtx) win._arboriaAudioCtx = new AudioContextClass();
       const ctx = win._arboriaAudioCtx;
@@ -213,77 +214,6 @@ const getIconForTerm = (term: string) => {
   return BrainCircuit;
 };
 
-interface FlipCardProps {
-  term: string;
-  def: string;
-  isFlipped: boolean;
-  onFlip: () => void;
-  playWhoosh: () => void;
-}
-
-const FlipCard: React.FC<FlipCardProps> = ({ term, def, isFlipped, onFlip, playWhoosh }) => {
-  const Icon = getIconForTerm(term);
-
-  const flipVariants = {
-    front: { rotateY: 0 },
-    back: { rotateY: 180 }
-  };
-
-  return (
-    <div
-      className="h-48 w-full cursor-pointer group"
-      style={{ perspective: "1200px" }}
-      onClick={() => {
-        onFlip();
-        playWhoosh();
-      }}
-    >
-      <motion.div
-        className="relative w-full h-full"
-        variants={flipVariants}
-        initial="front"
-        animate={isFlipped ? "back" : "front"}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        {/* Front */}
-        <div
-          className="absolute inset-0 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow"
-          style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
-        >
-          <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Icon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight">{term}</h3>
-          <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-            <Sparkles size={10} className="text-amber-400" />
-            <span>Toque para ver</span>
-          </div>
-        </div>
-
-        {/* Back */}
-        <div
-          className="absolute inset-0 bg-slate-900 text-white rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center text-center"
-          style={{
-            transform: "rotateY(180deg)",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden"
-          }}
-        >
-          <div className="absolute top-4 left-4">
-            <Icon className="w-4 h-4 text-emerald-500 opacity-40" />
-          </div>
-          <p className="text-sm font-medium leading-relaxed text-slate-200">{def}</p>
-          <div className="absolute bottom-4 right-4 flex items-center gap-2">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Voltar</span>
-            <RotateCw className="w-3 h-3 text-slate-500" />
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
-
 interface QuizComponentProps {
   card: Card;
   inline?: boolean;
@@ -293,13 +223,13 @@ interface QuizComponentProps {
   mode?: 'training' | 'reference';
 }
 
-const QuizComponent: React.FC<QuizComponentProps> = ({ 
-  card, 
-  inline = false, 
-  onAdvance, 
-  playFeedback, 
+const QuizComponent: React.FC<QuizComponentProps> = ({
+  card,
+  inline = false,
+  onAdvance,
+  playFeedback,
   setQuizResults,
-  mode 
+  mode
 }) => {
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [currentQIdx, setCurrentQIdx] = useState(0);
@@ -611,7 +541,6 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
   const [currentIndex, setCurrentIndex] = useState(0);
   const [xpGained, setXpGained] = useState(0);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
   const [mobileView, setMobileView] = useState<'content' | 'activity'>('content');
   const [showCelebration, setShowCelebration] = useState(false);
   const [quizResults, setQuizResults] = useState<Record<number, boolean>>({});
@@ -637,19 +566,34 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
   }, [topicId, modules, mode]);
 
   const cards = parseContent(content);
-  const totalSteps = cards.length + (cards.some(c => c.type === 'quiz') ? 1 : 0);
+  const totalSteps = mode === 'reference'
+    ? cards.filter(c => c.type !== 'quiz').length
+    : cards.length + (cards.some(c => c.type === 'quiz') ? 1 : 0);
   const progress = ((currentIndex + (showQuiz ? 1 : 0)) / totalSteps) * 100;
 
   const handleNext = () => {
     if (currentIndex < cards.length - 1) {
-      const nextIndex = currentIndex + 1;
+      let nextIndex = currentIndex + 1;
+
+      // No modo consulta, ignoramos cards de quiz
+      if (mode === 'reference') {
+        while (nextIndex < cards.length && cards[nextIndex].type === 'quiz') {
+          nextIndex++;
+        }
+
+        if (nextIndex >= cards.length) {
+          handleCompletion();
+          return;
+        }
+      }
+
       setCurrentIndex(nextIndex);
       if (mode === 'training') {
         updateModuleProgress(topicId, nextIndex);
       }
       // Scroll to top on change
       document.getElementById('content-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (cards.some(c => c.type === 'quiz') && !showQuiz) {
+    } else if (mode !== 'reference' && cards.some(c => c.type === 'quiz') && !showQuiz) {
       setShowQuiz(true);
       // Don't update progress here, user needs to pass quiz
     } else {
@@ -681,23 +625,19 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
     setTimeout(() => onComplete(), 3000);
   };
 
-  const toggleFlip = (term: string) => {
-    setFlippedCards(prev => ({ ...prev, [term]: !prev[term] }));
-  };
-
   const currentCard = cards[currentIndex];
 
   const ReferenceLayout = () => {
     // Filter cards based on content only (no search needed for clean view)
-    const filteredCards = cards;
+    const filteredCards = cards.filter(card => card.type !== 'quiz');
 
     return (
       <div className="relative flex flex-col w-full h-full bg-transparent text-slate-900 dark:text-slate-100 overflow-hidden">
-        
+
         {/* Main Content - Simplified for Reference Mode */}
         <main className="flex-1 overflow-y-auto scroll-smooth p-0" id="reference-scroll-area">
           <div className="max-w-4xl mx-auto space-y-8">
-            
+
             {/* Filtered Content Cards */}
             {filteredCards.map((card) => (
               <section
@@ -729,15 +669,14 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
                         <BrainCircuit size={14} />
                         Termos Técnicos
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
                         {card.definitions.map((def, i) => (
-                          <FlipCard 
-                            key={i} 
-                            term={def.term} 
-                            def={def.def} 
-                            isFlipped={!!flippedCards[def.term]}
-                            onFlip={() => toggleFlip(def.term)}
-                            playWhoosh={playWhoosh}
+                          <KeyConceptCard
+                            key={i}
+                            title={def.term}
+                            description={def.def}
+                            icon={getIconForTerm(def.term)}
+                            color="#10b981"
                           />
                         ))}
                       </div>
@@ -944,9 +883,9 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
               >
                 {/* 1. QUIZ RENDER */}
                 {currentCard.type === 'quiz' && (
-                  <QuizComponent 
-                    card={currentCard} 
-                    onAdvance={handleNext} 
+                  <QuizComponent
+                    card={currentCard}
+                    onAdvance={handleNext}
                     playFeedback={playFeedback}
                     setQuizResults={setQuizResults}
                     mode={mode}
@@ -974,15 +913,14 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
                         {currentCard.definitions.length} termos
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       {currentCard.definitions.map((def, i) => (
-                        <FlipCard 
-                          key={i} 
-                          term={def.term} 
-                          def={def.def} 
-                          isFlipped={!!flippedCards[def.term]}
-                          onFlip={() => toggleFlip(def.term)}
-                          playWhoosh={playWhoosh}
+                        <KeyConceptCard
+                          key={i}
+                          title={def.term}
+                          description={def.def}
+                          icon={getIconForTerm(def.term)}
+                          color="#10b981"
                         />
                       ))}
                     </div>
@@ -1061,7 +999,7 @@ function parseContent(fullContent: string): Card[] {
     const title = titleMatch ? titleMatch[1].trim() : `Tópico ${index + 1}`;
 
     // Remove title line
-    const content = section.replace(/^##\s+.+$/m, '').trim();
+    let content = section.replace(/^##\s+.+$/m, '').trim();
 
     // extract Definitions
     const definitions: Array<{ term: string, def: string }> = [];
@@ -1071,53 +1009,34 @@ function parseContent(fullContent: string): Card[] {
       definitions.push({ term: match[1], def: match[2] });
     }
 
-    // Heuristic for Quiz
-    const isQuiz = title.toLowerCase().includes('quiz') ||
-      title.toLowerCase().includes('avaliação') ||
-      title.toLowerCase().includes('teste') ||
-      content.toLowerCase().includes('[quiz]');
+    // Extract JSON Quiz Data
+    let quizData: QuizData | undefined;
+    const jsonBlockRegex = /```json\s*(\{[\s\S]*?\})\s*```/m;
+    const jsonMatch = content.match(jsonBlockRegex);
 
-    // Mock Quiz Data generation if it's a quiz type
-    const quizData: QuizData | undefined = isQuiz ? {
-      title: "Verificação de Aprendizado",
-      questions: [
-        {
-          id: `q${index}_1`,
-          text: "Qual é o foco principal deste tópico?",
-          options: ["Segurança e Procedimentos", "Velocidade na Execução", "Ignorar Regras", "Apenas Teoria"],
-          correctAnswer: 0,
-          explanation: "A segurança e o seguimento de procedimentos corretos são fundamentais em todas as operações."
-        },
-        {
-          id: `q${index}_2`,
-          text: "Sobre os conceitos apresentados, o que é verdadeiro?",
-          options: ["São opcionais", "Devem ser aplicados sempre", "Apenas para iniciantes", "Não se aplicam na prática"],
-          correctAnswer: 1,
-          explanation: "Os conceitos técnicos e de segurança devem ser aplicados consistentemente por todos os profissionais."
-        },
-        {
-          id: `q${index}_3`,
-          text: "Qual equipamento é essencial aqui?",
-          options: ["EPI Adequado", "Nenhum", "Roupas comuns", "Apenas luvas"],
-          correctAnswer: 0,
-          explanation: "O uso de Equipamento de Proteção Individual (EPI) completo e adequado é obrigatório."
-        },
-        {
-          id: `q${index}_4`,
-          text: "Qual a consequência de ignorar estas normas?",
-          options: ["Risco de Acidentes", "Maior produtividade", "Economia de tempo", "Nenhuma"],
-          correctAnswer: 0,
-          explanation: "Ignorar normas de segurança aumenta drasticamente o risco de acidentes graves."
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[1]);
+        if (parsed.type === 'quiz' || parsed.questions) {
+          quizData = parsed;
+          // Remove the JSON block from the visible content
+          content = content.replace(jsonBlockRegex, '').trim();
         }
-      ],
-      minScore: 7.5
-    } : undefined;
+      } catch (e) {
+        console.warn('Failed to parse quiz JSON', e);
+      }
+    }
+
+    // Heuristic for Quiz if no JSON found (legacy support or fallback)
+    const isQuizLegacy = (title.toLowerCase().includes('quiz') ||
+      title.toLowerCase().includes('avaliação') ||
+      title.toLowerCase().includes('teste')) && !quizData;
 
     return {
       id: index,
       title,
       content,
-      type: isQuiz ? 'quiz' : 'content',
+      type: (quizData || isQuizLegacy) ? 'quiz' : 'content',
       definitions: definitions.length > 0 ? definitions : undefined,
       quizData
     };
