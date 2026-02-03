@@ -690,7 +690,7 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
                         <BrainCircuit size={14} />
                         Termos Técnicos
                       </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {card.definitions.map((def, i) => (
                           <KeyConceptCard
                             key={i}
@@ -934,7 +934,7 @@ export const InteractiveLearningExperience: React.FC<InteractiveLearningExperien
                         {currentCard.definitions.length} termos
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {currentCard.definitions.map((def, i) => (
                         <KeyConceptCard
                           key={i}
