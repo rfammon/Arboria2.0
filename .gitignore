@@ -1,3 +1,5 @@
+# Standardized .gitignore for Arboria v3
+
 # Dependencies
 node_modules/
 .pnp
@@ -5,35 +7,38 @@ node_modules/
 
 # Testing
 coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache
 
-# Production
+# Production / Build
 build/
 dist/
 dist-windows/
-
-# Binary files
 *.exe
 *.apk
 *.dll
 *.so
 *.dylib
 
-# Misc
-.DS_Store
+# Environment / Secret
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+supabase-key*
+*supabase-client*.js
+service-account.json
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
-# Python
-__pycache__/
-*.pyc
-
-# IDEs
+# IDEs / Editors
 .idea/
 .vscode/
 !.vscode/settings.json
@@ -42,18 +47,18 @@ __pycache__/
 
 # OS
 Thumbs.db
+.DS_Store
 
-# Legacy / Deprecated / Nested Repos
+# Brain / Agents
+.gemini/
+.agent/workflows_disabled/
+.opencode_backup/
+compressed_screenshot.png
+
+# Arboria Specific
 Arboria - deprecated/
-apps/arboria-v3/android/
-
-# Security: Additional sensitive files to ignore
-*.key
-*.pem
-*.crt
-*.cert
-supabase-key*
-*.env.local
-*supabase-client*.js
-config.key
-service-account.json
+arboria-installer/
+android_mcp.egg-info/
+uv.lock
+pyproject.toml
+package-lock.json

@@ -83,7 +83,7 @@ describe('usePushNotifications', () => {
         const mockToken = { value: 'test-token' };
         await registrationCallback(mockToken);
 
-        expect(supabase.from).toHaveBeenCalledWith('device_tokens');
+        expect(supabase.from).toHaveBeenCalledWith('user_device_tokens');
     });
 
     it('should navigate to settings on app_update notification', async () => {
@@ -143,7 +143,8 @@ describe('usePushNotifications', () => {
 
         actionCallback({
             notification: {
-                data: { deep_link: 'arboria://plans/456?search=test' }
+                // Must have a hostname like 'arboria://host/path' to be a valid URL for the constructor
+                data: { deep_link: 'arboria://app/plans/456?search=test' }
             }
         });
 

@@ -1,0 +1,20 @@
+# Arboria v3 Commit Template
+# <type>(<scope>): <subject>
+#
+# Types:
+#   feat     - New feature
+#   fix      - Bug fix
+#   docs     - Documentation changes
+#   style    - Formatting, missing semi-colons, etc (not code changes)
+#   refactor - Refactoring production code
+#   test     - Adding missing tests, refactoring tests
+#   chore    - Updating build tasks, package manager configs, etc
+#
+# Breaking Change:
+#   Append '!' to the type (e.g., feat!: description) or add BRRAKING CHANGE in footer.
+#
+# Scope (Optional):
+#   e.g., (education), (auth), (ui), (infra)
+#
+# Example:
+#   feat(auth): add google oauth integration
