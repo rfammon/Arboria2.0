@@ -7,8 +7,10 @@ import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { ArrowRight, ShieldCheck, Sprout, Loader2 } from 'lucide-react';
 import BackgroundCarousel from '../components/layout/BackgroundCarousel';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
+    const { user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +20,13 @@ export default function Login() {
     const [isSignup, setIsSignup] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Reactive navigation: when AuthContext confirms user, redirect
+    useEffect(() => {
+        if (user) {
+            navigate('/installation-selector', { replace: true });
+        }
+    }, [user, navigate]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -39,7 +48,7 @@ export default function Login() {
             if (error) throw error;
 
             toast.success('Bem-vindo de volta!');
-            navigate('/installation-selector', { replace: true });
+            // Navigation is handled reactively by the useEffect watching `user`
         } catch (error: any) {
             toast.error(error.message || 'Erro ao realizar login');
         } finally {
@@ -114,7 +123,7 @@ export default function Login() {
             {/* Left Side (Hero) */}
             <div className="hidden lg:flex relative bg-slate-950 overflow-hidden h-full flex-col justify-end">
                 <BackgroundCarousel />
-                
+
                 <div className="relative z-10 flex flex-col justify-end p-12 w-full">
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
@@ -124,7 +133,7 @@ export default function Login() {
                                 <span className="text-blue-600">IA</span>
                             </span>
                         </div>
-                        
+
                         <h2 className="text-4xl font-bold text-white leading-tight max-w-md">
                             Gestão inteligente de ecossistemas urbanos e industriais.
                         </h2>
@@ -155,7 +164,7 @@ export default function Login() {
                                 <span className="text-blue-600">IA</span>
                             </span>
                         </div>
-                        
+
                         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                             {isSignup ? "Criar nova conta" : "Bem-vindo de volta"}
                         </h1>

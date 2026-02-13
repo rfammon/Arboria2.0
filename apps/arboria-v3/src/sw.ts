@@ -29,7 +29,7 @@ function getDB() {
 }
 
 // Supabase Storage URL Pattern (Adjust base on your actual project ID)
-const SUPABASE_STORAGE_URL = 'https://ovhhtnsvlyclqofixrvy.supabase.co/storage/v1/object/public/tree-photos';
+const SUPABASE_STORAGE_URL = 'https://mbfouxrinygecbxmjckg.supabase.co/storage/v1/object/public/tree-photos';
 
 /**
  * Service Worker: Offline Photo Caching

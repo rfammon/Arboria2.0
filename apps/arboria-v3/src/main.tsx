@@ -1,10 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client'
-import { registerSW } from 'virtual:pwa-register'
 import './index.css'
-
-// Register Service Worker for PWA
-registerSW({ immediate: true })
 import App from './App.tsx'
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { ThemeProvider } from './components/theme-provider';

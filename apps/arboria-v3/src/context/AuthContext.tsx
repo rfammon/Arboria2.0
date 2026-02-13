@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { InstallationService } from '../lib/installationService';
@@ -47,92 +47,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [profileMap, setProfileMap] = useState<Record<string, { nome: string, permissoes: string[] }>>({});
     const [profilesLoaded, setProfilesLoaded] = useState(false);
 
-    const refreshInstallations = async () => {
+    // ─── Helper Functions (stable references via useCallback) ───────────
+
+    const refreshInstallations = useCallback(async () => {
         try {
             const data = await InstallationService.getUserInstallations();
             setInstallations(data);
 
             // Auto-select first if none selected
-            if (data.length > 0 && !activeInstallation) {
-                // Check local storage
+            if (data.length > 0) {
                 const storedId = localStorage.getItem('arboria_active_installation');
                 const found = data.find((i: any) => i.id === storedId);
-                setActiveInstallation(found || data[0]);
+                setActiveInstallation(prev => prev || found || data[0]);
             }
         } catch (error) {
-            console.error('Error fetching installations:', error);
+            console.error('[AuthContext] Error fetching installations:', error);
         }
-    };
+    }, []);
 
-    const fetchUserTheme = async (userId: string) => {
+    const fetchUserTheme = useCallback(async (userId: string) => {
         try {
-            console.log('[AuthContext] Fetching theme for user:', userId);
             const { data, error } = await supabase
                 .from('user_profiles')
                 .select('theme')
                 .eq('id', userId)
-                .maybeSingle(); // Changed from single() to maybeSingle() to handle missing rows gracefully
+                .maybeSingle();
 
             if (error) {
-                console.error('[AuthContext] Error fetching theme (Supabase):', error);
-                // Don't rethrow or infinite loop
+                console.error('[AuthContext] Error fetching theme:', error);
             } else if (data) {
-                console.log('[AuthContext] Theme found:', data.theme);
                 setUserTheme(data.theme);
-            } else {
-                console.log('[AuthContext] No profile/theme found for user.');
             }
         } catch (error) {
             console.error('[AuthContext] Unexpected error fetching user theme:', error);
         }
-    };
+    }, []);
 
-    const handleSetActiveInstallation = (installation: Installation) => {
+    const handleSetActiveInstallation = useCallback((installation: Installation) => {
         setActiveInstallation(installation);
         localStorage.setItem('arboria_active_installation', installation.id);
-    };
+    }, []);
 
-    const signOut = async () => {
+    const signOut = useCallback(async () => {
         try {
-            // Timeout de 2 segundos para o signOut do Supabase
-            const signOutPromise = supabase.auth.signOut();
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Sign out timeout')), 2000)
-            );
-
-            await Promise.race([signOutPromise, timeoutPromise]).catch(err => {
-                console.warn('[AuthContext] Supabase signOut timed out or failed, proceeding with local cleanup:', err);
+            await Promise.race([
+                supabase.auth.signOut(),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Sign out timeout')), 2000)
+                )
+            ]).catch(err => {
+                console.warn('[AuthContext] signOut timed out or failed:', err);
             });
-
         } catch (error) {
-            console.error('[AuthContext] Error during signOut logic:', error);
+            console.error('[AuthContext] Error during signOut:', error);
         } finally {
-            console.log('[AuthContext] Performing local cleanup...');
-
-            // 1. Limpa state do React
+            // Local state cleanup — Supabase handles its own token removal
             setSession(null);
             setInstallations([]);
             setActiveInstallation(null);
             setUserTheme(null);
-
-            // 2. Limpa varivies especificas do App
+            setProfileMap({});
+            setProfilesLoaded(false);
             localStorage.removeItem('arboria_active_installation');
-
-            // 3. CRITICAL: Limpa tokens do Supabase manualmente para evitar "stuck state"
-            // O Supabase usa chaves como "sb-<project-ref>-auth-token"
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-                    console.log('[AuthContext] Removing stale Supabase token:', key);
-                    localStorage.removeItem(key);
-                }
-            });
-
-            // 4. Força redirecionamento/reload
             window.location.hash = '#/login';
         }
-    };
+    }, []);
 
-    const updateUserTheme = async (theme: string) => {
+    const updateUserTheme = useCallback(async (theme: string) => {
         if (!session?.user?.id) return;
 
         try {
@@ -144,90 +125,83 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (!error) {
                 setUserTheme(theme);
             } else {
-                console.error('Error updating user theme:', error);
+                console.error('[AuthContext] Error updating user theme:', error);
             }
         } catch (error) {
-            console.error('Error updating user theme:', error);
+            console.error('[AuthContext] Error updating user theme:', error);
         }
-    };
+    }, [session?.user?.id]);
+
+    // ─── Effect 1: Auth Subscription (Single Source of Truth) ───────────
+    // Supabase manages its own token persistence. We only listen to state changes.
 
     useEffect(() => {
-        let isMounted = true;
+        console.log('[AuthContext] Initializing auth subscription...');
 
-        const initializeAuth = async () => {
-            try {
-                // 1. Carrega perfis PRIMEIRO (dado estático, não depende de sessão)
-                const profiles = await InstallationService.getProfiles();
+        // Get the initial session from Supabase's internal storage
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            console.log('[AuthContext] Initial session:', session ? 'found' : 'none');
+            setSession(session);
+            setLoading(false);
+        });
 
-                if (!isMounted) return;
-
-                const map: Record<string, { nome: string, permissoes: string[] }> = {};
-                profiles.forEach(p => map[p.id] = { nome: p.nome, permissoes: p.permissoes });
-
-                setProfileMap(map);
-                setProfilesLoaded(true);
-
-                // 2. Carrega sessão
-                const { data: { session } } = await supabase.auth.getSession();
-
-                if (!isMounted) return;
-
-                setSession(session);
-
-                // 3. Se autenticado, carrega instalações
-                if (session) {
-                    await refreshInstallations();
-                    await fetchUserTheme(session.user.id);
-                }
-
-            } catch (error) {
-                console.error('[AuthContext] Initialization error:', error);
-
-                // Se houver erro crítico na inicialização (ex: token malformado), 
-                // forçamos limpeza para não travar o app em loading eterno
-                console.warn('[AuthContext] Critical init error - forcing cleanup');
-                localStorage.removeItem('arboria_active_installation');
-                Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                setSession(null);
-            } finally {
-                // 4. Só seta loading=false quando TUDO estiver pronto
-                if (isMounted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        initializeAuth();
-
-        // Listener para mudanças de auth
+        // Subscribe to auth state changes — this is the ONLY source of truth
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (_event, session) => {
-                if (!isMounted) return;
-
+            (_event, session) => {
+                console.log('[AuthContext] Auth state changed:', _event, session ? 'session' : 'no session');
                 setSession(session);
-
-                if (session) {
-                    await refreshInstallations();
-                    await fetchUserTheme(session.user.id);
-                } else {
-                    setInstallations([]);
-                    setActiveInstallation(null);
-                    setUserTheme(null);
-                }
             }
         );
 
         return () => {
-            isMounted = false;
             subscription.unsubscribe();
         };
     }, []);
 
-    // Derived values
+    // ─── Effect 2: Data Loading (Decoupled, Non-blocking) ──────────────
+    // Loads user data when session changes. Failures are non-fatal (graceful degradation).
+
+    useEffect(() => {
+        const userId = session?.user?.id;
+
+        if (!userId) {
+            // User logged out — clear all data
+            setInstallations([]);
+            setActiveInstallation(null);
+            setUserTheme(null);
+            setProfileMap({});
+            setProfilesLoaded(false);
+            return;
+        }
+
+        console.log('[AuthContext] Loading user data for:', userId);
+
+        // Load profiles (non-blocking)
+        InstallationService.getProfiles()
+            .then(profiles => {
+                const map: Record<string, { nome: string, permissoes: string[] }> = {};
+                profiles.forEach(p => map[p.id] = { nome: p.nome, permissoes: p.permissoes });
+                setProfileMap(map);
+                setProfilesLoaded(true);
+            })
+            .catch(err => {
+                console.warn('[AuthContext] Failed to load profiles (non-critical):', err);
+            });
+
+        // Load installations (non-blocking)
+        refreshInstallations().catch(err => {
+            console.warn('[AuthContext] Failed to load installations (non-critical):', err);
+        });
+
+        // Load theme (non-blocking)
+        fetchUserTheme(userId).catch(err => {
+            console.warn('[AuthContext] Failed to load theme (non-critical):', err);
+        });
+
+    }, [session?.user?.id, refreshInstallations, fetchUserTheme]);
+
+    // ─── Derived Values ────────────────────────────────────────────────
+
     const userDisplayName = useMemo(() => {
         if (!session?.user) return '';
         return session.user.user_metadata?.full_name || session.user.email || 'Usuário';
@@ -250,11 +224,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return Array.from(perms);
     }, [activeInstallation, profileMap, profilesLoaded]);
 
-    const hasPermission = (permission: string) => {
+    const hasPermission = useCallback((permission: string) => {
         return permissions.includes(permission);
-    };
+    }, [permissions]);
 
-    const value = {
+    const value = useMemo(() => ({
         session,
         user: session?.user ?? null,
         loading,
@@ -269,7 +243,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         hasPermission,
         userTheme,
         updateUserTheme
-    };
+    }), [
+        session, loading, signOut, installations, activeInstallation,
+        handleSetActiveInstallation, refreshInstallations, userDisplayName,
+        activeProfileNames, permissions, hasPermission, userTheme, updateUserTheme
+    ]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
